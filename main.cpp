@@ -3,57 +3,57 @@
 #include "mpi.h"
 
 
-
+template<typename T>
 class Handle {
-    virtual void send();
-    virtual void receive();
-    virtual void test();
+    typedef TT T;
+    void send(char* buff, size_t size){
+        T::getInstance()->send(this, buff, size);
+    }
+
+    void receive(char* buff, size_t size){
+        T::getInstance()->receive(this, buff, size);
+    }
+
+    void yield(){
+        T::getInstance()->yield(this);
+    }
 };
 
-class ConnType {
+struct ConnType {
+    
+    template<typename T>
+    static T* getInstance() {
+        static T ct;
+        return &ct;
+    }
 
-    virtual void init();
-    virtual void* getReady();
-    virtual void manage(void* handle);
-    virtual void unmanage(void* handle);
+    virtual void init() = 0;
+    virtual void connect(std::string);
+    virtual void removeConnection(std::string);
+    virtual void removeConnection(Handle<ConnType>*);
+    virtual void update(); // chiama il thread del manager
+    virtual Handle<ConnType>* getReady();
+    virtual void manage(Handle<ConnType>*);
+    virtual void unmanage(Handle<ConnType>*);
+    virtual void end();
+
+    virtual void send(Handle<ConnType>*, char*, size_t);
+    virtual void receive(Handle<ConnType>*, char*, size_t);
+    virtual void yield(Handle<ConnType>*);
 
 };
 
 class ConnTcp : public ConnType {
-    // mutex per gestione del set (tutte le operazioni sul set)
-    // map tra descriptor e handle;
-    // set 
-    void* getReady(){
-        lock()
-        select(timeout);
-         // se nuova connessione aggiuni nella mappa e crea nuovo handle e modifica il set
-        unlock()
-        // select TCP
-    }
+    void init() {
 
-    void manage(void* h){
-        lock();
-        // aggiunge al set
-        unlock();
     }
 };
-
-class HandleTCP : public Handle {
-    
-};
-
 
 
 class ConnMPI : public ConnType {
-    //map tra std::pair<std::atomic<bool>, tuple<int, int, int>> -> handle
-    // se
-    void*  getReady(){
-        // check nuove connessioni con IProbe(ANY_SOURCE, TAG_NUOVE_CONNESSIONI);
-
-        for(handle) IProbe 
-        //MPI_IProbe(/**/);
-        // se pronto return true altrimenti false;
-    }
+   void init(){
+        MPI_Init()
+   }
 };
 
 
@@ -80,30 +80,38 @@ class Manager {
         // riprova da capo
     }
 
-    void connect(/* tipo connessione TCP:MPI, parametri connessione*/);
+    void yield(Handle* n){
+        // come faccio a sapere il tipo di connessioni in N??
+
+    }
+
+    map<std::string, ConnType*> protocolsMap;
+
+    template<typename T>
+    void registerType(std::string s){
+        protocolsMap[s] = T::getInstance();
+    }
+
+    static void connect(std::string s){
+
+    };
 };
 
 
-class Handle{
-    void yield(){
-        bool blocked = true;
-    
-       // comunica al manager che deve gestire questo handle (modifica il bool se mpi, aggiungi nel set se TCP)
-    } 
-
-    void send (){
-        if (blocked) throw err;
-    }
-}
-
 
 int main(int argc, char** argv){
-    manager.registerProtocol<ConnTcp>("TCP");
+    Manager m(argc,argv);
+    //manager.registerProtocol<ConnTcp>("TCP");
 
-    auto handle = manager.connect<ConnTCP>("hostname:port");// TCP : hostname:porta // MPI COMM_WORL:rank:tag
+    auto handle = Manager::connect<ConnTCP>("TCP://hostname:port");// TCP : hostname:porta // MPI COMM_WORL:rank:tag
 
     handle.send()
     handle.yield();
+
+
+
+
+
     
     handle = getReady();
     if (handle){
