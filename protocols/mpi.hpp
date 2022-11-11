@@ -3,6 +3,8 @@
 #include <handle.hpp>
 #include "protocolInterface.hpp"
 #include "mpi.h"
+#include <map>
+#include <tuple>
 
 #define CONNECTION_TAG 0
 
@@ -48,7 +50,7 @@ public:
         MPI_Send(header, 1, MPI_INT, dest_rank, CONNECTION_TAG, MPI_COMM_WORLD);
 
         // creo l'handle
-        auto* handle = new HandleMPI(rank. tag);
+        auto* handle = new HandleMPI(rank, tag);
         connections[handle] = false;    
 
         return createHandleUser(handle);
