@@ -7,58 +7,80 @@
 #include <mpi.h>
 
 #define CONNECTION_TAG 0
+class ConnType;
 
-
-template<typename T>
 class Handle {
     // Potrebbe avere un ID univoco incrementale che definiamo noi in modo da
     // accedere velocemente a quale connessione fa riferimento nel ConnType
     // Questo potrebbe sostituire l'oggetto "this" a tutti gli effetti quando
     // vogliamo fare send/receive/yield --> il ConnType di appartenenza ha info
     // interne per capire di chi si tratta
+
+public:
+
+    virtual void send(char* buff, size_t size);
+    virtual void receive(char* buff, size_t size);
+};
+
+class HandleUser {
+    friend class ConnType;
+    Handle * realHandle;
+    HandleUser(Handle* h) : realHandle(h) {}
+public:
+    HandleUser(const HandleUser&) = delete;
+    HandleUser& operator=(HandleUser const&) = delete;
     
-public:
-    // TODO: Per ora public, poi dentro un getter per recuperarlo
-    size_t ID;
-
-public:
-    Handle(size_t ID) : ID(ID) {}
-
-    // typedef TT T;
-    void send(char* buff, size_t size){
-        T::getInstance()->send(this, buff, size);
-    }
-
-    void receive(char* buff, size_t size){
-        T::getInstance()->receive(this, buff, size);
-    }
-
     void yield(){
-        T::getInstance()->yield(this);
+        // notifico il manager che l'handle lo gestisce lui
+        realHandle = nullptr;
+    }
+
+    Handle* operator->() {
+        // throw exception se realHandle è nullptr;
+        return realHandle;
     }
 };
 
+class HandleMPI : public Handle {
+    int rank;
+    int tag;
+
+    HandleMPI(int rank, int tag): rank(rank), tag(tag){}
+
+    void send(char* buff, size_t size){
+        MPI_Send(buff, size, MPI_BYTE, rank, tag, MPI_COMM_WORLD);
+    }
+
+    void receive(char* buff, size_t size){
+        MPI_Recv(buff, size, MPI_BYTE, rank, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    }
+};
+
+
+
+
 struct ConnType {
-    
     template<typename T>
     static T* getInstance() {
         static T ct;
         return &ct;
     }
 
+
     virtual void init() = 0;
-    virtual void connect(std::string);
+    virtual HandleUser connect(std::string);
     virtual void removeConnection(std::string);
-    virtual void removeConnection(Handle<ConnType>*);
+    virtual void removeConnection(HandleUser*);
     virtual void update(); // chiama il thread del manager
-    virtual Handle<ConnType>* getReady();
-    virtual void manage(Handle<ConnType>*);
-    virtual void unmanage(Handle<ConnType>*);
+    virtual HandleUser getReady();
     virtual void end();
 
-    virtual void send(Handle<ConnType>*, char*, size_t);
-    virtual void receive(Handle<ConnType>*, char*, size_t);
-    virtual void yield(Handle<ConnType>*);
+    virtual void yield(Handle*);
+
+protected:
+    HandleUser createHandleUser(Handle* h){
+        return HandleUser(h);
+    }
 
 };
 
@@ -69,26 +91,39 @@ class ConnTcp : public ConnType {
 };
 
 
+
+
 class ConnMPI : public ConnType {
+public:
     // Supponiamo tutte le comunicazioni avvengano sul comm_world
     // map è <rank, tag> ---> <free, handle object>
     // nuova map è <hash_val> --> <free, <rank,tag>, handle object>
     // std::map<std::pair<int,int>, std::pair<bool, Handle<ConnMPI>*>> handles;
-    std::map<size_t, std::tuple<bool, std::pair<int,int>, Handle<ConnMPI>*>> handles;
-    Handle<ConnMPI>* lastReady;
+
+    Handle* lastReady;
+    std::map<HandleMPI*, bool> connections;
 
     void init(){
         MPI_Init(NULL, NULL);
     }
 
 
-    void connect(std::string dest, int tag) {
+    HandleUser connect(std::string dest) {
         // in pratica questo specifica il tag utilizzato per le comunicazioni successive
         // per ora solo tag, poi si vede
+
+        //parse della stringa
+
         int header[1];
         header[0] = tag;
         int dest_rank = stoi(dest);
         MPI_Send(header, 1, MPI_INT, dest_rank, CONNECTION_TAG, MPI_COMM_WORLD);
+
+        // creo l'handle
+        auto* handle = new HandleMPI(rank. tag);
+        connections[handle] = false;    
+
+        return createHandleUser(handle);
     }
 
 
@@ -154,40 +189,15 @@ class ConnMPI : public ConnType {
     }
 
     
-    void removeConnection(Handle<ConnType>* handle) {
-        size_t key = handle->ID;
-        if(checkFree(key)){
+    void removeConnection(HandleMPI* handle) {
+        if(connections[handle]){
             printf("Handle is busy\n");
             return;
         }
-
-        handles.erase(key);
+        connections.erase(handle);
     }
 
 
-    // Anche qui, come gestiamo gli Handle se non hanno più informazioni protocol-specific?
-    // Qui vorrei recuperarmi rank-tag di quell'handle, accedere alla map e aggiornare il bool interno
-    virtual void manage(Handle<ConnType>*);
-    virtual void unmanage(Handle<ConnType>*);
-
-
-    void send(Handle<ConnType>* handle, char* buf, size_t size) {
-        size_t key = handle->ID;
-
-        int rank = std::get<1>(handles[key]).first;
-        int tag = std::get<1>(handles[key]).second;
-
-        MPI_Send(buf, size, MPI_BYTE, rank, tag, MPI_COMM_WORLD);
-    }
-
-    void receive(Handle<ConnType>* handle, char* buf, size_t size) {
-        size_t key = handle->ID;
-
-        int rank = std::get<1>(handles[key]).first;
-        int tag = std::get<1>(handles[key]).second;
-
-        MPI_Recv(buf, size, MPI_BYTE, rank, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    }
 
     void yield(Handle<ConnType>* handle) {
         size_t key = handle->ID;
