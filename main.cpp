@@ -30,9 +30,8 @@ public:
 class HandleUser {
     friend class ConnType;
     Handle * realHandle;
-    bool isWritable = false;
     bool isReadable = false;
-    HandleUser(Handle* h, bool w, bool r) : realHandle(h), isWritable(w), isReadable(r) {}
+    HandleUser(Handle* h, bool r) : realHandle(h), isReadable(r) {}
 public:
     HandleUser(const HandleUser&) = delete;
     HandleUser& operator=(HandleUser const&) = delete;
@@ -49,7 +48,6 @@ public:
     }
 
     void send(char* buff, size_t size){
-        if (!isWritable) throw ;
         realHandle->send(buff, size);
     }
 
@@ -95,11 +93,11 @@ struct ConnType {
     virtual void end();
 
 
-    //virtual void yield(Handle*); 
+    virtual void yield(Handle*); 
 
 protected:
-    HandleUser createHandleUser(Handle* h, bool w, bool r){
-        return HandleUser(h, w, r);
+    HandleUser createHandleUser(Handle* h, bool r){
+        return HandleUser(h, r);
     }
 
 };
