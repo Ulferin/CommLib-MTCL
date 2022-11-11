@@ -5,9 +5,11 @@
 #include <map>
 #include <tuple>
 #include <mpi.h>
+#include <optional>
 
 #define CONNECTION_TAG 0
 class ConnType;
+class HandleUser;
 
 class Handle {
     // Potrebbe avere un ID univoco incrementale che definiamo noi in modo da
@@ -15,37 +17,54 @@ class Handle {
     // Questo potrebbe sostituire l'oggetto "this" a tutti gli effetti quando
     // vogliamo fare send/receive/yield --> il ConnType di appartenenza ha info
     // interne per capire di chi si tratta
+    friend class HandleUser;
+    ConnType* parent;
 
 public:
-
+    Handle(ConnType* parent) : parent(parent) {}
     virtual void send(char* buff, size_t size);
     virtual void receive(char* buff, size_t size);
 };
 
+
 class HandleUser {
     friend class ConnType;
     Handle * realHandle;
-    HandleUser(Handle* h) : realHandle(h) {}
+    bool isWritable = false;
+    bool isReadable = false;
+    HandleUser(Handle* h, bool w, bool r) : realHandle(h), isWritable(w), isReadable(r) {}
 public:
     HandleUser(const HandleUser&) = delete;
     HandleUser& operator=(HandleUser const&) = delete;
     
     void yield(){
         // notifico il manager che l'handle lo gestisce lui
-        realHandle = nullptr;
+        isReadable = false;
+        
     }
 
-    Handle* operator->() {
-        // throw exception se realHandle è nullptr;
-        return realHandle;
+    bool acquireRead(){
+        // check se sono l'unico a ricevere
+        // se si setta readable a true e torna true, altrimenti torna false
     }
+
+    void send(char* buff, size_t size){
+        if (!isWritable) throw ;
+        realHandle->send(buff, size);
+    }
+
+    void read(char* buff, size_t size){
+        if (!isReadable) throw;
+        realHandle->receive(buff, size);
+    }
+
 };
 
 class HandleMPI : public Handle {
     int rank;
     int tag;
 
-    HandleMPI(int rank, int tag): rank(rank), tag(tag){}
+    HandleMPI(ConnType* parent, int rank, int tag): Handle(parent), rank(rank), tag(tag){}
 
     void send(char* buff, size_t size){
         MPI_Send(buff, size, MPI_BYTE, rank, tag, MPI_COMM_WORLD);
@@ -68,18 +87,19 @@ struct ConnType {
 
 
     virtual void init() = 0;
-    virtual HandleUser connect(std::string);
+    virtual HandleUser connect(std::string); 
     virtual void removeConnection(std::string);
     virtual void removeConnection(HandleUser*);
     virtual void update(); // chiama il thread del manager
-    virtual HandleUser getReady();
+    virtual HandleUser getReady(); // ritorna readable
     virtual void end();
 
-    virtual void yield(Handle*);
+
+    //virtual void yield(Handle*); 
 
 protected:
-    HandleUser createHandleUser(Handle* h){
-        return HandleUser(h);
+    HandleUser createHandleUser(Handle* h, bool w, bool r){
+        return HandleUser(h, w, r);
     }
 
 };
@@ -219,7 +239,7 @@ public:
 class Manager {
     std::map<std::string, ConnType*> protocolsMap;
     std::vector<ConnType*> protocols;
-    void* nextReady;
+    void* nextReady; // coda thread safe 1 produttore (thread che fa polling) n consumatori che sono quelli che chiamano getReady
 
     void* getReady(){
         void* tmp = nextReady;
@@ -266,25 +286,44 @@ class Manager {
 
 int main(int argc, char** argv){
     Manager m(argc,argv);
-    //manager.registerProtocol<ConnTcp>("TCP");
+    manager.registerProtocol<ConnTcp>("TCP");
 
-    auto handle = Manager::connect<ConnTCP>("TCP://hostname:port");// TCP : hostname:porta // MPI COMM_WORL:rank:tag
-
-    handle.send()
-    handle.yield();
-
-
-
-
-
+     Manager::connect("TCP://hostname:port").yield();
+     Manager::connect("TCP://hostname:port").yield();
+     Manager::connect("TCP://hostname:port").yield();
+     Manager::connect("TCP://hostname:port", "master").yield();
+    Manger::connect("MPI://0:10");
     
-    handle = getReady();
-    if (handle){
 
+    while(true){
+        auto handle = Manger.getReady();
+
+        // send/receive
+        auto* handle2 = &handle;
+
+
+        handle.yield();
+
+        handle2->receive(); // errore handle2 è invalidato
     }
 
+    
+
+    Manager.getHandleFromLabel("master");
+
+    auto handle = Manager::connect("TCP://hostname:port");// TCP : hostname:porta // MPI COMM_WORL:rank:tag
+
+    handle->send();
 
     handle.yield();
+
+    
+    handle = manger.getReady();
+    handle->receive(buff, size);
+    handle.yield();
+
+
+
 
     return 0;
 }
