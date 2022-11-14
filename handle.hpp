@@ -38,8 +38,8 @@ private:
 
 public:
     Handle(ConnType* parent, bool busy=false) : parent(parent), busy(busy) {}
-    virtual int send(char* buff, size_t size);
-    virtual int receive(char* buff, size_t size);
+    virtual size_t send(char* buff, size_t size);
+    virtual size_t receive(char* buff, size_t size);
     
     bool isBusy() {
         return this->busy;

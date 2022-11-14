@@ -26,10 +26,9 @@ class HandleTCP : public Handle {
 
 public:
     int fd; // File descriptor of the connection represented by this Handle
-    HandleTCP(ConnType* parent, int fd) : Handle(parent), fd(fd) {}
+    HandleTCP(ConnType* parent, int fd, bool busy=true) : Handle(parent, busy), fd(fd) {}
 
-    // NOTE: qui vogliamo restituire il numero di byte inviati oppure vogliamo garantire che tutti i byte siano stati mandati?
-    int send(char* buff, size_t size) {
+    size_t send(char* buff, size_t size) {
         size_t* sz = new size_t(htobe64(size));
         
         struct iovec iov[IOVMAXCOUNT];
@@ -57,7 +56,7 @@ public:
     }
 
 
-    int receive(char* buff, size_t size) {
+    size_t receive(char* buff, size_t size) {
         size_t sz;
         struct iovec iov[1];
         iov[0].iov_base = &sz;
@@ -217,11 +216,11 @@ public:
     }
 
     // URL: host:prot || label: stringa utente
-    Handle* connect(const std::string& address, const std::string& label=std::string()) {
+    Handle* connect(const std::string& address/*, const std::string& label=std::string()*/) {
         size_t hash_val;
-        if(!label.empty())
-            hash_val = std::hash<std::string>{}(label);
-        else
+        // if(!label.empty())
+        //     hash_val = std::hash<std::string>{}(label);
+        // else
             hash_val = std::hash<std::string>{}(address);
 
         int fd;
@@ -301,7 +300,9 @@ public:
     // }
 
 
-    virtual void removeConnection(Handle*);
+    void removeConnection(Handle*) {
+        return;
+    }
 
 
     void notify_yield(Handle* h) {

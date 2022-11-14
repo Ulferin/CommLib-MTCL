@@ -4,22 +4,32 @@
 #include "protocolInterface.hpp"
 #include "mpi.h"
 #include <map>
+#include <assert.h>
 #include <tuple>
 
 #define CONNECTION_TAG 0
 
 class HandleMPI : public Handle {
+
+public:
     int rank;
     int tag;
+    HandleMPI(ConnType* parent, int rank, int tag, bool busy=true): Handle(parent,busy), rank(rank), tag(tag){}
 
-    HandleMPI(ConnType* parent, int rank, int tag): Handle(parent), rank(rank), tag(tag){}
-
-    void send(char* buff, size_t size){
+    size_t send(char* buff, size_t size) {
         MPI_Send(buff, size, MPI_BYTE, rank, tag, MPI_COMM_WORLD);
+
+        return size;
     }
 
-    void receive(char* buff, size_t size){
-        MPI_Recv(buff, size, MPI_BYTE, rank, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    size_t receive(char* buff, size_t size){
+        MPI_Status status; 
+        int count;
+        MPI_Recv(buff, size, MPI_BYTE, rank, tag, MPI_COMM_WORLD, &status);
+
+        MPI_Get_count(&status, MPI_BYTE, &count);
+        
+        return count;
     }
 };
 
@@ -31,33 +41,47 @@ public:
     // std::map<std::pair<int,int>, std::pair<bool, Handle<ConnMPI>*>> handles;
 
     Handle* lastReady;
-    std::map<HandleMPI*, bool> connections;
+    int rank;
+    // std::map<HandleMPI*, bool> connections;
+    std::vector<HandleMPI*> connections;
 
-    void init(){
-        MPI_Init(NULL, NULL);
+    int init() {
+        int provided;
+        if (MPI_Init_thread(NULL, NULL, MPI_THREAD_MULTIPLE, &provided) != MPI_SUCCESS)
+            return -1;
+
+        // no thread support 
+        if (provided < MPI_THREAD_MULTIPLE){
+            printf("No thread support by MPI\n");
+            return -1;
+        }
+
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        return 0;
     }
 
 
-    HandleUser connect(std::string dest) {
+    Handle* connect(std::string dest) {
         // in pratica questo specifica il tag utilizzato per le comunicazioni successive
         // per ora solo tag, poi si vede
 
         //parse della stringa
-
+        int rank = stoi(dest.substr(0, dest.find(":")));
+        int tag = stoi(dest.substr(dest.find(":") + 1, dest.length()));
+        
         int header[1];
         header[0] = tag;
-        int dest_rank = stoi(dest);
-        MPI_Send(header, 1, MPI_INT, dest_rank, CONNECTION_TAG, MPI_COMM_WORLD);
+        MPI_Send(header, 1, MPI_INT, rank, CONNECTION_TAG, MPI_COMM_WORLD);
 
         // creo l'handle
-        auto* handle = new HandleMPI(rank, tag);
-        connections[handle] = false;    
+        auto* handle = new HandleMPI(this, rank, tag, true);
+        connections.push_back(handle);    
 
-        return createHandleUser(handle);
+        return handle;
     }
 
 
-    void update() {
+    void update(std::queue<Handle*>& q, std::queue<Handle*>& qnew) {
         int flag;
         MPI_Status status;
         MPI_Iprobe(MPI_ANY_SOURCE, CONNECTION_TAG, MPI_COMM_WORLD, &flag, &status);
@@ -77,47 +101,29 @@ public:
             
             int source = status.MPI_SOURCE;
             int source_tag = header[0];
-            // Genera ID univoco per la stringa "rank:tag"
-            size_t hash_val = std::hash<std::string>{}(std::to_string(source) + ":" + std::to_string(source_tag));
-            handles[hash_val] = std::make_tuple(true, std::make_pair(source, source_tag), new Handle<ConnMPI>(hash_val));
+            HandleMPI* handle = new HandleMPI(this, source, source_tag, true);
+            connections.push_back(handle);
+            qnew.push(handle);
         }
 
-        for (auto &[k, v] : handles) {
-            if(std::get<0>(v)) {
-                MPI_Iprobe(std::get<1>(v).first, std::get<1>(v).second, MPI_COMM_WORLD, &flag, &status);
+        for (HandleMPI* el : connections) {
+            if(!el->isBusy()) {
+                MPI_Iprobe(el->rank, el->tag, MPI_COMM_WORLD, &flag, &status);
                 if(flag) {
-                     std::get<0>(v) = false;
-
-                    // Qui passare al manager l'handle da restituire all'utente dopo chiamata a getReady?
-                    // Sincronizzato?
-                    lastReady = std::get<2>(v);
+                    q.push(el);
                 }
             }
         }
         
     }
 
-
-    // Handle<ConnType>* getReady() {
-    //     // Esplode con un return di questo tipo?
-    //     return (Handle<ConnType>*)lastReady;
-    // }
-
-
-    void removeConnection(std::string connection) {
-        // Assumendo che la stringa per specificare le connessioni sia rank:tag
-        size_t key = std::hash<std::string>{}(connection);
-        if(checkFree(key)){
-            printf("Handle is busy\n");
-            return;
-        }
-
-        // Questa ha bisogno di sincronizzazione? Magari sì, visto che la removeConnection
-        // potrebbe essere chiamata anche da utente nel caso volesse chiudere la connessione a mano
-        // (magari questa per MPI ha poco senso)
-        handles.erase(key);
+    void notify_yield(Handle* h) {
+        return;
     }
 
+    void notify_request(Handle* h) {
+        return;
+    }
     
     void removeConnection(HandleMPI* handle) {
         if(connections[handle]){
@@ -125,23 +131,6 @@ public:
             return;
         }
         connections.erase(handle);
-    }
-
-
-
-    void yield(Handle<ConnType>* handle) {
-        size_t key = handle->ID;
-
-        // Per il momento impostiamo a true, ma bisogna vedere come rimuovere il
-        // controllo dall'utente che ha fatto yield. Magari con un puntatore offuscato
-        // come abbiamo discusso in precedenza
-        std::get<0>(handles[key]) = true;
-    }
-
-
-    // Funzione di utilità per vedere se handle è in uso oppure no
-    bool checkFree(size_t key) {
-        return std::get<0>(handles[key]);
     }
 };
 
