@@ -98,10 +98,10 @@ public:
     }
 
 
-    Handle<ConnType>* getReady() {
-        // Esplode con un return di questo tipo?
-        return (Handle<ConnType>*)lastReady;
-    }
+    // Handle<ConnType>* getReady() {
+    //     // Esplode con un return di questo tipo?
+    //     return (Handle<ConnType>*)lastReady;
+    // }
 
 
     void removeConnection(std::string connection) {

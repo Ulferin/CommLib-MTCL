@@ -7,20 +7,25 @@ class HandleUser {
     friend class ConnType;
     Handle * realHandle;
     bool isReadable = false;
-    HandleUser(Handle* h, bool r) : realHandle(h), isReadable(r) {}
 public:
-    HandleUser(const HandleUser&) = delete;
-    HandleUser& operator=(HandleUser const&) = delete;
+    HandleUser() : HandleUser(nullptr, false) {}
+    HandleUser(Handle* h, bool r) : realHandle(h), isReadable(r) {}
+
+    // HandleUser(const HandleUser&) = delete;
+    // HandleUser& operator=(HandleUser const&) = delete;
     
     void yield(){
         // notifico il manager che l'handle lo gestisce lui
         isReadable = false;
-        
+        realHandle->yield();        
     }
 
-    bool acquireRead(){
+    bool acquireRead() {
         // check se sono l'unico a ricevere
         // se si setta readable a true e torna true, altrimenti torna false
+        isReadable = realHandle->request();
+
+        return isReadable;
     }
 
     void send(char* buff, size_t size){

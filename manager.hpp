@@ -8,38 +8,50 @@
 #include "handleUser.hpp"
 #include "protocolInterface.hpp"
 
+#include <queue>
+
 
 class Manager {
+public:
     std::map<std::string, ConnType*> protocolsMap;
     std::vector<ConnType*> protocols;
-    void* nextReady; // coda thread safe 1 produttore (thread che fa polling) n consumatori che sono quelli che chiamano getReady
 
-    void* getReady(){
-        void* tmp = nextReady;
-        nextReady = nullptr;
-        // setta closed to false
-        return tmp;
+    // Code sincronizzate
+    std::queue<Handle*> handleready;
+    std::queue<Handle*> handleNew;
+
+    std::optional<HandleUser> getReady(){
+        // NOTE: Chekc empty
+        if(handleready.empty())
+            return {};
+
+        auto el = handleready.front();
+        el->setBusy(true);
+        handleready.pop();
+        return {HandleUser(el, true)};
+    }
+
+    std::optional<HandleUser> getNewConnection() {
+        if(handleNew.empty())
+            return {};
+
+        auto el = handleNew.front();
+        el->setBusy(true);
+        handleNew.pop();
+        return {HandleUser(el,true)};
     }
 
     void getReadyBackend(){
         while(true){
             for(auto& c : protocols){
-                void* ready = c->getReady();
-                if (ready) nextReady = ready;
+                c->update(handleready, handleNew);
             }
         }
-        // dormi per n ns
-        // riprova da capo
-    }
-
-    void yield(Handle* n){
-        // come faccio a sapere il tipo di connessioni in N??
-
     }
 
     // Qualcosa così per creare gli oggetti associati ad un sottotipo?
     template<typename T>
-    ConnType* createConnType() {
+    static ConnType* createConnType() {
         static_assert(std::is_base_of<ConnType,T>::value, "Not a ConnType subclass");
         return new T;
     }
@@ -49,8 +61,24 @@ class Manager {
         protocolsMap[s] = createConnType<T>();
     }
 
-    static void connect(std::string s){
+    std::optional<HandleUser> connect(std::string s){
+        // parsing protocollo
+        // connect di ConnType dalla mappa dei protocolli
 
+        // TCP:host:port || MPI:rank:tag
+        std::string protocol = s.substr(0, s.find(":"));
+        if(protocol.empty())
+            return {};
+
+        if(protocolsMap.count(protocol)) {
+            Handle* handle = protocolsMap[protocol]->connect(s.substr(s.find(":") + 1, s.length()));
+            if(handle) {
+                return {HandleUser(handle, true)};
+            }
+        }
+
+        return {};
+            
     };
 };
 
