@@ -14,6 +14,7 @@
 #include <queue>
 #include <map>
 
+#include "../handle.hpp"
 #include "../protocolInterface.hpp"
 
 #define IOVMAXCOUNT 2
@@ -21,8 +22,6 @@
 #define SELECTTIMEOUT 100000    // usec
 
 class HandleTCP : public Handle {
-
-// protected:
 
 public:
     int fd; // File descriptor of the connection represented by this Handle
@@ -75,9 +74,9 @@ public:
         }
 
         sz = be64toh(sz);
+        size_t   nleft = sz;
 
         if (sz > 0){
-            size_t   nleft = sz;
             ssize_t  nread;
 
             while (nleft > 0) {
@@ -88,8 +87,8 @@ public:
                 nleft -= nread;
                 buff += nread;
             }
-            return(sz - nleft); /* return >= 0 */
         }
+        return(sz - nleft); /* return >= 0 */
     }
 
 };
@@ -97,6 +96,7 @@ public:
 
 class ConnTcp : public ConnType {
 protected:
+    std::string address;
     int port;
     
     std::queue<Handle*> ready;             // Ready connections
@@ -152,11 +152,17 @@ public:
             Per ora solo port dovrebbe andare bene, dato che ascoltiamo da tutte
             le interfacce di rete
     */
-    ConnTcp(int port) : port(port) {}
+    ConnTcp(std::string s) : ConnType(s) {
+        address = s.substr(s.find(":")+1, s.length());
+        port = stoi(address.substr(address.find(":")+1, address.length()));
+    }
+    // ConnTcp(int port) : port(port) {}
 
     int init() {
         if(this->_init())
             return -1;
+
+        printf("Listening on: %s\n", address.c_str());
 
         // intialize both sets (master, temp)
         FD_ZERO(&set);
@@ -167,6 +173,8 @@ public:
 
         // hold the greater descriptor
         fdmax = this->listen_sck;
+
+        return 0;
     }
 
     void update(std::queue<Handle*>& q, std::queue<Handle*>& qnew) {
@@ -217,6 +225,7 @@ public:
 
     // URL: host:prot || label: stringa utente
     Handle* connect(const std::string& address/*, const std::string& label=std::string()*/) {
+        printf("[TCP]Connecting to: %s\n", address.c_str());
         size_t hash_val;
         // if(!label.empty())
         //     hash_val = std::hash<std::string>{}(label);
@@ -305,7 +314,7 @@ public:
     }
 
 
-    void notify_yield(Handle* h) {
+    void notify_yield(Handle* h) override {
         int fd = reinterpret_cast<HandleTCP*>(h)->fd;
         FD_SET(fd, &set);
         if(fd > fdmax) {
@@ -314,7 +323,7 @@ public:
     }
 
 
-    void notify_request(Handle* h) {
+    void notify_request(Handle* h) override {
         int fd = reinterpret_cast<HandleTCP*>(h)->fd;
         FD_CLR(fd, &set);
 
@@ -325,6 +334,10 @@ public:
                     fdmax = ii;
                     break;
                 }
+    }
+
+    void end() {
+        return;
     }
 
 };

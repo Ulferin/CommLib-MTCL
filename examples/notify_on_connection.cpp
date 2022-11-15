@@ -26,52 +26,53 @@
  * 
  */
 
-//client X --> server: server --> client X(1)
-//client Y --> server: server --> client Y(2)
+//client X --> server: server --> client X(ID_1)
+//client Y --> server: server --> client Y(ID_2)
 
 #include <iostream>
-#include <vector>
 #include <string>
-#include <assert.h>
-#include <map>
-#include <tuple>
-#include <mpi.h>
 #include <optional>
+#include <thread>
 
 
-#include "manager.hpp"
+#include "../protocols/tcp.hpp"
+#include "../manager.hpp"
 
 
 int main(int argc, char** argv){
-    // Manager m(argc,argv);
-    CommLib::init(argc,argv);
-    m.registerProtocol<ConnTcp>("TCP://host:port");
+    if(argc != 3) {
+        printf("Usage: %s <id> <address>\n", argv[0]);
+        return -1;
+    }
     
-    std::map<std::string, size_t> peers;
+    int id = atoi(argv[1]);
+    char* addr = argv[2];
 
-    while(true){
-        auto handle = m.getReady();            // voglio farci business logic
-        if(!handle.has_value()) {
-            printf("no handle");
-            return;
-        }
+    Manager m(argc,argv);
+    m.registerType<ConnTcp>(addr);
+    m.init();
+
+    // Listening for new connections
+    if(id == 0) {
+        std::thread t1([&](){m.getReadyBackend();});
 
         while(true) {
-            auto handle = m.getNewConnection();       // voglio farci l'handshake
+            auto handle = m.getNewConnection();
+            if(handle.has_value()) {
+                printf("Got new connection\n");
+                m.endM();
+                t1.join();
+                return 0;
+            }
+            else {
+                printf("No value in handle\n");
+                std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            }
         }
-
-        handle.receive(buff, sz);
-        peers[std::string(buff)] = handle.getID();
-        handle.yield();
-
-        // faccio altro, magari anche scrivendo dati su HandleUser
-        // ....
-        // ....
-
-        // Voglio recuperare peer di prima per interazioni domanda-risposta
-        // quindi ho bisogno di recuperare di nuovo 
-        auto handle = Manager.getHandle(peers["host:port"]);
-
+    }
+    // Trying to connect
+    else {
+        m.connect("TCP:127.0.0.1:42000");
     }
 
     return 0;

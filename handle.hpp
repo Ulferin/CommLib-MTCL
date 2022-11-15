@@ -4,7 +4,8 @@
 #include <iostream>
 #include <atomic>
 
-class ConnType;
+#include "protocolInterface.hpp"
+// class ConnType;
 
 class Handle {
     // Potrebbe avere un ID univoco incrementale che definiamo noi in modo da
@@ -38,8 +39,8 @@ private:
 
 public:
     Handle(ConnType* parent, bool busy=false) : parent(parent), busy(busy) {}
-    virtual size_t send(char* buff, size_t size);
-    virtual size_t receive(char* buff, size_t size);
+    virtual size_t send(char* buff, size_t size) = 0;
+    virtual size_t receive(char* buff, size_t size) = 0;
     
     bool isBusy() {
         return this->busy;

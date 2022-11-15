@@ -12,16 +12,31 @@
 
 
 class Manager {
-public:
     std::map<std::string, ConnType*> protocolsMap;
-    std::vector<ConnType*> protocols;
-
-    // Code sincronizzate
+    
+    //TODO: Code sincronizzate
     std::queue<Handle*> handleready;
     std::queue<Handle*> handleNew;
 
+    int argc;
+    char** argv;
+
+    bool end = false;
+
+public:
+    Manager(int argc, char** argv) : argc(argc), argv(argv) {}
+
+    void init() {
+        for (auto &&el : protocolsMap) {
+            el.second->init();
+        }
+    }
+
+    void endM() {
+        end = true;
+    }
+
     std::optional<HandleUser> getReady(){
-        // NOTE: Chekc empty
         if(handleready.empty())
             return {};
 
@@ -30,6 +45,7 @@ public:
         handleready.pop();
         return {HandleUser(el, true)};
     }
+
 
     std::optional<HandleUser> getNewConnection() {
         if(handleNew.empty())
@@ -41,25 +57,29 @@ public:
         return {HandleUser(el,true)};
     }
 
+
     void getReadyBackend(){
-        while(true){
-            for(auto& c : protocols){
-                c->update(handleready, handleNew);
+        while(!end){
+            for(auto& [prot, conn] : protocolsMap) {
+                conn->update(handleready, handleNew);
             }
         }
     }
 
-    // Qualcosa così per creare gli oggetti associati ad un sottotipo?
+
     template<typename T>
-    static ConnType* createConnType() {
+    static ConnType* createConnType(std::string s) {
         static_assert(std::is_base_of<ConnType,T>::value, "Not a ConnType subclass");
-        return new T;
+        return new T(s);
     }
+
 
     template<typename T>
     void registerType(std::string s){
-        protocolsMap[s] = createConnType<T>();
+        std::string protocol = s.substr(0, s.find(":"));
+        protocolsMap[protocol] = createConnType<T>(s);
     }
+
 
     std::optional<HandleUser> connect(std::string s){
         // parsing protocollo
@@ -67,6 +87,7 @@ public:
 
         // TCP:host:port || MPI:rank:tag
         std::string protocol = s.substr(0, s.find(":"));
+        printf("[MANAGER]Received connection request for: %s\n", protocol.c_str());
         if(protocol.empty())
             return {};
 

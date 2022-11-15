@@ -3,7 +3,7 @@
 #include <handle.hpp>
 #include "protocolInterface.hpp"
 #include "mpi.h"
-#include <map>
+#include <vector>
 #include <assert.h>
 #include <tuple>
 
@@ -126,11 +126,12 @@ public:
     }
     
     void removeConnection(HandleMPI* handle) {
-        if(connections[handle]){
-            printf("Handle is busy\n");
-            return;
-        }
-        connections.erase(handle);
+        // if(connections[handle]){
+        //     printf("Handle is busy\n");
+        //     return;
+        // }
+        // connections.erase(handle);
+        return;
     }
 };
 

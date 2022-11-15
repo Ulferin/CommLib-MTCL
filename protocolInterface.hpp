@@ -1,13 +1,15 @@
 #ifndef PROTOCOLINTERFACE_HPP
 #define PROTOCOLINTERFACE_HPP
 
-#include "manager.hpp"
-#include "handle.hpp"
-#include "handleUser.hpp"
+// #include "manager.hpp"
+// #include "handle.hpp"
+// #include "handleUser.hpp"
+class Handle;
 
 class ConnType {
 
 public:
+    ConnType(std::string s) {}
     // template<typename T>
     // static T* getInstance() {
     //     static T ct;
@@ -16,13 +18,13 @@ public:
 
 
     virtual int init() = 0;
-    virtual Handle* connect(std::string); 
+    virtual Handle* connect(const std::string&) = 0; 
     // virtual void removeConnection(std::string);
-    virtual void removeConnection(Handle*);
-    virtual void update(std::queue<Handle*>&, std::queue<Handle*>&); // chiama il thread del manager
-    virtual void notify_yield(Handle*);
-    virtual void notify_request(Handle*);
-    virtual void end();
+    virtual void removeConnection(Handle*) = 0;
+    virtual void update(std::queue<Handle*>&, std::queue<Handle*>&) = 0; // chiama il thread del manager
+    virtual void notify_yield(Handle*) = 0;
+    virtual void notify_request(Handle*) = 0;
+    virtual void end() = 0;
 
 
 
