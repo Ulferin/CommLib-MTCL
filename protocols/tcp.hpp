@@ -30,14 +30,12 @@ public:
     size_t send(char* buff, size_t size) {
         size_t* sz = new size_t(htobe64(size));
         
-        struct iovec iov[IOVMAXCOUNT];
-        iov[0].iov_base = sz;
-        iov[0].iov_len = sizeof(size_t);
-        iov[1].iov_base = buff;
-        iov[1].iov_len = size;
+        struct iovec iov[1];
+        iov[0].iov_base = buff;
+        iov[0].iov_len = size;
 
         ssize_t written;
-        int count = IOVMAXCOUNT;
+        int count = 1;
         for (int cur = 0;;) {
             written = writev(fd, iov+cur, count-cur);
             if (written < 0) return -1;
@@ -56,39 +54,21 @@ public:
 
 
     size_t receive(char* buff, size_t size) {
-        size_t sz;
-        struct iovec iov[1];
-        iov[0].iov_base = &sz;
-        iov[0].iov_len = sizeof(sz);
+        size_t   nleft = size;
 
-        ssize_t rread;
-        while(rread)
-        for (int cur = 0;;) {
-            rread = readv(fd, iov+cur, 1-cur);
-            if (rread <= 0) return rread; // error or closed connection
-            while (cur < 1 && rread >= (ssize_t)iov[cur].iov_len)
-                rread -= iov[cur++].iov_len;
-            if (cur == 1) return 1; // success!!
-            iov[cur].iov_base = (char *)iov[cur].iov_base + rread;
-            iov[cur].iov_len -= rread;
-        }
-
-        sz = be64toh(sz);
-        size_t   nleft = sz;
-
-        if (sz > 0){
+        if (size > 0){
             ssize_t  nread;
 
             while (nleft > 0) {
                 if((nread = read(fd, buff, nleft)) < 0) {
-                    if (nleft == sz) return -1; /* error, return -1 */
+                    if (nleft == size) return -1; /* error, return -1 */
                     else break; /* error, return amount read so far */
                 } else if (nread == 0) break; /* EOF */
                 nleft -= nread;
                 buff += nread;
             }
         }
-        return(sz - nleft); /* return >= 0 */
+        return(size - nleft); /* return >= 0 */
     }
 
 };

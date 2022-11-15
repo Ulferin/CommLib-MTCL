@@ -60,6 +60,10 @@ int main(int argc, char** argv){
             auto handle = m.getNewConnection();
             if(handle.has_value()) {
                 printf("Got new connection\n");
+
+                char buff[4]{'c','i','a','o'};
+                handle->send(buff, 4);
+
                 m.endM();
                 t1.join();
                 return 0;
@@ -72,7 +76,15 @@ int main(int argc, char** argv){
     }
     // Trying to connect
     else {
-        m.connect("TCP:127.0.0.1:42000");
+        auto handle = m.connect("TCP:127.0.0.1:42000");
+        if(handle.has_value()) {
+            size_t size = 4;
+            char buff[4];
+            handle->read(buff, size);
+
+            std::string res{buff};
+            printf("%s\n", res.c_str());
+        }
     }
 
     return 0;
