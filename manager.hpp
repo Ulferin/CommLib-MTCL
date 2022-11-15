@@ -10,13 +10,13 @@
 
 #include <queue>
 
-
 class Manager {
     std::map<std::string, ConnType*> protocolsMap;
     
     //TODO: Code sincronizzate
-    std::queue<Handle*> handleready;
-    std::queue<Handle*> handleNew;
+    std::queue<std::pair<bool, Handle*>> handleReady;
+    // std::queue<Handle*> handleready;
+    // std::queue<Handle*> handleNew;
 
     int argc;
     char** argv;
@@ -27,7 +27,7 @@ public:
     Manager(int argc, char** argv) : argc(argc), argv(argv) {}
 
     void init() {
-        for (auto &&el : protocolsMap) {
+        for (auto &el : protocolsMap) {
             el.second->init();
         }
     }
@@ -36,52 +36,68 @@ public:
         end = true;
     }
 
-    std::optional<HandleUser> getReady(){
-        if(handleready.empty())
-            return {};
+    // HandleUser getReady(){
+    //     if(handleready.empty())
+    //         return HandleUser(nullptr, true);
 
-        auto el = handleready.front();
-        el->setBusy(true);
-        handleready.pop();
-        return {HandleUser(el, true)};
+    //     auto el = handleready.front();
+    //     el->setBusy(true);
+    //     handleready.pop();
+
+        
+    //     return HandleUser(el,true);    
+    // }
+
+
+    // HandleUser getNewConnection() {
+    //     if(handleNew.empty())
+    //         return HandleUser(nullptr, true);
+
+    //     auto el = handleNew.front();
+    //     el->setBusy(true);
+    //     handleNew.pop();
+    //     return HandleUser(el,true);
+    // }
+
+    HandleUser getNext() {
+        if(handleReady.empty())
+            return HandleUser(nullptr, true, true);
+
+        auto el = handleReady.front();
+        el.second->setBusy(true);
+        handleReady.pop();
+        return HandleUser(el.second,true, el.first);
     }
 
 
-    std::optional<HandleUser> getNewConnection() {
-        if(handleNew.empty())
-            return {};
-
-        auto el = handleNew.front();
-        el->setBusy(true);
-        handleNew.pop();
-        return {HandleUser(el,true)};
-    }
-
-
-    void getReadyBackend(){
+    void getReadyBackend() {
         while(!end){
             for(auto& [prot, conn] : protocolsMap) {
-                conn->update(handleready, handleNew);
+                conn->update(handleReady);
             }
         }
     }
 
 
     template<typename T>
-    static ConnType* createConnType(std::string s) {
+    static ConnType* createConnType() {
         static_assert(std::is_base_of<ConnType,T>::value, "Not a ConnType subclass");
-        return new T(s);
+        return new T;
     }
 
 
     template<typename T>
-    void registerType(std::string s){
+    void registerType(std::string protocol){
+        protocolsMap[protocol] = createConnType<T>();
+    }
+
+    int listen(std::string s) {
         std::string protocol = s.substr(0, s.find(":"));
-        protocolsMap[protocol] = createConnType<T>(s);
+        return protocolsMap[protocol]->listen(s.substr(protocol.length(), s.length()));
     }
 
 
-    std::optional<HandleUser> connect(std::string s){
+    HandleUser connect(std::string s){
         // parsing protocollo
         // connect di ConnType dalla mappa dei protocolli
 
@@ -89,16 +105,16 @@ public:
         std::string protocol = s.substr(0, s.find(":"));
         printf("[MANAGER]Received connection request for: %s\n", protocol.c_str());
         if(protocol.empty())
-            return {};
+            return HandleUser(nullptr, true, true);
 
         if(protocolsMap.count(protocol)) {
             Handle* handle = protocolsMap[protocol]->connect(s.substr(s.find(":") + 1, s.length()));
             if(handle) {
-                return {HandleUser(handle, true)};
+                return HandleUser(handle, true, true);
             }
         }
 
-        return {};
+        return HandleUser(nullptr, true, true);
             
     };
 };

@@ -117,7 +117,7 @@ private:
             return -1;
         }
 
-        if (listen(listen_sck, MAXRETRY) < 0){
+        if (::listen(listen_sck, MAXRETRY) < 0){
             printf("Error listening\n");
             return -1;
         }
@@ -132,13 +132,15 @@ public:
             Per ora solo port dovrebbe andare bene, dato che ascoltiamo da tutte
             le interfacce di rete
     */
-    ConnTcp(std::string s) : ConnType(s) {
-        address = s.substr(s.find(":")+1, s.length());
-        port = stoi(address.substr(address.find(":")+1, address.length()));
-    }
-    // ConnTcp(int port) : port(port) {}
 
     int init() {
+        return 0;
+    }
+
+    int listen(std::string s) {
+        address = s.substr(s.find(":")+1, s.length());
+        port = stoi(address.substr(address.find(":")+1, address.length()));
+
         if(this->_init())
             return -1;
 
@@ -157,7 +159,7 @@ public:
         return 0;
     }
 
-    void update(std::queue<Handle*>& q, std::queue<Handle*>& qnew) {
+    void update(std::queue<std::pair<bool, Handle*>>& q) {
         // copy the master set to the temporary
         tmpset = set;
         struct timeval wait_time = {.tv_sec=0, .tv_usec=SELECTTIMEOUT};
@@ -179,7 +181,7 @@ public:
                         if(connfd > fdmax) fdmax = connfd;
                         connections[connfd] = new HandleTCP(this, connfd);
                     }
-                    qnew.push(connections[connfd]);
+                    q.push({true, connections[connfd]});
                 }
                 else {
                     // Updates ready connections and removes from listening
@@ -194,7 +196,7 @@ public:
                             }
 
                     // ready.push(connections[idx]);
-                    q.push(connections[idx]);
+                    q.push({false, connections[idx]});
                 }
                 
             }

@@ -60,6 +60,10 @@ public:
         return 0;
     }
 
+    int listen(std::string) {
+        return 0;
+    }
+
 
     Handle* connect(std::string dest) {
         // in pratica questo specifica il tag utilizzato per le comunicazioni successive

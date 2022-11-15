@@ -45,24 +45,30 @@ int main(int argc, char** argv){
         return -1;
     }
     
-    int id = atoi(argv[1]);
-    char* addr = argv[2];
+    int id = atoi(argv[1]);     // logical rank
+    char* addr = argv[2];       // listening address
 
     Manager m(argc,argv);
-    m.registerType<ConnTcp>(addr);
+    m.registerType<ConnTcp>("TCP");      // TCP
+    // CommLib::init();
+    // m.registerType<ConnMPI>(addr);   // MPI
     m.init();
+    m.listen(addr); // TCP:host:port
 
     // Listening for new connections
     if(id == 0) {
         std::thread t1([&](){m.getReadyBackend();});
 
         while(true) {
-            auto handle = m.getNewConnection();
-            if(handle.has_value()) {
+            auto handle = m.getNext();
+            // auto handle = m.getReady();
+            if(handle.isValid()) {
+                handle.yield();
                 printf("Got new connection\n");
-
                 char buff[4]{'c','i','a','o'};
-                handle->send(buff, 4);
+                handle.send(buff, 4);
+                // handle.read(buff, 4);
+                // handle->yield();
 
                 m.endM();
                 t1.join();
@@ -72,15 +78,23 @@ int main(int argc, char** argv){
                 printf("No value in handle\n");
                 std::this_thread::sleep_for(std::chrono::milliseconds(1000));
             }
+
+            // bool blocking;
+            // HandleUser handle = m.getNext(blocking);
+            // if(handle.new())
+            //     handle.yield();
+            // else....
         }
     }
     // Trying to connect
     else {
         auto handle = m.connect("TCP:127.0.0.1:42000");
-        if(handle.has_value()) {
+        if(handle.isValid()) {
             size_t size = 4;
             char buff[4];
-            handle->read(buff, size);
+            handle.read(buff, size);
+            // handle->yield();
+            // auto handle = m.getReady();
 
             std::string res{buff};
             printf("%s\n", res.c_str());
