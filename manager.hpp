@@ -11,28 +11,29 @@
 #include <queue>
 
 class Manager {
-    std::map<std::string, ConnType*> protocolsMap;
+    static std::map<std::string, ConnType*> protocolsMap;
     
     //TODO: Code sincronizzate
-    std::queue<std::pair<bool, Handle*>> handleReady;
+    static std::queue<std::pair<bool, Handle*>> handleReady;
     // std::queue<Handle*> handleready;
     // std::queue<Handle*> handleNew;
 
     int argc;
     char** argv;
 
-    bool end = false;
+    static bool end;
 
 public:
     Manager(int argc, char** argv) : argc(argc), argv(argv) {}
 
-    void init() {
+    static void init() {
+        end = false;
         for (auto &el : protocolsMap) {
             el.second->init();
         }
     }
 
-    void endM() {
+    static void endM() {
         end = true;
     }
 
@@ -59,7 +60,7 @@ public:
     //     return HandleUser(el,true);
     // }
 
-    HandleUser getNext() {
+    static HandleUser getNext() {
         if(handleReady.empty())
             return HandleUser(nullptr, true, true);
 
@@ -87,17 +88,17 @@ public:
 
 
     template<typename T>
-    void registerType(std::string protocol){
+    static void registerType(std::string protocol){
         protocolsMap[protocol] = createConnType<T>();
     }
 
-    int listen(std::string s) {
+    static int listen(std::string s) {
         std::string protocol = s.substr(0, s.find(":"));
         return protocolsMap[protocol]->listen(s.substr(protocol.length(), s.length()));
     }
 
 
-    HandleUser connect(std::string s){
+    static HandleUser connect(std::string s){
         // parsing protocollo
         // connect di ConnType dalla mappa dei protocolli
 
