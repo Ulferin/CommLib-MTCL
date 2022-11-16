@@ -11,30 +11,38 @@
 #include <queue>
 
 class Manager {
-    static std::map<std::string, ConnType*> protocolsMap;
+    /*NOTE: anche questa deve essere sincronizzata dato che l'utente potrebbe
+            voler aggiungere un protocollo dopo l'inizializzazione della libreria*/
+    inline static std::map<std::string, ConnType*> protocolsMap;
     
-    //TODO: Code sincronizzate
-    static std::queue<std::pair<bool, Handle*>> handleReady;
+    //TODO: probabilmente una std::deque sincronizzata
+    inline static std::queue<std::pair<bool, Handle*>> handleReady;
     // std::queue<Handle*> handleready;
     // std::queue<Handle*> handleNew;
 
-    int argc;
-    char** argv;
+    inline static std::thread t1;
+    inline static bool end;
 
-    static bool end;
+
+private:
+    Manager() {}
 
 public:
-    Manager(int argc, char** argv) : argc(argc), argv(argv) {}
+    // Manager(int argc, char** argv) : argc(argc), argv(argv) {}
 
-    static void init() {
+    static void init(int argc, char** argv) {
         end = false;
         for (auto &el : protocolsMap) {
             el.second->init();
         }
+
+        t1 = std::thread([&](){Manager::getReadyBackend();});
+
     }
 
     static void endM() {
         end = true;
+        t1.join();
     }
 
     // HandleUser getReady(){
@@ -67,11 +75,11 @@ public:
         auto el = handleReady.front();
         el.second->setBusy(true);
         handleReady.pop();
-        return HandleUser(el.second,true, el.first);
+        return HandleUser(el.second, true, el.first);
     }
 
 
-    void getReadyBackend() {
+    static void getReadyBackend() {
         while(!end){
             for(auto& [prot, conn] : protocolsMap) {
                 conn->update(handleReady);
@@ -89,7 +97,10 @@ public:
 
     template<typename T>
     static void registerType(std::string protocol){
-        protocolsMap[protocol] = createConnType<T>();
+        ConnType* conn = createConnType<T>();
+        //NOTE: init() direttamente nel costruttore di ConnType???
+        // conn->init();
+        protocolsMap[protocol] = conn;
     }
 
     static int listen(std::string s) {
