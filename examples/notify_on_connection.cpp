@@ -35,8 +35,8 @@
 #include <thread>
 
 
-#include "../protocols/tcp.hpp"
 #include "../manager.hpp"
+#include "../protocols/tcp.hpp"
 
 
 int main(int argc, char** argv){
@@ -47,20 +47,20 @@ int main(int argc, char** argv){
     
     int id = atoi(argv[1]);     // logical rank
     char* addr = argv[2];       // listening address
+    // Manager m;
+    Manager::init(argc, argv);
+    Manager::registerType<ConnTcp>("TCP");
+    Manager::listen(addr); // TCP:host:port
 
-    Manager m(argc,argv);
-    m.registerType<ConnTcp>("TCP");      // TCP
-    // CommLib::init();
+    // m.registerType<ConnTcp>("TCP");      // TCP
     // m.registerType<ConnMPI>(addr);   // MPI
-    m.init();
-    m.listen(addr); // TCP:host:port
+    // m.init();
 
     // Listening for new connections
     if(id == 0) {
-        std::thread t1([&](){m.getReadyBackend();});
 
         while(true) {
-            auto handle = m.getNext();
+            auto handle = Manager::getNext();
             // auto handle = m.getReady();
             if(handle.isValid()) {
                 handle.yield();
@@ -70,8 +70,7 @@ int main(int argc, char** argv){
                 // handle.read(buff, 4);
                 // handle->yield();
 
-                m.endM();
-                t1.join();
+                Manager::endM();
                 return 0;
             }
             else {
@@ -88,7 +87,7 @@ int main(int argc, char** argv){
     }
     // Trying to connect
     else {
-        auto handle = m.connect("TCP:127.0.0.1:42000");
+        auto handle = Manager::connect("TCP:127.0.0.1:42000");
         if(handle.isValid()) {
             size_t size = 4;
             char buff[4];
@@ -99,6 +98,7 @@ int main(int argc, char** argv){
             std::string res{buff};
             printf("%s\n", res.c_str());
         }
+        Manager::endM();
     }
 
     return 0;
