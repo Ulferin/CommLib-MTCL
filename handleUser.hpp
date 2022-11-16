@@ -18,6 +18,7 @@ public:
     // notifico il manager che l'handle lo gestisce lui
     void yield() {
         isReadable = false;
+        newConnection = false;
         realHandle->yield();        
         // realHandle = nullptr;
     }
@@ -34,13 +35,19 @@ public:
         return realHandle;
     }
 
-    void send(char* buff, size_t size){
-        realHandle->send(buff, size);
+    bool isNewConnection() {
+        return newConnection;
     }
 
-    void read(char* buff, size_t size){
+    size_t send(char* buff, size_t size){
+        newConnection = false;
+        return realHandle->send(buff, size);
+    }
+
+    size_t read(char* buff, size_t size){
+        newConnection = false;
         if (!isReadable) throw;
-        realHandle->receive(buff, size);
+        return realHandle->receive(buff, size);
     }
 
 };
