@@ -33,7 +33,7 @@ public:
         return newConnection;
     }
 
-    size_t send(char* buff, size_t size){
+    size_t send(const char* buff, size_t size){
         newConnection = false;
         if (!realHandle) throw;
         return realHandle->send(buff, size);

@@ -6,8 +6,8 @@
 #include <cstring>
 
 
-#include "../../manager.hpp"
-#include "../../protocols/tcp.hpp"
+#include "../manager.hpp"
+#include "../protocols/tcp.hpp"
 
 
 int main(int argc, char** argv){
@@ -23,7 +23,7 @@ int main(int argc, char** argv){
         char buffer[65535];
         size_t rcvd = h.read(buffer, 65535);
 
-        if (rcvd == 0){ // discconnect che faccio??
+        if (rcvd == 0){ 
             h.close();
             continue;
         }
@@ -44,9 +44,8 @@ int main(int argc, char** argv){
             qs = uri - 1; //use an empty string
         }
 
-
-
-        
+        std::string pippo("Ciao!");
+        h.send(pippo.c_str(), pippo.size());
 
 
         // ho servito la richiesta, devo chiudere la connessione

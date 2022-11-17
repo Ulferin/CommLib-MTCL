@@ -28,7 +28,7 @@ public:
     int fd; // File descriptor of the connection represented by this Handle
     HandleTCP(ConnType* parent, int fd, bool busy=true) : Handle(parent, busy), fd(fd) {}
 
-    size_t send(char* buff, size_t size) {
+    size_t send(const char* buff, size_t size) {
         return write(fd, buff, size);
     }
 

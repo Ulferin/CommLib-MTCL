@@ -14,7 +14,7 @@ class Handle {
     std::atomic<bool> busy;
 
     std::atomic<int> counter = 0;
-    bool closed;
+    bool closed = false;
 
     void incrementReferenceCounter(){
         counter++;
@@ -49,7 +49,7 @@ private:
 
 public:
     Handle(ConnType* parent, bool busy=false) : parent(parent), busy(busy) {}
-    virtual size_t send(char* buff, size_t size) = 0;
+    virtual size_t send(const char* buff, size_t size) = 0;
     virtual size_t receive(char* buff, size_t size) = 0;
     
     bool isBusy() {
