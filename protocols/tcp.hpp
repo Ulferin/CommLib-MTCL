@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <string.h>
 
 #include <sys/types.h>
 #include <sys/uio.h>
@@ -74,7 +75,6 @@ public:
         return read(fd, buff, size);
     }
 
-    void close() { ::close(fd); }
 
 };
 
@@ -136,6 +136,8 @@ public:
             Per ora solo port dovrebbe andare bene, dato che ascoltiamo da tutte
             le interfacce di rete
     */
+
+   ConnTcp(){};
 
     int init() {
         return 0;
@@ -255,38 +257,9 @@ public:
         return handle;
     }
 
-
-    // HandleUser getReady(bool readMode) {
-    //     HandleUser emptyhusr;
-
-    //     /*NOTE: qui sto restituendo il controllo all'utente nel caso il primo
-    //             nella coda fosse vuoto */
-    //     if(ready.empty())
-    //         return emptyhusr;
-    //     else {
-    //         HandleTCP* handle = nullptr;
-    //         while(handle == nullptr || ready.empty()) {
-    //             bool busy = ready.front()->isBusy();
-    //             if(!busy) {
-    //                 handle = (HandleTCP*)ready.front();
-    //             }
-    //             ready.pop();
-    //         }
-    //     }
-    //     // if(readMode && ready.front()->isBusy()) {
-    //     //     ready.pop();
-    //     //     return emptyhusr;
-    //     // }
-        
-
-    //     HandleTCP *handle = (HandleTCP*)ready.front();
-    //     ready.pop();
-    //     HandleUser husr(handle, readMode);
-    // }
-
-
     void notify_close(Handle* h) {
         int fd = reinterpret_cast<HandleTCP*>(h)->fd;
+        close(fd);
         connections.erase(fd); // elimina un puntatore! è safe!
         FD_CLR(fd, &set);
 
@@ -307,20 +280,6 @@ public:
             fdmax = fd;
         }
     }
-
-
-    // v<oid notify_request(Handle* h) override {
-    //     int fd = reinterpret_cast<HandleTCP*>(h)->fd;
-    //     FD_CLR(fd, &set);
-
-    //     // update the maximum file descriptor
-    //     if (fd == fdmax)
-    //         for(int ii=(fdmax-1);ii>=0;--ii)
-    //             if (FD_ISSET(ii, &set)){
-    //                 fdmax = ii;
-    //                 break;
-    //             }
-    // }>
 
     void end() {
         return;

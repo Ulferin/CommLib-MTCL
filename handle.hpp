@@ -39,6 +39,14 @@ private:
         parent->notify_yield(this);
     }
 
+    void close(){
+        closed = true;
+        std::lock_guard lk(parent->m);
+        parent->notify_close(this);
+    }
+
+
+
 
     void setBusy(bool b) {
         busy = b;
@@ -48,11 +56,12 @@ public:
     Handle(ConnType* parent, bool busy=false) : parent(parent), busy(busy) {}
     virtual size_t send(char* buff, size_t size) = 0;
     virtual size_t receive(char* buff, size_t size) = 0;
-    virtual void close() = 0;
     
     bool isBusy() {
         return this->busy;
     }
+
+    virtual ~Handle() = 0;
 
 };
 

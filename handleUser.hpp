@@ -54,7 +54,6 @@ public:
 
     void close(){
         realHandle->close();
-        realHandle->closed = true;
     }
 
     ~HandleUser(){

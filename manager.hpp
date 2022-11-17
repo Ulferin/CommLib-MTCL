@@ -89,7 +89,6 @@ public:
         std::unique_lock lk(mutex);
         condv.wait(lk, [&]{return !handleReady.empty();});
 
-        std::pair<bool, Handle*> el;
         // Handle* handle = nullptr;
 
         // do {
@@ -148,6 +147,13 @@ public:
         ConnType* conn = createConnType<T>();
         //NOTE: init() direttamente nel costruttore di ConnType???
         conn->init();
+
+        // warning!!!!
+        conn->addinQ = [&](std::pair<bool, Handle*> item){
+            Manager::addinQ(item);
+        };
+
+        
         protocolsMap[protocol] = conn;
     }
 
