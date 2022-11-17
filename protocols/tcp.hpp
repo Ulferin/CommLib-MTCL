@@ -74,6 +74,8 @@ public:
         return read(fd, buff, size);
     }
 
+    void close() { ::close(fd); }
+
 };
 
 
@@ -82,7 +84,7 @@ protected:
     std::string address;
     int port;
     
-    std::map<size_t, Handle*> connections;  // Active connections for this Connector
+    std::map<int, Handle*> connections;  // Active connections for this Connector
 
     fd_set set, tmpset;
     int listen_sck;
@@ -293,8 +295,18 @@ public:
     // }
 
 
-    void removeConnection(Handle*) {
-        return;
+    void notify_close(Handle* h) {
+        int fd = reinterpret_cast<HandleTCP*>(h)->fd;
+        connections.erase(fd); // elimina un puntatore! è safe!
+        FD_CLR(fd, &set);
+
+        // update the maximum file descriptor
+        if (fd == fdmax)
+            for(int ii=(fdmax-1);ii>=0;--ii)
+                if (FD_ISSET(ii, &set)){
+                    fdmax = ii;
+                    break;
+                }
     }
 
 
