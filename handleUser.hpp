@@ -11,7 +11,7 @@ class HandleUser {
 public:
     HandleUser() : HandleUser(nullptr, false, false) {}
     HandleUser(Handle* h, bool r, bool n) : realHandle(h), isReadable(r), newConnection(n) {
-        h->counter++;
+        if (h) h->incrementReferenceCounter();
     }
 
     HandleUser(const HandleUser&) = delete;
@@ -21,7 +21,7 @@ public:
     void yield() {
         isReadable = false;
         newConnection = false;
-        realHandle->yield();        
+        if (realHandle) realHandle->yield();        
         // realHandle = nullptr;
     }
 
@@ -43,25 +43,26 @@ public:
 
     size_t send(char* buff, size_t size){
         newConnection = false;
+        if (!realHandle) throw;
         return realHandle->send(buff, size);
     }
 
     size_t read(char* buff, size_t size){
         newConnection = false;
-        if (!isReadable) throw;
+        if (!isReadable || !realHandle) throw;
         return realHandle->receive(buff, size);
     }
 
     void close(){
-        realHandle->close();
+        if (realHandle) realHandle->close();
     }
 
     ~HandleUser(){
         // if this handle is readable and it is not closed, when i destruct this handle implicitly i'm giving the control to the runtime.
-        if (isReadable && !realHandle->closed) this->yield();
+        if (isReadable && realHandle && !realHandle->closed) this->yield();
 
         // decrement the reference counter of the wrapped handle to manage its destruction.
-        realHandle->decrementReferenceCounter();
+        if (realHandle) realHandle->decrementReferenceCounter();
     }
 
 };
