@@ -161,8 +161,9 @@ public:
         return 0;
     }
 
-    void update(std::queue<std::pair<bool, Handle*>>& q) {
+    void update() {
         // copy the master set to the temporary
+
         tmpset = set;
         struct timeval wait_time = {.tv_sec=0, .tv_usec=SELECTTIMEOUT};
 
@@ -183,7 +184,7 @@ public:
                         if(connfd > fdmax) fdmax = connfd;
                         connections[connfd] = new HandleTCP(this, connfd, false);
                     }
-                    q.push({true, connections[connfd]});
+                    addinQ({true, connections[connfd]});
                 }
                 else {
                     // Updates ready connections and removes from listening
@@ -198,7 +199,7 @@ public:
                             }
 
                     // ready.push(connections[idx]);
-                    q.push({false, connections[idx]});
+                    addinQ({false, connections[idx]});
                 }
                 
             }
@@ -296,18 +297,18 @@ public:
     }
 
 
-    void notify_request(Handle* h) override {
-        int fd = reinterpret_cast<HandleTCP*>(h)->fd;
-        FD_CLR(fd, &set);
+    // v<oid notify_request(Handle* h) override {
+    //     int fd = reinterpret_cast<HandleTCP*>(h)->fd;
+    //     FD_CLR(fd, &set);
 
-        // update the maximum file descriptor
-        if (fd == fdmax)
-            for(int ii=(fdmax-1);ii>=0;--ii)
-                if (FD_ISSET(ii, &set)){
-                    fdmax = ii;
-                    break;
-                }
-    }
+    //     // update the maximum file descriptor
+    //     if (fd == fdmax)
+    //         for(int ii=(fdmax-1);ii>=0;--ii)
+    //             if (FD_ISSET(ii, &set)){
+    //                 fdmax = ii;
+    //                 break;
+    //             }
+    // }>
 
     void end() {
         return;

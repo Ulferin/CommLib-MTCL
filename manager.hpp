@@ -3,14 +3,19 @@
 
 #include <map>
 #include <vector>
+#include <queue>
+#include <mutex>
+#include <condition_variable>
 
 #include "handle.hpp"
 #include "handleUser.hpp"
 #include "protocolInterface.hpp"
 
-#include <queue>
 
 class Manager {
+    friend class ConnType;
+    // friend void ConnType::addinQ(std::pair<bool, Handle*>);
+
     /*NOTE: anche questa deve essere sincronizzata dato che l'utente potrebbe
             voler aggiungere un protocollo dopo l'inizializzazione della libreria*/
     inline static std::map<std::string, ConnType*> protocolsMap;
@@ -22,16 +27,28 @@ class Manager {
 
     inline static std::thread t1;
     inline static bool end;
+    inline static bool initialized = false;
+
+    inline static std::mutex mutex;
+    inline static std::condition_variable condv;
 
 
 private:
     Manager() {}
+
+    static void addinQ(std::pair<bool, Handle*> el) {
+        std::unique_lock lk(mutex);
+        handleReady.push(el);
+        lk.unlock();
+        condv.notify_one();
+    }
 
 public:
     // Manager(int argc, char** argv) : argc(argc), argv(argv) {}
 
     static void init(int argc, char** argv) {
         end = false;
+        initialized = true;
         for (auto &el : protocolsMap) {
             el.second->init();
         }
@@ -69,12 +86,27 @@ public:
     // }
 
     static HandleUser getNext() {
-        if(handleReady.empty())
-            return HandleUser(nullptr, true, true);
+        std::unique_lock lk(mutex);
+        condv.wait(lk, [&]{return !handleReady.empty();});
+
+        std::pair<bool, Handle*> el;
+        // Handle* handle = nullptr;
+
+        // do {
+        //     el = handleReady.front();
+        //     if(!el.second->isBusy())
+        //         handle = el.second;
+        //     handleReady.pop();
+        // } while(el.second->isBusy() && !handleReady.empty());
+        
+        // if(handle == nullptr)
+        //     return HandleUser(nullptr, true, true);
 
         auto el = handleReady.front();
-        el.second->setBusy(true);
         handleReady.pop();
+        lk.unlock();
+        el.second->setBusy(true);
+
         return HandleUser(el.second, true, el.first);
     }
 
@@ -82,8 +114,19 @@ public:
     static void getReadyBackend() {
         while(!end){
             for(auto& [prot, conn] : protocolsMap) {
-                conn->update(handleReady);
+                // std::unique_lock lk(mutex);
+                std::unique_lock lk(conn->m);
+                conn->update();
+                lk.unlock();
+
+                // // Notify only when there's something to read
+                // if(!handleReady.empty()) {
+                //     lk.unlock();
+                //     condv.notify_one();
+                // }
             }
+            // To prevent starvation of application threads
+            std::this_thread::sleep_for(std::chrono::nanoseconds(100));
         }
     }
 
@@ -97,14 +140,20 @@ public:
 
     template<typename T>
     static void registerType(std::string protocol){
+        if(initialized) {
+            printf("Manager was already initialized. Impossible to register new protocols.\n");
+            return;
+        }
+
         ConnType* conn = createConnType<T>();
         //NOTE: init() direttamente nel costruttore di ConnType???
-        // conn->init();
+        conn->init();
         protocolsMap[protocol] = conn;
     }
 
     static int listen(std::string s) {
         std::string protocol = s.substr(0, s.find(":"));
+        std::lock_guard lk(protocolsMap[protocol]->m);
         return protocolsMap[protocol]->listen(s.substr(protocol.length(), s.length()));
     }
 
@@ -120,6 +169,7 @@ public:
             return HandleUser(nullptr, true, true);
 
         if(protocolsMap.count(protocol)) {
+            std::lock_guard lk(protocolsMap[protocol]->m);
             Handle* handle = protocolsMap[protocol]->connect(s.substr(s.find(":") + 1, s.length()));
             if(handle) {
                 return HandleUser(handle, true, true);

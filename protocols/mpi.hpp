@@ -7,6 +7,9 @@
 #include <assert.h>
 #include <tuple>
 
+#include <mpi.h>
+
+
 #define CONNECTION_TAG 0
 
 class HandleMPI : public Handle {
@@ -86,6 +89,9 @@ public:
 
 
     void update(std::queue<Handle*>& q, std::queue<Handle*>& qnew) {
+
+        // check coda eventi
+
         int flag;
         MPI_Status status;
         MPI_Iprobe(MPI_ANY_SOURCE, CONNECTION_TAG, MPI_COMM_WORLD, &flag, &status);

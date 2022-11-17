@@ -47,21 +47,16 @@ int main(int argc, char** argv){
     
     int id = atoi(argv[1]);     // logical rank
     char* addr = argv[2];       // listening address
-    // Manager m;
+
     Manager::registerType<ConnTcp>("TCP");
     Manager::init(argc, argv);
-    Manager::listen(addr); // TCP:host:port
-
-    // m.registerType<ConnTcp>("TCP");      // TCP
-    // m.registerType<ConnMPI>(addr);   // MPI
-    // m.init();
 
     // Listening for new connections
     if(id == 0) {
+        Manager::listen(addr); // TCP:host:port
 
         while(true) {
             auto handle = Manager::getNext();
-            // auto handle = m.getReady();
             if(handle.isValid()) {
                 if(handle.isNewConnection()) {
                     handle.yield();
@@ -71,36 +66,65 @@ int main(int argc, char** argv){
                     size_t size = 4;
                     while(count < size)
                         count += handle.send(buff+count, size-count);
-                    
+                    // handle->yield();
                     // Manager::endM();
                     // return 0;
                 }
-                else handle.yield();
+                else {
+                    size_t count = 0;
+                    size_t size = 4;
+                    char buff[size];
+                    while(count < size) {
+                        size_t aux = handle.read(buff+count, size-count);
+                        count += aux;
+                        if(aux == 0) {
+                            break;
+                        }
+                    }
+
+                    if(count == size) {
+                        std::string res{buff};
+                        printf("%s\n", res.c_str());
+                    }
+                    handle.yield();
+                }
             }
             else {
                 printf("No value in handle\n");
                 std::this_thread::sleep_for(std::chrono::milliseconds(1000));
             }
 
-            // bool blocking;
-            // HandleUser handle = m.getNext(blocking);
-            // if(handle.new())
-            //     handle.yield();
-            // else....
         }
     }
     // Trying to connect
     else {
+        // Manager::listen(addr); // TCP:host:port
         auto handle = Manager::connect("TCP:127.0.0.1:42000");
-        if(handle.isValid()) {
-            size_t size = 4;
-            char buff[4];
-            handle.read(buff, size);
-            // handle->yield();
-            // auto handle = m.getReady();
 
-            std::string res{buff};
-            printf("%s\n", res.c_str());
+        handle.yield();
+
+        while(true) {
+            auto handle = Manager::getNext();
+            // Adesso questo controllo dovrebbe essere sempre true dopo la getNext
+            if(handle.isValid()) {
+                size_t size = 4;
+                size_t count = 0;
+                char buff[4];
+
+                while(count < size)
+                    count += handle.read(buff+count, 4-count);
+                std::string res{buff};
+                printf("%s\n", res.c_str());
+
+                count = 0;
+                char buff1[4]{'c','i','a','o'};
+                while(count < size)
+                    count += handle.send(buff1+count, 4-count);
+
+                handle.yield();
+
+                break;
+            }
         }
         Manager::endM();
     }

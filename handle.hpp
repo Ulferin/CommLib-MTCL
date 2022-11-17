@@ -21,6 +21,7 @@ class Handle {
 private:
     void yield() {
         setBusy(false);
+        std::lock_guard lk(parent->m);
         parent->notify_yield(this);
     }
 
