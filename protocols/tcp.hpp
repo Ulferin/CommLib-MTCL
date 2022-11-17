@@ -181,7 +181,7 @@ public:
                     } else {
                         FD_SET(connfd, &set);
                         if(connfd > fdmax) fdmax = connfd;
-                        connections[connfd] = new HandleTCP(this, connfd);
+                        connections[connfd] = new HandleTCP(this, connfd, false);
                     }
                     q.push({true, connections[connfd]});
                 }
@@ -247,10 +247,6 @@ public:
         if (rp == NULL)            /* No address succeeded */
             return nullptr;
 
-        /*NOTE: qui sto assumendo che sia praticamente impossibile avere un clash
-                in hashtable tra i descrittori e i valori generati dalla hash
-                function sulle stringhe label/URL
-        */
         HandleTCP *handle = new HandleTCP(this, fd);
         connections[fd] = handle;
         return handle;
