@@ -104,6 +104,7 @@ public:
         auto el = handleReady.front();
         handleReady.pop();
         lk.unlock();
+        el.second->incrementReferenceCounter();
         el.second->setBusy(true);
 
         return HandleUser(el.second, true, el.first);
@@ -177,6 +178,7 @@ public:
         if(protocolsMap.count(protocol)) {
             std::lock_guard lk(protocolsMap[protocol]->m);
             Handle* handle = protocolsMap[protocol]->connect(s.substr(s.find(":") + 1, s.length()));
+            handle->incrementReferenceCounter();
             if(handle) {
                 return HandleUser(handle, true, true);
             }

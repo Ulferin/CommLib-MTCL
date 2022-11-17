@@ -61,7 +61,7 @@ public:
         return this->busy;
     }
 
-    virtual ~Handle() = 0;
+    virtual ~Handle() {};
 
 };
 
