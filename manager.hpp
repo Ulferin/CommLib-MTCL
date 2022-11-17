@@ -60,51 +60,20 @@ public:
     static void endM() {
         end = true;
         t1.join();
+
+        for (auto [k,v]: protocolsMap) {
+            delete v;
+        }
     }
-
-    // HandleUser getReady(){
-    //     if(handleready.empty())
-    //         return HandleUser(nullptr, true);
-
-    //     auto el = handleready.front();
-    //     el->setBusy(true);
-    //     handleready.pop();
-
-        
-    //     return HandleUser(el,true);    
-    // }
-
-
-    // HandleUser getNewConnection() {
-    //     if(handleNew.empty())
-    //         return HandleUser(nullptr, true);
-
-    //     auto el = handleNew.front();
-    //     el->setBusy(true);
-    //     handleNew.pop();
-    //     return HandleUser(el,true);
-    // }
 
     static HandleUser getNext() {
         std::unique_lock lk(mutex);
         condv.wait(lk, [&]{return !handleReady.empty();});
 
-        // Handle* handle = nullptr;
-
-        // do {
-        //     el = handleReady.front();
-        //     if(!el.second->isBusy())
-        //         handle = el.second;
-        //     handleReady.pop();
-        // } while(el.second->isBusy() && !handleReady.empty());
-        
-        // if(handle == nullptr)
-        //     return HandleUser(nullptr, true, true);
-
         auto el = handleReady.front();
         handleReady.pop();
         lk.unlock();
-        el.second->incrementReferenceCounter();
+        // el.second->incrementReferenceCounter();
         el.second->setBusy(true);
 
         return HandleUser(el.second, true, el.first);
@@ -118,12 +87,6 @@ public:
                 std::unique_lock lk(conn->m);
                 conn->update();
                 lk.unlock();
-
-                // // Notify only when there's something to read
-                // if(!handleReady.empty()) {
-                //     lk.unlock();
-                //     condv.notify_one();
-                // }
             }
             // To prevent starvation of application threads
             std::this_thread::sleep_for(std::chrono::nanoseconds(100));
@@ -166,8 +129,6 @@ public:
 
 
     static HandleUser connect(std::string s){
-        // parsing protocollo
-        // connect di ConnType dalla mappa dei protocolli
 
         // TCP:host:port || MPI:rank:tag
         std::string protocol = s.substr(0, s.find(":"));
@@ -178,7 +139,7 @@ public:
         if(protocolsMap.count(protocol)) {
             std::lock_guard lk(protocolsMap[protocol]->m);
             Handle* handle = protocolsMap[protocol]->connect(s.substr(s.find(":") + 1, s.length()));
-            handle->incrementReferenceCounter();
+            // handle->incrementReferenceCounter();
             if(handle) {
                 return HandleUser(handle, true, true);
             }

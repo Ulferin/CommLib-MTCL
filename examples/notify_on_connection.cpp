@@ -91,16 +91,19 @@ int main(int argc, char** argv){
     }
     // Trying to connect
     else {
-        auto handle = Manager::connect("TCP:127.0.0.1:42000");
-        if(handle.isValid()) {
-            size_t size = 4;
-            char buff[4];
-            handle.read(buff, size);
-            // handle->yield();
-            // auto handle = m.getReady();
+        {
+            auto handle = Manager::connect("TCP:127.0.0.1:42000");
+            if(handle.isValid()) {
+                size_t size = 4;
+                char buff[4];
+                handle.read(buff, size);
+                // handle.yield();
+                handle.close();
+                // auto handle = m.getReady();
 
-            std::string res{buff};
-            printf("%s\n", res.c_str());
+                std::string res{buff};
+                printf("%s\n", res.c_str());
+            }
         }
         Manager::endM();
     }

@@ -25,14 +25,6 @@ public:
         // realHandle = nullptr;
     }
 
-    // bool acquireRead() {
-    //     // check se sono l'unico a ricevere
-    //     // se si setta readable a true e torna true, altrimenti torna false
-    //     isReadable = realHandle->request();
-
-    //     return isReadable;
-    // }
-
     bool isValid() {
         return realHandle;
     }

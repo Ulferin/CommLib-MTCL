@@ -8,11 +8,6 @@
 // class ConnType;
 
 class Handle {
-    // Potrebbe avere un ID univoco incrementale che definiamo noi in modo da
-    // accedere velocemente a quale connessione fa riferimento nel ConnType
-    // Questo potrebbe sostituire l'oggetto "this" a tutti gli effetti quando
-    // vogliamo fare send/receive/yield --> il ConnType di appartenenza ha info
-    // interne per capire di chi si tratta
     friend class HandleUser;
     friend class Manager;
     ConnType* parent;

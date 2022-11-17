@@ -26,7 +26,8 @@ protected:
     std::function<void(std::pair<bool, Handle*>)> addinQ;
 
 public:
-    ConnType() {}
+    ConnType() {};
+    virtual ~ConnType() {};
     
     virtual int init() = 0;
     virtual int listen(std::string) = 0;
