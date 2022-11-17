@@ -210,11 +210,6 @@ public:
     // URL: host:prot || label: stringa utente
     Handle* connect(const std::string& address/*, const std::string& label=std::string()*/) {
         printf("[TCP]Connecting to: %s\n", address.c_str());
-        size_t hash_val;
-        // if(!label.empty())
-        //     hash_val = std::hash<std::string>{}(label);
-        // else
-            hash_val = std::hash<std::string>{}(address);
 
         int fd;
 
@@ -242,7 +237,6 @@ public:
             if (fd == -1)
                 continue;
 
-            // NOTE: naming clash with global namespace connect, hence ::connect
             if (::connect(fd, rp->ai_addr, rp->ai_addrlen) != -1)
                 break;                  /* Success */
 
@@ -258,8 +252,7 @@ public:
                 function sulle stringhe label/URL
         */
         HandleTCP *handle = new HandleTCP(this, fd);
-        connections[hash_val] = handle;
-
+        connections[fd] = handle;
         return handle;
     }
 
