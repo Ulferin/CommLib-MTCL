@@ -14,6 +14,7 @@
 #include <vector>
 #include <queue>
 #include <map>
+#include <shared_mutex>
 
 #include "../handle.hpp"
 #include "../protocolInterface.hpp"
@@ -55,7 +56,9 @@ protected:
 
     fd_set set, tmpset;
     int listen_sck;
-    int fdmax;
+    std::atomic<int> fdmax;
+
+    std::shared_mutex shm;
 
 
 private:
@@ -131,7 +134,13 @@ public:
     void update() {
         // copy the master set to the temporary
 
+        std::unique_lock ulock(shm, std::defer_lock);
+        std::shared_lock shlock(shm, std::defer_lock);
+
+        ulock.lock();
         tmpset = set;
+        ulock.unlock();
+
         struct timeval wait_time = {.tv_sec=0, .tv_usec=SELECTTIMEOUT};
 
         switch(select(fdmax+1, &tmpset, NULL, NULL, &wait_time)){
@@ -146,27 +155,33 @@ public:
                     if (connfd == -1){
                         printf("Error accepting client\n");
                         return;
-                    } else {
-                        FD_SET(connfd, &set);
-                        if(connfd > fdmax) fdmax = connfd;
-                        connections[connfd] = new HandleTCP(this, connfd, false);
                     }
+
+                    ulock.lock();
+                    FD_SET(connfd, &set);
+                    if(connfd > fdmax) fdmax = connfd;
+                    connections[connfd] = new HandleTCP(this, connfd, false);
                     addinQ({true, connections[connfd]});
+                    ulock.unlock();
+                    
                 }
                 else {
+                    ulock.lock();
                     // Updates ready connections and removes from listening
                     FD_CLR(idx, &set);
 
                     // update the maximum file descriptor
                     if (idx == fdmax)
-                        for(int ii=(fdmax-1);ii>=0;--ii)
+                        for(int ii=(fdmax-1);ii>=0;--ii) {
                             if (FD_ISSET(ii, &set)){
                                 fdmax = ii;
                                 break;
                             }
-
+                        }
                     // ready.push(connections[idx]);
                     addinQ({false, connections[idx]});
+                    ulock.unlock();
+
                 }
                 
             }
@@ -216,28 +231,33 @@ public:
             return nullptr;
 
         HandleTCP *handle = new HandleTCP(this, fd);
+        std::unique_lock lock(shm);
         connections[fd] = handle;
+        lock.unlock();
         return handle;
     }
 
     void notify_close(Handle* h) {
         int fd = reinterpret_cast<HandleTCP*>(h)->fd;
         close(fd);
+        std::unique_lock lock(shm);
         connections.erase(fd); // elimina un puntatore! è safe!
         FD_CLR(fd, &set);
 
         // update the maximum file descriptor
         if (fd == fdmax)
-            for(int ii=(fdmax-1);ii>=0;--ii)
+            for(int ii=(fdmax-1);ii>=0;--ii) {
                 if (FD_ISSET(ii, &set)){
                     fdmax = ii;
                     break;
                 }
+            }
     }
 
 
     void notify_yield(Handle* h) override {
         int fd = reinterpret_cast<HandleTCP*>(h)->fd;
+        std::unique_lock l(shm);
         FD_SET(fd, &set);
         if(fd > fdmax) {
             fdmax = fd;

@@ -13,11 +13,6 @@ class ConnType {
     friend class Manager;
     friend class Handle;
 
-
-private:
-    std::mutex m;
-
-
 protected:
     /*void addinQ(std::pair<bool, Handle*> el) {
         Manager::addinQ(el);

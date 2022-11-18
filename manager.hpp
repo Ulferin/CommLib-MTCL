@@ -83,13 +83,10 @@ public:
     static void getReadyBackend() {
         while(!end){
             for(auto& [prot, conn] : protocolsMap) {
-                // std::unique_lock lk(mutex);
-                std::unique_lock lk(conn->m);
                 conn->update();
-                lk.unlock();
             }
             // To prevent starvation of application threads
-            std::this_thread::sleep_for(std::chrono::nanoseconds(100));
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
     }
 
@@ -123,12 +120,11 @@ public:
 
     static int listen(std::string s) {
         std::string protocol = s.substr(0, s.find(":"));
-        std::lock_guard lk(protocolsMap[protocol]->m);
         return protocolsMap[protocol]->listen(s.substr(protocol.length(), s.length()));
     }
 
 
-    static HandleUser connect(std::string s){
+    static HandleUser connect(std::string s) {
 
         // TCP:host:port || MPI:rank:tag
         std::string protocol = s.substr(0, s.find(":"));
@@ -137,7 +133,6 @@ public:
             return HandleUser(nullptr, true, true);
 
         if(protocolsMap.count(protocol)) {
-            std::lock_guard lk(protocolsMap[protocol]->m);
             Handle* handle = protocolsMap[protocol]->connect(s.substr(s.find(":") + 1, s.length()));
             // handle->incrementReferenceCounter();
             if(handle) {

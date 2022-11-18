@@ -72,8 +72,7 @@ int main(int argc, char** argv){
                     while(count < size)
                         count += handle.send(buff+count, size-count);
                     
-                    // Manager::endM();
-                    // return 0;
+                    break;
                 }
                 else handle.yield();
             }
@@ -88,6 +87,7 @@ int main(int argc, char** argv){
             //     handle.yield();
             // else....
         }
+        Manager::endM();
     }
     // Trying to connect
     else {
