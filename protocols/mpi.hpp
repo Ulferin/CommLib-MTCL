@@ -147,7 +147,7 @@ public:
 
 
     void end() {
-        return;
+        MPI_Finalize();
     }
 };
 

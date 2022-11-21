@@ -35,9 +35,9 @@ int main(int argc, char** argv){
                 if(handle.isNewConnection()) {
                     handle.yield();
                     printf("Got new connection\n");
-                    char buff[4]{'c','i','a','o'};
+                    char buff[5]{'c','i','a','o', '\0'};
                     size_t count = 0;
-                    size_t size = 4;
+                    size_t size = 5;
                     while(count < size)
                         count += handle.send(buff+count, size-count);
                     
@@ -63,8 +63,8 @@ int main(int argc, char** argv){
         {
             auto handle = Manager::connect("TCP:127.0.0.1:42000");
             if(handle.isValid()) {
-                size_t size = 4;
-                char buff[4];
+                size_t size = 5;
+                char buff[5];
                 handle.read(buff, size);
                 // handle.yield();
                 handle.close();
