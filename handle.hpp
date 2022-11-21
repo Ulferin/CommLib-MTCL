@@ -10,6 +10,8 @@
 class Handle {
     friend class HandleUser;
     friend class Manager;
+    friend class ConnType;
+
     ConnType* parent;
     std::atomic<bool> busy;
 
@@ -36,6 +38,8 @@ private:
     void close(){
         closed = true;
         parent->notify_close(this);
+        if (counter == 0) 
+            delete this;
     }
 
     void setBusy(bool b) {
@@ -54,5 +58,10 @@ public:
     virtual ~Handle() {};
 
 };
+
+
+void ConnType::setAsClosed(Handle* h){
+    h->close();
+}
 
 #endif

@@ -13,14 +13,13 @@
 
 #define POLLINGTIMEOUT 10
 
-
 class Manager {
     friend class ConnType;
     // friend void ConnType::addinQ(std::pair<bool, Handle*>);
 
     /*NOTE: anche questa deve essere sincronizzata dato che l'utente potrebbe
             voler aggiungere un protocollo dopo l'inizializzazione della libreria*/
-    inline static std::map<std::string, ConnType*> protocolsMap;
+    inline static std::map<std::string, std::shared_ptr<ConnType>> protocolsMap;
     
     //TODO: probabilmente una std::deque sincronizzata
     inline static std::queue<std::pair<bool, Handle*>> handleReady;
@@ -33,7 +32,6 @@ class Manager {
 
     inline static std::mutex mutex;
     inline static std::condition_variable condv;
-
 
 private:
     Manager() {}
@@ -63,8 +61,8 @@ public:
         end = true;
         t1.join();
 
-        for (auto [k,v]: protocolsMap) {
-            delete v;
+        for (auto [_,v]: protocolsMap) {
+            v->end();
         }
     }
 
@@ -94,30 +92,20 @@ public:
 
 
     template<typename T>
-    static ConnType* createConnType() {
-        static_assert(std::is_base_of<ConnType,T>::value, "Not a ConnType subclass");
-        return new T;
-    }
-
-
-    template<typename T>
     static void registerType(std::string protocol){
+        static_assert(std::is_base_of<ConnType,T>::value, "Not a ConnType subclass");
         if(initialized) {
             printf("Manager was already initialized. Impossible to register new protocols.\n");
             return;
         }
 
-        ConnType* conn = createConnType<T>();
-        //NOTE: init() direttamente nel costruttore di ConnType???
-        conn->init();
+        protocolsMap[protocol] = std::shared_ptr<T>(new T);
+        
 
-        // warning!!!!
-        conn->addinQ = [&](std::pair<bool, Handle*> item){
+        protocolsMap[protocol]->addinQ = [&](std::pair<bool, Handle*> item){
             Manager::addinQ(item);
         };
 
-        
-        protocolsMap[protocol] = conn;
     }
 
     static int listen(std::string s) {
@@ -145,6 +133,7 @@ public:
         return HandleUser(nullptr, true, true);
             
     };
+
 };
 
 #endif

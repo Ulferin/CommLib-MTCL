@@ -265,7 +265,14 @@ public:
     }
 
     void end() {
-        return;
+        for(auto& [fd, h] : connections)
+            if(isSet(fd))
+                setAsClosed(h);
+    }
+
+    bool isSet(int fd){
+        std::shared_lock s(shm);
+        return FD_ISSET(fd, &set);
     }
 
 };

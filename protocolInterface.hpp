@@ -20,6 +20,8 @@ protected:
 
     std::function<void(std::pair<bool, Handle*>)> addinQ;
 
+    static void setAsClosed(Handle* h);
+
 public:
     ConnType() {};
     virtual ~ConnType() {};
