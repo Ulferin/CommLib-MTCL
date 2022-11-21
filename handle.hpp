@@ -38,9 +38,6 @@ private:
         parent->notify_close(this);
     }
 
-
-
-
     void setBusy(bool b) {
         busy = b;
     }
