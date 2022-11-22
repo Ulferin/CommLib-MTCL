@@ -57,6 +57,7 @@ public:
 
     }
 
+    // non posso fare più niente con la libreria
     static void endM() {
         end = true;
         t1.join();

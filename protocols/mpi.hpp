@@ -95,7 +95,6 @@ public:
     void update() {
 
         std::unique_lock ulock(shm, std::defer_lock);
-        std::shared_lock shlock(shm, std::defer_lock);
 
         int flag;
         MPI_Status status;
@@ -147,6 +146,11 @@ public:
 
 
     void end() {
+        auto modified_connections = connections;
+        for(auto& [handle, to_manage] : connections)
+            if(to_manage)
+                setAsClosed(handle);
+
         MPI_Finalize();
     }
 };
