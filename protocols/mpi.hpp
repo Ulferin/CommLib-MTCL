@@ -16,25 +16,45 @@
 class HandleMPI : public Handle {
 
 public:
+    bool closing = false;
     int rank;
     int tag;
     HandleMPI(ConnType* parent, int rank, int tag, bool busy=true): Handle(parent,busy), rank(rank), tag(tag){}
 
-    size_t send(const char* buff, size_t size) {
-        MPI_Send(buff, size, MPI_BYTE, rank, tag, MPI_COMM_WORLD);
+    ssize_t send(const char* buff, size_t size) {
+        if (MPI_Send(buff, size, MPI_BYTE, rank, tag, MPI_COMM_WORLD) != MPI_SUCCESS)
+            return -1;
 
         return size;
     }
 
-    size_t receive(char* buff, size_t size){
+    ssize_t receive(char* buff, size_t size){
         MPI_Status status; 
         int count;
-        MPI_Recv(buff, size, MPI_BYTE, rank, tag, MPI_COMM_WORLD, &status);
-        MPI_Get_count(&status, MPI_BYTE, &count);
-        
-        return count;
+        int flag = 0;
+
+        while(true){
+            MPI_Iprobe(rank, tag, MPI_COMM_WORLD, &flag, &status);
+            if (flag) {
+                MPI_Recv(buff, size, MPI_BYTE, rank, tag, MPI_COMM_WORLD, &status);
+                MPI_Get_count(&status, MPI_BYTE, &count);
+                return count;
+            }
+            else {
+                 MPI_Iprobe(rank, -tag, MPI_COMM_WORLD, &flag, &status);
+                 if (flag) {
+                    closing = true;
+                    char in;
+                    MPI_Recv(&in, 1, MPI_BYTE, rank, -tag, MPI_COMM_WORLD, &status);
+                    return 0;
+                 }
+            }
+            std::this_thread::sleep_for(std::chrono::microseconds(500));
+        }
     }
 };
+
+
 
 class ConnMPI : public ConnType {
 protected:
@@ -118,22 +138,34 @@ public:
             ulock.unlock();
         }
 
+        
+
         ulock.lock();
         for (auto& [handle, to_manage] : connections) {
             if(to_manage) {
                 MPI_Iprobe(handle->rank, handle->tag, MPI_COMM_WORLD, &flag, &status);
-                if(flag) {
+                if (!flag)
+                    MPI_Iprobe(handle->rank, -handle->tag, MPI_COMM_WORLD, &flag, &status);
+
+                if (flag) {
                     to_manage = false;
                     addinQ({false, handle});
                 }
             }
         }
+
         ulock.unlock();
         
     }
 
 
     void notify_close(Handle* h) {
+        HandleMPI* hMPI = reinterpret_cast<HandleMPI*>(h);
+        if (!hMPI->closing){
+            char a = 0;
+            MPI_Send(&a, 1, MPI_BYTE, hMPI->rank, -hMPI->tag, MPI_COMM_WORLD);
+        }
+
         std::unique_lock l(shm);
         connections.erase(reinterpret_cast<HandleMPI*>(h));
     }
@@ -147,7 +179,7 @@ public:
 
     void end() {
         auto modified_connections = connections;
-        for(auto& [handle, to_manage] : connections)
+        for(auto& [handle, to_manage] : modified_connections)
             if(to_manage)
                 setAsClosed(handle);
 

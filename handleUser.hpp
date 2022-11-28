@@ -16,13 +16,16 @@ public:
 
     HandleUser(const HandleUser&) = delete;
     HandleUser& operator=(HandleUser const&) = delete;
+
+    HandleUser(HandleUser&& h) : realHandle(h.realHandle), isReadable(h.isReadable), newConnection(h.newConnection){
+        h.realHandle = nullptr;
+    }
     
     // notifico il manager che l'handle lo gestisce lui
     void yield() {
         isReadable = false;
         newConnection = false;
         if (realHandle) realHandle->yield();        
-        // realHandle = nullptr;
     }
 
     bool isValid() {
@@ -33,13 +36,13 @@ public:
         return newConnection;
     }
 
-    size_t send(const char* buff, size_t size){
+    ssize_t send(const char* buff, size_t size){
         newConnection = false;
         if (!realHandle) throw;
         return realHandle->send(buff, size);
     }
 
-    size_t read(char* buff, size_t size){
+    ssize_t read(char* buff, size_t size){
         newConnection = false;
         if (!isReadable || !realHandle) throw;
         return realHandle->receive(buff, size);

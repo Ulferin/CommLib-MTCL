@@ -25,17 +25,47 @@
 
 class HandleTCP : public Handle {
 
+    ssize_t readn(int fd, char *ptr, size_t n) {  
+        size_t   nleft = n;
+        ssize_t  nread;
+
+        while (nleft > 0) {
+            if((nread = read(fd, ptr, nleft)) < 0) {
+                if (nleft == n) return -1; /* error, return -1 */
+                else break; /* error, return amount read so far */
+            } else if (nread == 0) break; /* EOF */
+            nleft -= nread;
+            ptr += nread;
+        }
+        return(n - nleft); /* return >= 0 */
+    }
+
+    ssize_t writen(int fd, const char *ptr, size_t n) {  
+        size_t   nleft = n;
+        ssize_t  nwritten;
+        
+        while (nleft > 0) {
+            if((nwritten = write(fd, ptr, nleft)) < 0) {
+                if (nleft == n) return -1; /* error, return -1 */
+                else break; /* error, return amount written so far */
+            } else if (nwritten == 0) break; 
+            nleft -= nwritten;
+            ptr   += nwritten;
+        }
+        return(n - nleft); /* return >= 0 */
+    }
+
 public:
     int fd; // File descriptor of the connection represented by this Handle
     HandleTCP(ConnType* parent, int fd, bool busy=true) : Handle(parent, busy), fd(fd) {}
 
-    size_t send(const char* buff, size_t size) {
-        return write(fd, buff, size);
+    ssize_t send(const char* buff, size_t size) {
+        return writen(fd, buff, size); //modificare in writen
     }
 
 
-    size_t receive(char* buff, size_t size) {
-        return read(fd, buff, size);
+    ssize_t receive(char* buff, size_t size) {
+        return readn(fd, buff, size); // modificare in readn
     }
 
 
@@ -268,9 +298,7 @@ public:
         auto modified_connections = connections;
         for(auto& [fd, h] : modified_connections)
             if(isSet(fd))
-                setAsClosed(h);
-
-        
+                setAsClosed(h); 
     }
 
     bool isSet(int fd){
