@@ -5,6 +5,7 @@
 #include <vector>
 #include <queue>
 #include <mutex>
+#include <thread>
 #include <condition_variable>
 
 #include "handle.hpp"

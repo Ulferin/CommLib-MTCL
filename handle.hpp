@@ -16,7 +16,6 @@ class Handle {
     std::atomic<bool> busy;
 
     std::atomic<int> counter = 0;
-    std::atomic<bool> closed = false;
 
     void incrementReferenceCounter(){
         counter++;
@@ -28,7 +27,8 @@ class Handle {
             delete this;
         }
     }
-
+protected:
+        std::atomic<bool> closed = false;
 private:
     void yield() {
         setBusy(false);
