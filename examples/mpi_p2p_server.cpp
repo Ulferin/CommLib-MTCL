@@ -4,7 +4,6 @@
  *
  * 2- run server:
  *      $ mpirun -n 1 --ompi-server file:uri_addr.txt mpi_p2p_server.out
- *      $ portname: 217448449.0:2962486216  <----- copy the printed portname and paste in client execution argument
  * 
  */
 
@@ -37,13 +36,14 @@ int main(int argc, char** argv){
 
             if(handle.isValid()) {
                 if(handle.isNewConnection()) {
-                    handle.yield();
+                    // handle.yield();
                     printf("Got new connection\n");
-                    char buff[5]{'c','i','a','o','\0'};
-                    size_t count = 0;
+                    char buff[5];
                     size_t size = 5;
-                    while(count < size)
-                        count += handle.send(buff+count, size-count);
+                    handle.read(buff, size);
+
+                    std::string res{buff};
+                    printf("%s\n", res.c_str());
                     
                     break;
                 }
