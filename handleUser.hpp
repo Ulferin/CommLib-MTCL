@@ -38,13 +38,13 @@ public:
 
     ssize_t send(const char* buff, size_t size){
         newConnection = false;
-        if (!realHandle) throw;
+        if (!realHandle || realHandle->closed) throw;
         return realHandle->send(buff, size);
     }
 
     ssize_t read(char* buff, size_t size){
         newConnection = false;
-        if (!isReadable || !realHandle) throw;
+        if (!isReadable || !realHandle || realHandle->closed) throw ;
         return realHandle->receive(buff, size);
     }
 
