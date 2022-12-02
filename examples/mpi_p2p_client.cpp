@@ -34,12 +34,10 @@ int main(int argc, char** argv){
             if(handle.isValid()) {
                 char buff[5]{'c','i','a','o','\0'};
                 size_t size = 5;
+                // std::this_thread::sleep_for(std::chrono::milliseconds(10000));
                 handle.send(buff, size);
                 printf("sent\n");
                 handle.close();
-
-                // std::string res{buff};
-                // printf("%s\n", res.c_str());
             }
         }
         Manager::endM();

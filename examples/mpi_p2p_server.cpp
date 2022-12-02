@@ -40,14 +40,23 @@ int main(int argc, char** argv){
                     printf("Got new connection\n");
                     char buff[5];
                     size_t size = 5;
-                    handle.read(buff, size);
+                    if(handle.read(buff, size) == 0)
+                        printf("Connection closed by peer\n");
+                    else {
+                        std::string res{buff};
+                        printf("%s\n", res.c_str());
+                    }
+                }
+                else {
+                    printf("Waiting for connection close...\n");
+                    char buff[5];
+                    size_t size = 5;
+                    if(handle.read(buff, size) == 0)
+                        printf("Connection closed by peer\n");
 
-                    std::string res{buff};
-                    printf("%s\n", res.c_str());
-                    
+                    handle.close();
                     break;
                 }
-                else handle.yield();
             }
             else {
                 printf("No value in handle\n");
