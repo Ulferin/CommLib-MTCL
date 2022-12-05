@@ -6,6 +6,7 @@
 #include <tuple>
 #include <shared_mutex>
 #include <thread>
+#include <errno.h>
 
 #include <mpi.h>
 
@@ -25,8 +26,20 @@ public:
     HandleMPI(ConnType* parent, int rank, int tag, bool busy=true): Handle(parent,busy), rank(rank), tag(tag){}
 
     ssize_t send(const char* buff, size_t size) {
-        if (MPI_Send(buff, size, MPI_BYTE, rank, tag, MPI_COMM_WORLD) != MPI_SUCCESS)
+        MPI_Request request;
+        if (MPI_Isend(buff, size, MPI_BYTE, rank, tag, MPI_COMM_WORLD, &request) != MPI_SUCCESS)
             return -1;
+
+        int flag = 0;
+        MPI_Status status;
+        while(!flag && !closing) {
+            MPI_Test(&request, &flag, &status);
+        }
+
+        if(closing) {
+            errno = ECONNRESET;
+            return -1;
+        }
 
         return size;
     }
