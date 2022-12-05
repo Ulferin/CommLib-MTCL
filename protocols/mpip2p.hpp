@@ -46,7 +46,7 @@ public:
         MPI_Status status; 
         int count, flag;
         while(true) {
-            if(MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, server_comm, &flag, &status)!=MPI_SUCCESS) {
+            if(MPI_Iprobe(MPI_ANY_SOURCE, 0, server_comm, &flag, &status)!=MPI_SUCCESS) {
                 printf("Error in probe\n");
                 return -1;
             }

@@ -3,7 +3,7 @@
  *      $ ompi-server -r uri_addr.txt
  *
  * 2- run server:
- *      $ mpirun -n 1 --ompi-server file:uri_addr.txt mpi_p2p_server.out
+ *      $ mpirun -n 1 --ompi-server file:uri_addr.txt mpi_p2p_pong.out
  * 
  */
 
@@ -18,6 +18,7 @@
 #include "../../manager.hpp"
 #include "../../protocols/mpip2p.hpp"
 
+#define MAX_NUM_CLIENTS 4
 
 int main(int argc, char** argv){
 
@@ -30,13 +31,12 @@ int main(int argc, char** argv){
 
     // Listening for new connections
     if(rank == 0) {
-
-        while(true) {
+        int count = 0;
+        while(count < MAX_NUM_CLIENTS) {
             auto handle = Manager::getNext();
 
             if(handle.isValid()) {
                 if(handle.isNewConnection()) {
-                    // handle.yield();
                     printf("Got new connection\n");
                     char buff[5];
                     size_t size = 5;
@@ -46,16 +46,20 @@ int main(int argc, char** argv){
                         std::string res{buff};
                         printf("Received \"%s\"\n", res.c_str());
                     }
+
+                    char reply[5]{'p','o','n','g','\0'};
+                    handle.send(reply, size);
+                    printf("Sent: \"%s\"\n",reply);
                 }
                 else {
                     printf("Waiting for connection close...\n");
-                    char buff[5];
-                    size_t size = 5;
-                    if(handle.read(buff, size) == 0)
+                    char tmp;
+                    size_t size = 1;
+                    if(handle.read(&tmp, size) == 0) {
                         printf("Connection closed by peer\n");
-
-                    handle.close();
-                    break;
+                        handle.close();
+                        count++;
+                    }
                 }
             }
             else {
