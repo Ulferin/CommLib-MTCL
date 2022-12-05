@@ -99,7 +99,7 @@ private:
      */
     int _init() {
         if ((listen_sck=socket(AF_INET, SOCK_STREAM, 0)) < 0){
-            printf("Error creating the socket\n");
+            printf("Error creating the socket\n"); 
             return -1;
         }
 
@@ -271,7 +271,7 @@ public:
         int fd = reinterpret_cast<HandleTCP*>(h)->fd;
         close(fd);
         std::unique_lock lock(shm);
-        connections.erase(fd); // elimina un puntatore! è safe!
+        connections.erase(fd);
         FD_CLR(fd, &set);
 
         // update the maximum file descriptor

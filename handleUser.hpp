@@ -2,6 +2,7 @@
 #define HANDLEUSER_HPP
 
 #include "handle.hpp"
+#include "errno.h"
 
 class HandleUser {
     friend class ConnType;
@@ -25,7 +26,7 @@ public:
     void yield() {
         isReadable = false;
         newConnection = false;
-        if (realHandle) realHandle->yield();        
+        if (realHandle) realHandle->yield();
     }
 
     bool isValid() {
@@ -38,13 +39,23 @@ public:
 
     ssize_t send(const char* buff, size_t size){
         newConnection = false;
-        if (!realHandle || realHandle->closed) throw;
+        if (!realHandle || realHandle->closed) {
+            errno = EBADF; // the "communicator" is not valid or closed
+            return -1;
+        }
         return realHandle->send(buff, size);
     }
 
     ssize_t read(char* buff, size_t size){
         newConnection = false;
-        if (!isReadable || !realHandle || realHandle->closed) throw ;
+        if (!isReadable){
+            errno = EINVAL; // unable to read from the "communicator"
+            return -1;
+        }
+        if (!realHandle || realHandle->closed){
+            errno = EBADF; // the "communicator" is not valid or closed
+            return -1;
+        };
         return realHandle->receive(buff, size);
     }
 

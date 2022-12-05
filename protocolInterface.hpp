@@ -6,6 +6,7 @@
 #include <queue>
 #include <mutex>
 #include <functional>
+#include <errno.h>
 
 class Handle;
 class ConnType {
@@ -14,9 +15,6 @@ class ConnType {
     friend class Handle;
 
 protected:
-    /*void addinQ(std::pair<bool, Handle*> el) {
-        Manager::addinQ(el);
-    }*/
 
     std::function<void(std::pair<bool, Handle*>)> addinQ;
 
@@ -33,9 +31,6 @@ public:
     virtual void notify_yield(Handle*) = 0;
     virtual void notify_close(Handle*) = 0;
     virtual void end() = 0;
-
-
-
 };
 
 #endif
