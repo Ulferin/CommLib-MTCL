@@ -27,6 +27,8 @@
 
 #define MPIP2PSLEEPUS 1000
 #define DISCONNECTTAG 42
+#define STOP_PROCESS "stop_accept.out"
+#define PUBLISH_NAME "test_server"
 
 class HandleMPIP2P : public Handle {
 
@@ -115,7 +117,7 @@ public:
     void _listen(char* portname) {
 
         listening = true;
-        MPI_Publish_name("test_server", MPI_INFO_NULL, portname);
+        MPI_Publish_name(PUBLISH_NAME, MPI_INFO_NULL, portname);
         
         while(!finalized) {
             MPI_Comm client;
@@ -175,7 +177,7 @@ public:
      * della lookup. Attualmente inutilizzato.
      */
     Handle* connect(const std::string& address) {
-        MPI_Lookup_name("test_server", MPI_INFO_NULL, portname);
+        MPI_Lookup_name(PUBLISH_NAME, MPI_INFO_NULL, portname);
         MPI_Comm server_comm;
         MPI_Comm_connect(portname, MPI_INFO_NULL, 0, MPI_COMM_WORLD, &server_comm);
         printf("[MPIP2P]Connecting to: %s\n", portname);
@@ -222,11 +224,11 @@ public:
             /* Spawns utility MPI process to issue a fake MPI_Comm_connect and
              * wake up the blocking accept
              */
-            MPI_Comm_spawn("stop_accept", a, 1, MPI_INFO_NULL, 0, MPI_COMM_SELF, &c, MPI_ERRCODES_IGNORE);
+            MPI_Comm_spawn(STOP_PROCESS, a, 1, MPI_INFO_NULL, 0, MPI_COMM_SELF, &c, MPI_ERRCODES_IGNORE);
             
             t1.join();
 
-            MPI_Unpublish_name("test_server", MPI_INFO_NULL, portname);
+            MPI_Unpublish_name(PUBLISH_NAME, MPI_INFO_NULL, portname);
             MPI_Close_port(portname);
         }
 

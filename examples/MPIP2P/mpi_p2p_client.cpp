@@ -15,15 +15,14 @@
 #include <mpi.h>
 
 
-#include "../manager.hpp"
-#include "../protocols/mpip2p.hpp"
+#include "../../manager.hpp"
+#include "../../protocols/mpip2p.hpp"
 
 
 int main(int argc, char** argv){
 
     Manager::registerType<ConnMPIP2P>("MPIP2P");
     Manager::init(argc, argv);
-    // Manager::listen("MPIP2P");
 
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -34,10 +33,11 @@ int main(int argc, char** argv){
             if(handle.isValid()) {
                 char buff[5]{'c','i','a','o','\0'};
                 size_t size = 5;
-                // std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+
                 handle.send(buff, size);
-                printf("sent\n");
+                printf("Sent %s\n", buff);
                 handle.close();
+                printf("Connection closed locally, notified the server.\n");
             }
         }
         Manager::endM();

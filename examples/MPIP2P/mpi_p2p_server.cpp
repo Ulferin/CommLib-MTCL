@@ -15,8 +15,8 @@
 #include <mpi.h>
 
 
-#include "../manager.hpp"
-#include "../protocols/mpip2p.hpp"
+#include "../../manager.hpp"
+#include "../../protocols/mpip2p.hpp"
 
 
 int main(int argc, char** argv){
@@ -44,7 +44,7 @@ int main(int argc, char** argv){
                         printf("Connection closed by peer\n");
                     else {
                         std::string res{buff};
-                        printf("%s\n", res.c_str());
+                        printf("Received \"%s\"\n", res.c_str());
                     }
                 }
                 else {
