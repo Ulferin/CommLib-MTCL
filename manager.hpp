@@ -13,7 +13,9 @@
 #include "protocolInterface.hpp"
 
 #define POLLINGTIMEOUT 10
-
+/**
+ * Main class for the library
+*/
 class Manager {
     friend class ConnType;
     // friend void ConnType::addinQ(std::pair<bool, Handle*>);
