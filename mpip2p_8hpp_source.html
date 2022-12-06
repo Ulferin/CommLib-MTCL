@@ -183,7 +183,7 @@ $(function() {
 <div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;   <a class="code" href="classConnMPIP2P.html">ConnMPIP2P</a>(){};</div>
 <div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;   ~<a class="code" href="classConnMPIP2P.html">ConnMPIP2P</a>(){};</div>
 <div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160; </div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;    <span class="keywordtype">int</span> init() {</div>
+<div class="line"><a name="l00115"></a><span class="lineno"><a class="line" href="classConnMPIP2P.html#ac926b83dc6f345b8562d9983baf87c59">  115</a></span>&#160;    <span class="keywordtype">int</span> <a class="code" href="classConnMPIP2P.html#ac926b83dc6f345b8562d9983baf87c59">init</a>() {</div>
 <div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;        <span class="keywordtype">int</span> provided;</div>
 <div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;        <span class="keywordflow">if</span> (MPI_Init_thread(NULL, NULL, MPI_THREAD_MULTIPLE, &amp;provided) != MPI_SUCCESS)</div>
 <div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;            <span class="keywordflow">return</span> -1;</div>
@@ -219,7 +219,7 @@ $(function() {
 <div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;        </div>
 <div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;    }</div>
 <div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160; </div>
-<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;    <span class="keywordtype">int</span> listen(std::string s) {</div>
+<div class="line"><a name="l00151"></a><span class="lineno"><a class="line" href="classConnMPIP2P.html#ac859f3a3c3b7b0b41bfd764e05e49114">  151</a></span>&#160;    <span class="keywordtype">int</span> <a class="code" href="classConnMPIP2P.html#ac859f3a3c3b7b0b41bfd764e05e49114">listen</a>(std::string s) {</div>
 <div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;        MPI_Open_port(MPI_INFO_NULL, portname);</div>
 <div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;        printf(<span class="stringliteral">&quot;Listening on portname: %s\n&quot;</span>, portname);</div>
 <div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160; </div>
@@ -228,7 +228,7 @@ $(function() {
 <div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;        <span class="keywordflow">return</span> 0;</div>
 <div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;    }</div>
 <div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160; </div>
-<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;    <span class="keywordtype">void</span> update() {</div>
+<div class="line"><a name="l00160"></a><span class="lineno"><a class="line" href="classConnMPIP2P.html#a23f15f88c8860700f154f81d0a5ed16a">  160</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classConnMPIP2P.html#a23f15f88c8860700f154f81d0a5ed16a">update</a>() {</div>
 <div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;        <span class="keywordtype">int</span> flag;</div>
 <div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;        MPI_Status status;</div>
 <div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160; </div>
@@ -261,7 +261,7 @@ $(function() {
 <div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;    <span class="comment">/* Probabilmente qui il parametro della connect può diventare la stringa</span></div>
 <div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;<span class="comment">     * della lookup. Attualmente inutilizzato.</span></div>
 <div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;<span class="comment">     */</span></div>
-<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;    <a class="code" href="classHandle.html">Handle</a>* connect(<span class="keyword">const</span> std::string&amp; address) {</div>
+<div class="line"><a name="l00193"></a><span class="lineno"><a class="line" href="classConnMPIP2P.html#a91b9f60c6977dd1f14bd6a4fad5780e3">  193</a></span>&#160;    <a class="code" href="classHandle.html">Handle</a>* <a class="code" href="classConnMPIP2P.html#a91b9f60c6977dd1f14bd6a4fad5780e3">connect</a>(<span class="keyword">const</span> std::string&amp; address) {</div>
 <div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;        MPI_Lookup_name(PUBLISH_NAME, MPI_INFO_NULL, portname);</div>
 <div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;        MPI_Comm server_comm;</div>
 <div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;        MPI_Comm_connect(portname, MPI_INFO_NULL, 0, MPI_COMM_WORLD, &amp;server_comm);</div>
@@ -276,7 +276,7 @@ $(function() {
 <div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;        <span class="keywordflow">return</span> handle;</div>
 <div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;    }</div>
 <div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160; </div>
-<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;    <span class="keywordtype">void</span> notify_close(<a class="code" href="classHandle.html">Handle</a>* h) {</div>
+<div class="line"><a name="l00208"></a><span class="lineno"><a class="line" href="classConnMPIP2P.html#aad1148b600b32dc69e05da6661471aba">  208</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classConnMPIP2P.html#aad1148b600b32dc69e05da6661471aba">notify_close</a>(<a class="code" href="classHandle.html">Handle</a>* h) {</div>
 <div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;        std::unique_lock l(shm);</div>
 <div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;        <a class="code" href="classHandleMPIP2P.html">HandleMPIP2P</a>* handle = <span class="keyword">reinterpret_cast&lt;</span><a class="code" href="classHandleMPIP2P.html">HandleMPIP2P</a>*<span class="keyword">&gt;</span>(h);</div>
 <div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;        <span class="keywordflow">if</span> (!handle-&gt;closing){</div>
@@ -288,12 +288,12 @@ $(function() {
 <div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;    }</div>
 <div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160; </div>
 <div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160; </div>
-<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;    <span class="keywordtype">void</span> notify_yield(<a class="code" href="classHandle.html">Handle</a>* h)<span class="keyword"> override </span>{</div>
+<div class="line"><a name="l00220"></a><span class="lineno"><a class="line" href="classConnMPIP2P.html#a0cc9d20141a0ed1605a3c38a14b5355b">  220</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classConnMPIP2P.html#a0cc9d20141a0ed1605a3c38a14b5355b">notify_yield</a>(<a class="code" href="classHandle.html">Handle</a>* h)<span class="keyword"> override </span>{</div>
 <div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;        std::unique_lock l(shm);</div>
 <div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;        connections[<span class="keyword">reinterpret_cast&lt;</span><a class="code" href="classHandleMPIP2P.html">HandleMPIP2P</a>*<span class="keyword">&gt;</span>(h)] = <span class="keyword">true</span>;</div>
 <div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;    }</div>
 <div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160; </div>
-<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;    <span class="keywordtype">void</span> end() {</div>
+<div class="line"><a name="l00225"></a><span class="lineno"><a class="line" href="classConnMPIP2P.html#a1e76ad80dd1e6f82f1123109917a3f21">  225</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classConnMPIP2P.html#a1e76ad80dd1e6f82f1123109917a3f21">end</a>() {</div>
 <div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;        <span class="keyword">auto</span> modified_connections = connections;</div>
 <div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;        <span class="keywordflow">for</span>(<span class="keyword">auto</span>&amp; [handle, to_manage] : modified_connections)</div>
 <div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;            <span class="keywordflow">if</span>(to_manage)</div>
@@ -325,7 +325,14 @@ $(function() {
 <div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160; </div>
 <div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassConnMPIP2P_html"><div class="ttname"><a href="classConnMPIP2P.html">ConnMPIP2P</a></div><div class="ttdef"><b>Definition:</b> mpip2p.hpp:89</div></div>
-<div class="ttc" id="aclassConnType_html"><div class="ttname"><a href="classConnType.html">ConnType</a></div><div class="ttdef"><b>Definition:</b> protocolInterface.hpp:12</div></div>
+<div class="ttc" id="aclassConnMPIP2P_html_a0cc9d20141a0ed1605a3c38a14b5355b"><div class="ttname"><a href="classConnMPIP2P.html#a0cc9d20141a0ed1605a3c38a14b5355b">ConnMPIP2P::notify_yield</a></div><div class="ttdeci">void notify_yield(Handle *h) override</div><div class="ttdoc">Manage the notification of an Handle object h issuing a yield operation. After this method is complet...</div><div class="ttdef"><b>Definition:</b> mpip2p.hpp:220</div></div>
+<div class="ttc" id="aclassConnMPIP2P_html_a1e76ad80dd1e6f82f1123109917a3f21"><div class="ttname"><a href="classConnMPIP2P.html#a1e76ad80dd1e6f82f1123109917a3f21">ConnMPIP2P::end</a></div><div class="ttdeci">void end()</div><div class="ttdoc">Stop listening for new connections and terminate existing Handles.</div><div class="ttdef"><b>Definition:</b> mpip2p.hpp:225</div></div>
+<div class="ttc" id="aclassConnMPIP2P_html_a23f15f88c8860700f154f81d0a5ed16a"><div class="ttname"><a href="classConnMPIP2P.html#a23f15f88c8860700f154f81d0a5ed16a">ConnMPIP2P::update</a></div><div class="ttdeci">void update()</div><div class="ttdoc">Non-blocking polling over the managed set of Handle objects. It should be used to check whether Handl...</div><div class="ttdef"><b>Definition:</b> mpip2p.hpp:160</div></div>
+<div class="ttc" id="aclassConnMPIP2P_html_a91b9f60c6977dd1f14bd6a4fad5780e3"><div class="ttname"><a href="classConnMPIP2P.html#a91b9f60c6977dd1f14bd6a4fad5780e3">ConnMPIP2P::connect</a></div><div class="ttdeci">Handle * connect(const std::string &amp;address)</div><div class="ttdoc">Create a new Handle object establishing a connection to the remote peer specified by string s.</div><div class="ttdef"><b>Definition:</b> mpip2p.hpp:193</div></div>
+<div class="ttc" id="aclassConnMPIP2P_html_aad1148b600b32dc69e05da6661471aba"><div class="ttname"><a href="classConnMPIP2P.html#aad1148b600b32dc69e05da6661471aba">ConnMPIP2P::notify_close</a></div><div class="ttdeci">void notify_close(Handle *h)</div><div class="ttdoc">Manage the notification of an Handle object h issuing a close operation. The Handle is invalidated an...</div><div class="ttdef"><b>Definition:</b> mpip2p.hpp:208</div></div>
+<div class="ttc" id="aclassConnMPIP2P_html_ac859f3a3c3b7b0b41bfd764e05e49114"><div class="ttname"><a href="classConnMPIP2P.html#ac859f3a3c3b7b0b41bfd764e05e49114">ConnMPIP2P::listen</a></div><div class="ttdeci">int listen(std::string s)</div><div class="ttdoc">Start listening for new connections at the specified address s.</div><div class="ttdef"><b>Definition:</b> mpip2p.hpp:151</div></div>
+<div class="ttc" id="aclassConnMPIP2P_html_ac926b83dc6f345b8562d9983baf87c59"><div class="ttname"><a href="classConnMPIP2P.html#ac926b83dc6f345b8562d9983baf87c59">ConnMPIP2P::init</a></div><div class="ttdeci">int init()</div><div class="ttdoc">Initialize the ConnType object.</div><div class="ttdef"><b>Definition:</b> mpip2p.hpp:115</div></div>
+<div class="ttc" id="aclassConnType_html"><div class="ttname"><a href="classConnType.html">ConnType</a></div><div class="ttdef"><b>Definition:</b> protocolInterface.hpp:10</div></div>
 <div class="ttc" id="aclassHandleMPIP2P_html"><div class="ttname"><a href="classHandleMPIP2P.html">HandleMPIP2P</a></div><div class="ttdef"><b>Definition:</b> mpip2p.hpp:33</div></div>
 <div class="ttc" id="aclassHandle_html"><div class="ttname"><a href="classHandle.html">Handle</a></div><div class="ttdef"><b>Definition:</b> handle.hpp:10</div></div>
 </div><!-- fragment --></div><!-- contents -->

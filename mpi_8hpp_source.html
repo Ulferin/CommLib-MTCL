@@ -150,7 +150,7 @@ $(function() {
 <div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160; </div>
 <div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="keyword">public</span>:</div>
 <div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160; </div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    <span class="keywordtype">int</span> init() {</div>
+<div class="line"><a name="l00082"></a><span class="lineno"><a class="line" href="classConnMPI.html#a3d0020f9c60a805cd012bf230ce56126">   82</a></span>&#160;    <span class="keywordtype">int</span> <a class="code" href="classConnMPI.html#a3d0020f9c60a805cd012bf230ce56126">init</a>() {</div>
 <div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;        <span class="keywordtype">int</span> provided;</div>
 <div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;        <span class="keywordflow">if</span> (MPI_Init_thread(NULL, NULL, MPI_THREAD_MULTIPLE, &amp;provided) != MPI_SUCCESS)</div>
 <div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;            <span class="keywordflow">return</span> -1;</div>
@@ -165,12 +165,12 @@ $(function() {
 <div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;        <span class="keywordflow">return</span> 0;</div>
 <div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;    }</div>
 <div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160; </div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;    <span class="keywordtype">int</span> listen(std::string) {</div>
+<div class="line"><a name="l00097"></a><span class="lineno"><a class="line" href="classConnMPI.html#a5e990a087aa5fdf191351a427153e088">   97</a></span>&#160;    <span class="keywordtype">int</span> <a class="code" href="classConnMPI.html#a5e990a087aa5fdf191351a427153e088">listen</a>(std::string) {</div>
 <div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;        <span class="keywordflow">return</span> 0;</div>
 <div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    }</div>
 <div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160; </div>
 <div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160; </div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    <a class="code" href="classHandle.html">Handle</a>* connect(<span class="keyword">const</span> std::string&amp; dest) {</div>
+<div class="line"><a name="l00102"></a><span class="lineno"><a class="line" href="classConnMPI.html#a23b38202b801f517051a95e76081d1e3">  102</a></span>&#160;    <a class="code" href="classHandle.html">Handle</a>* <a class="code" href="classConnMPI.html#a23b38202b801f517051a95e76081d1e3">connect</a>(<span class="keyword">const</span> std::string&amp; dest) {</div>
 <div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;        <span class="comment">// in pratica questo specifica il tag utilizzato per le comunicazioni successive</span></div>
 <div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;        <span class="comment">// per ora solo tag, poi si vede</span></div>
 <div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160; </div>
@@ -196,7 +196,7 @@ $(function() {
 <div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;    }</div>
 <div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160; </div>
 <div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160; </div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;    <span class="keywordtype">void</span> update() {</div>
+<div class="line"><a name="l00128"></a><span class="lineno"><a class="line" href="classConnMPI.html#ace8c27fcc5650e34a44c7b97b3bda56e">  128</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classConnMPI.html#ace8c27fcc5650e34a44c7b97b3bda56e">update</a>() {</div>
 <div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160; </div>
 <div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;        std::unique_lock ulock(shm, std::defer_lock);</div>
 <div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160; </div>
@@ -263,7 +263,7 @@ $(function() {
 <div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;    }</div>
 <div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160; </div>
 <div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160; </div>
-<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;    <span class="keywordtype">void</span> notify_close(<a class="code" href="classHandle.html">Handle</a>* h) {</div>
+<div class="line"><a name="l00195"></a><span class="lineno"><a class="line" href="classConnMPI.html#a3faa6efb1c8415d3220efae62ffcb594">  195</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classConnMPI.html#a3faa6efb1c8415d3220efae62ffcb594">notify_close</a>(<a class="code" href="classHandle.html">Handle</a>* h) {</div>
 <div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;        <a class="code" href="classHandleMPI.html">HandleMPI</a>* hMPI = <span class="keyword">reinterpret_cast&lt;</span><a class="code" href="classHandleMPI.html">HandleMPI</a>*<span class="keyword">&gt;</span>(h);</div>
 <div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;        <span class="keywordflow">if</span> (!hMPI-&gt;closing){</div>
 <div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;            MPI_Send(&amp;hMPI-&gt;tag, 1, MPI_INT, hMPI-&gt;rank, DISCONNECT_TAG, MPI_COMM_WORLD);</div>
@@ -274,7 +274,7 @@ $(function() {
 <div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;    }</div>
 <div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160; </div>
 <div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160; </div>
-<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;    <span class="keywordtype">void</span> notify_yield(<a class="code" href="classHandle.html">Handle</a>* h) {</div>
+<div class="line"><a name="l00206"></a><span class="lineno"><a class="line" href="classConnMPI.html#aaa0610139e3a821cb44d2b82e6b642ff">  206</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classConnMPI.html#aaa0610139e3a821cb44d2b82e6b642ff">notify_yield</a>(<a class="code" href="classHandle.html">Handle</a>* h) {</div>
 <div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;        <a class="code" href="classHandleMPI.html">HandleMPI</a>* hMPI = <span class="keyword">reinterpret_cast&lt;</span><a class="code" href="classHandleMPI.html">HandleMPI</a>*<span class="keyword">&gt;</span>(h);</div>
 <div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;        <span class="keywordflow">if</span> (hMPI-&gt;closing) {</div>
 <div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;            addinQ({<span class="keyword">false</span>, h});</div>
@@ -285,7 +285,7 @@ $(function() {
 <div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;    }</div>
 <div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160; </div>
 <div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160; </div>
-<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;    <span class="keywordtype">void</span> end() {</div>
+<div class="line"><a name="l00217"></a><span class="lineno"><a class="line" href="classConnMPI.html#a6efbf65b9aa6ceac80bb03cebec2bdbb">  217</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classConnMPI.html#a6efbf65b9aa6ceac80bb03cebec2bdbb">end</a>() {</div>
 <div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;        <span class="keyword">auto</span> modified_connections = connections;</div>
 <div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;        <span class="keywordflow">for</span>(<span class="keyword">auto</span>&amp; [_, handlePair] : modified_connections)</div>
 <div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;            <span class="keywordflow">if</span>(handlePair.second)</div>
@@ -299,7 +299,14 @@ $(function() {
 <div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160; </div>
 <div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassConnMPI_html"><div class="ttname"><a href="classConnMPI.html">ConnMPI</a></div><div class="ttdef"><b>Definition:</b> mpi.hpp:66</div></div>
-<div class="ttc" id="aclassConnType_html"><div class="ttname"><a href="classConnType.html">ConnType</a></div><div class="ttdef"><b>Definition:</b> protocolInterface.hpp:12</div></div>
+<div class="ttc" id="aclassConnMPI_html_a23b38202b801f517051a95e76081d1e3"><div class="ttname"><a href="classConnMPI.html#a23b38202b801f517051a95e76081d1e3">ConnMPI::connect</a></div><div class="ttdeci">Handle * connect(const std::string &amp;dest)</div><div class="ttdoc">Create a new Handle object establishing a connection to the remote peer specified by string s.</div><div class="ttdef"><b>Definition:</b> mpi.hpp:102</div></div>
+<div class="ttc" id="aclassConnMPI_html_a3d0020f9c60a805cd012bf230ce56126"><div class="ttname"><a href="classConnMPI.html#a3d0020f9c60a805cd012bf230ce56126">ConnMPI::init</a></div><div class="ttdeci">int init()</div><div class="ttdoc">Initialize the ConnType object.</div><div class="ttdef"><b>Definition:</b> mpi.hpp:82</div></div>
+<div class="ttc" id="aclassConnMPI_html_a3faa6efb1c8415d3220efae62ffcb594"><div class="ttname"><a href="classConnMPI.html#a3faa6efb1c8415d3220efae62ffcb594">ConnMPI::notify_close</a></div><div class="ttdeci">void notify_close(Handle *h)</div><div class="ttdoc">Manage the notification of an Handle object h issuing a close operation. The Handle is invalidated an...</div><div class="ttdef"><b>Definition:</b> mpi.hpp:195</div></div>
+<div class="ttc" id="aclassConnMPI_html_a5e990a087aa5fdf191351a427153e088"><div class="ttname"><a href="classConnMPI.html#a5e990a087aa5fdf191351a427153e088">ConnMPI::listen</a></div><div class="ttdeci">int listen(std::string)</div><div class="ttdoc">Start listening for new connections at the specified address s.</div><div class="ttdef"><b>Definition:</b> mpi.hpp:97</div></div>
+<div class="ttc" id="aclassConnMPI_html_a6efbf65b9aa6ceac80bb03cebec2bdbb"><div class="ttname"><a href="classConnMPI.html#a6efbf65b9aa6ceac80bb03cebec2bdbb">ConnMPI::end</a></div><div class="ttdeci">void end()</div><div class="ttdoc">Stop listening for new connections and terminate existing Handles.</div><div class="ttdef"><b>Definition:</b> mpi.hpp:217</div></div>
+<div class="ttc" id="aclassConnMPI_html_aaa0610139e3a821cb44d2b82e6b642ff"><div class="ttname"><a href="classConnMPI.html#aaa0610139e3a821cb44d2b82e6b642ff">ConnMPI::notify_yield</a></div><div class="ttdeci">void notify_yield(Handle *h)</div><div class="ttdoc">Manage the notification of an Handle object h issuing a yield operation. After this method is complet...</div><div class="ttdef"><b>Definition:</b> mpi.hpp:206</div></div>
+<div class="ttc" id="aclassConnMPI_html_ace8c27fcc5650e34a44c7b97b3bda56e"><div class="ttname"><a href="classConnMPI.html#ace8c27fcc5650e34a44c7b97b3bda56e">ConnMPI::update</a></div><div class="ttdeci">void update()</div><div class="ttdoc">Non-blocking polling over the managed set of Handle objects. It should be used to check whether Handl...</div><div class="ttdef"><b>Definition:</b> mpi.hpp:128</div></div>
+<div class="ttc" id="aclassConnType_html"><div class="ttname"><a href="classConnType.html">ConnType</a></div><div class="ttdef"><b>Definition:</b> protocolInterface.hpp:10</div></div>
 <div class="ttc" id="aclassHandleMPI_html"><div class="ttname"><a href="classHandleMPI.html">HandleMPI</a></div><div class="ttdef"><b>Definition:</b> mpi.hpp:20</div></div>
 <div class="ttc" id="aclassHandle_html"><div class="ttname"><a href="classHandle.html">Handle</a></div><div class="ttdef"><b>Definition:</b> handle.hpp:10</div></div>
 </div><!-- fragment --></div><!-- contents -->

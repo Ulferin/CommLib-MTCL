@@ -94,7 +94,7 @@ $(function() {
 <div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    <span class="comment">// std::queue&lt;Handle*&gt; handleNew;</span></div>
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160; </div>
 <div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    <span class="keyword">inline</span> <span class="keyword">static</span> std::thread t1;</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    <span class="keyword">inline</span> <span class="keyword">static</span> <span class="keywordtype">bool</span> end;</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    <span class="keyword">inline</span> <span class="keyword">static</span> <span class="keywordtype">bool</span> <a class="code" href="classConnType.html#a4781ceaf1366e6d080092b60affb0a0e">end</a>;</div>
 <div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    <span class="keyword">inline</span> <span class="keyword">static</span> <span class="keywordtype">bool</span> initialized = <span class="keyword">false</span>;</div>
 <div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160; </div>
 <div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    <span class="keyword">inline</span> <span class="keyword">static</span> std::mutex mutex;</div>
@@ -113,8 +113,8 @@ $(function() {
 <div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="keyword">public</span>:</div>
 <div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    <span class="comment">// Manager(int argc, char** argv) : argc(argc), argv(argv) {}</span></div>
 <div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160; </div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    <span class="keyword">static</span> <span class="keywordtype">void</span> init(<span class="keywordtype">int</span> argc, <span class="keywordtype">char</span>** argv) {</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;        end = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code" href="classConnType.html#a04b73c9c5f1971dce1d50bc9d2932ba8">init</a>(<span class="keywordtype">int</span> argc, <span class="keywordtype">char</span>** argv) {</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;        <a class="code" href="classConnType.html#a4781ceaf1366e6d080092b60affb0a0e">end</a> = <span class="keyword">false</span>;</div>
 <div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;        initialized = <span class="keyword">true</span>;</div>
 <div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;        <span class="keywordflow">for</span> (<span class="keyword">auto</span> &amp;el : protocolsMap) {</div>
 <div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;            el.second-&gt;init();</div>
@@ -126,7 +126,7 @@ $(function() {
 <div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160; </div>
 <div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    <span class="comment">// non posso fare più niente con la libreria</span></div>
 <div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="keyword">static</span> <span class="keywordtype">void</span> endM() {</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;        end = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;        <a class="code" href="classConnType.html#a4781ceaf1366e6d080092b60affb0a0e">end</a> = <span class="keyword">true</span>;</div>
 <div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;        t1.join();</div>
 <div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160; </div>
 <div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;        <span class="keywordflow">for</span> (<span class="keyword">auto</span> [_,v]: protocolsMap) {</div>
@@ -149,7 +149,7 @@ $(function() {
 <div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160; </div>
 <div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160; </div>
 <div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    <span class="keyword">static</span> <span class="keywordtype">void</span> getReadyBackend() {</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        <span class="keywordflow">while</span>(!end){</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        <span class="keywordflow">while</span>(!<a class="code" href="classConnType.html#a4781ceaf1366e6d080092b60affb0a0e">end</a>){</div>
 <div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;            <span class="keywordflow">for</span>(<span class="keyword">auto</span>&amp; [prot, conn] : protocolsMap) {</div>
 <div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;                conn-&gt;update();</div>
 <div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;            }</div>
@@ -176,13 +176,13 @@ $(function() {
 <div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160; </div>
 <div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    }</div>
 <div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160; </div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;    <span class="keyword">static</span> <span class="keywordtype">int</span> listen(std::string s) {</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;    <span class="keyword">static</span> <span class="keywordtype">int</span> <a class="code" href="classConnType.html#ad2c79c4f2ea8946bc65a25165c2d3682">listen</a>(std::string s) {</div>
 <div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;        std::string protocol = s.substr(0, s.find(<span class="stringliteral">&quot;:&quot;</span>));</div>
 <div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;        <span class="keywordflow">return</span> protocolsMap[protocol]-&gt;listen(s.substr(protocol.length(), s.length()));</div>
 <div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;    }</div>
 <div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160; </div>
 <div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160; </div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;    <span class="keyword">static</span> <a class="code" href="classHandleUser.html">HandleUser</a> connect(std::string s) {</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;    <span class="keyword">static</span> <a class="code" href="classHandleUser.html">HandleUser</a> <a class="code" href="classConnType.html#a6bdb335c3f00795a1e4d8b25ba3127f4">connect</a>(std::string s) {</div>
 <div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160; </div>
 <div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;        <span class="comment">// TCP:host:port || MPI:rank:tag</span></div>
 <div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;        std::string protocol = s.substr(0, s.find(<span class="stringliteral">&quot;:&quot;</span>));</div>
@@ -205,7 +205,11 @@ $(function() {
 <div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;};</div>
 <div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160; </div>
 <div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="ttc" id="aclassConnType_html"><div class="ttname"><a href="classConnType.html">ConnType</a></div><div class="ttdef"><b>Definition:</b> protocolInterface.hpp:12</div></div>
+<div class="ttc" id="aclassConnType_html"><div class="ttname"><a href="classConnType.html">ConnType</a></div><div class="ttdef"><b>Definition:</b> protocolInterface.hpp:10</div></div>
+<div class="ttc" id="aclassConnType_html_a04b73c9c5f1971dce1d50bc9d2932ba8"><div class="ttname"><a href="classConnType.html#a04b73c9c5f1971dce1d50bc9d2932ba8">ConnType::init</a></div><div class="ttdeci">virtual int init()=0</div><div class="ttdoc">Initialize the ConnType object.</div></div>
+<div class="ttc" id="aclassConnType_html_a4781ceaf1366e6d080092b60affb0a0e"><div class="ttname"><a href="classConnType.html#a4781ceaf1366e6d080092b60affb0a0e">ConnType::end</a></div><div class="ttdeci">virtual void end()=0</div><div class="ttdoc">Stop listening for new connections and terminate existing Handles.</div></div>
+<div class="ttc" id="aclassConnType_html_a6bdb335c3f00795a1e4d8b25ba3127f4"><div class="ttname"><a href="classConnType.html#a6bdb335c3f00795a1e4d8b25ba3127f4">ConnType::connect</a></div><div class="ttdeci">virtual Handle * connect(const std::string &amp;s)=0</div><div class="ttdoc">Create a new Handle object establishing a connection to the remote peer specified by string s.</div></div>
+<div class="ttc" id="aclassConnType_html_ad2c79c4f2ea8946bc65a25165c2d3682"><div class="ttname"><a href="classConnType.html#ad2c79c4f2ea8946bc65a25165c2d3682">ConnType::listen</a></div><div class="ttdeci">virtual int listen(std::string s)=0</div><div class="ttdoc">Start listening for new connections at the specified address s.</div></div>
 <div class="ttc" id="aclassHandleUser_html"><div class="ttname"><a href="classHandleUser.html">HandleUser</a></div><div class="ttdef"><b>Definition:</b> handleUser.hpp:7</div></div>
 <div class="ttc" id="aclassHandle_html"><div class="ttname"><a href="classHandle.html">Handle</a></div><div class="ttdef"><b>Definition:</b> handle.hpp:10</div></div>
 <div class="ttc" id="aclassManager_html"><div class="ttname"><a href="classManager.html">Manager</a></div><div class="ttdef"><b>Definition:</b> manager.hpp:19</div></div>

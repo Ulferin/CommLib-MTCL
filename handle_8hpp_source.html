@@ -99,12 +99,12 @@ $(function() {
 <div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="keyword">private</span>:</div>
 <div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    <span class="keywordtype">void</span> yield() {</div>
 <div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;        setBusy(<span class="keyword">false</span>);</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;        parent-&gt;notify_yield(<span class="keyword">this</span>);</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;        parent-&gt;<a class="code" href="classConnType.html#a87399427d64cc8f2355d4f1eb325ec71">notify_yield</a>(<span class="keyword">this</span>);</div>
 <div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    }</div>
 <div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160; </div>
 <div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    <span class="keywordtype">void</span> close(){</div>
 <div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;        closed = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;        parent-&gt;notify_close(<span class="keyword">this</span>);</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;        parent-&gt;<a class="code" href="classConnType.html#acc40e536c6fcb25fa4833320f4097a41">notify_close</a>(<span class="keyword">this</span>);</div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;        <span class="keywordflow">if</span> (counter == 0) </div>
 <div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;            <span class="keyword">delete</span> <span class="keyword">this</span>;</div>
 <div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    }</div>
@@ -132,7 +132,9 @@ $(function() {
 <div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;}</div>
 <div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160; </div>
 <div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="ttc" id="aclassConnType_html"><div class="ttname"><a href="classConnType.html">ConnType</a></div><div class="ttdef"><b>Definition:</b> protocolInterface.hpp:12</div></div>
+<div class="ttc" id="aclassConnType_html"><div class="ttname"><a href="classConnType.html">ConnType</a></div><div class="ttdef"><b>Definition:</b> protocolInterface.hpp:10</div></div>
+<div class="ttc" id="aclassConnType_html_a87399427d64cc8f2355d4f1eb325ec71"><div class="ttname"><a href="classConnType.html#a87399427d64cc8f2355d4f1eb325ec71">ConnType::notify_yield</a></div><div class="ttdeci">virtual void notify_yield(Handle *h)=0</div><div class="ttdoc">Manage the notification of an Handle object h issuing a yield operation. After this method is complet...</div></div>
+<div class="ttc" id="aclassConnType_html_acc40e536c6fcb25fa4833320f4097a41"><div class="ttname"><a href="classConnType.html#acc40e536c6fcb25fa4833320f4097a41">ConnType::notify_close</a></div><div class="ttdeci">virtual void notify_close(Handle *h)=0</div><div class="ttdoc">Manage the notification of an Handle object h issuing a close operation. The Handle is invalidated an...</div></div>
 <div class="ttc" id="aclassHandleUser_html"><div class="ttname"><a href="classHandleUser.html">HandleUser</a></div><div class="ttdef"><b>Definition:</b> handleUser.hpp:7</div></div>
 <div class="ttc" id="aclassHandle_html"><div class="ttname"><a href="classHandle.html">Handle</a></div><div class="ttdef"><b>Definition:</b> handle.hpp:10</div></div>
 <div class="ttc" id="aclassManager_html"><div class="ttname"><a href="classManager.html">Manager</a></div><div class="ttdef"><b>Definition:</b> manager.hpp:19</div></div>
