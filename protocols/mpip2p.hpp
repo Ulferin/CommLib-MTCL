@@ -163,7 +163,16 @@ public:
 
         std::unique_lock ulock(shm);
         for (auto& [handle, to_manage] : connections) {
-            MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, handle->server_comm, &flag, &status);
+            if(to_manage) {
+                MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, handle->server_comm, &flag, &status);
+
+                if(flag) {
+                    to_manage = false;
+                    addinQ({false, handle});
+                }
+            }
+
+            MPI_Iprobe(MPI_ANY_SOURCE, DISCONNECTTAG, handle->server_comm, &flag, &status);
             if(flag) {
                 if(status.MPI_TAG == DISCONNECTTAG) {
                     int headersLen;
@@ -175,9 +184,7 @@ public:
                         throw;
                     }
                     handle->closing = true;
-                }
 
-                if(to_manage) {
                     to_manage = false;
                     addinQ({false, handle});
                 }
