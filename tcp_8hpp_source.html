@@ -130,12 +130,12 @@ $(function() {
 <div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    <span class="keywordtype">int</span> fd; <span class="comment">// File descriptor of the connection represented by this Handle</span></div>
 <div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    <a class="code" href="classHandleTCP.html">HandleTCP</a>(<a class="code" href="classConnType.html">ConnType</a>* parent, <span class="keywordtype">int</span> fd, <span class="keywordtype">bool</span> busy=<span class="keyword">true</span>) : <a class="code" href="classHandle.html">Handle</a>(parent, busy), fd(fd) {}</div>
 <div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160; </div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    ssize_t send(<span class="keyword">const</span> <span class="keywordtype">char</span>* buff, <span class="keywordtype">size_t</span> size) {</div>
+<div class="line"><a name="l00062"></a><span class="lineno"><a class="line" href="classHandleTCP.html#aa98ddb8e0a689064ad2429b3a325749c">   62</a></span>&#160;    ssize_t <a class="code" href="classHandleTCP.html#aa98ddb8e0a689064ad2429b3a325749c">send</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* buff, <span class="keywordtype">size_t</span> size) {</div>
 <div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;        <span class="keywordflow">return</span> writen(fd, buff, size); <span class="comment">//modificare in writen</span></div>
 <div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    }</div>
 <div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160; </div>
 <div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160; </div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    ssize_t receive(<span class="keywordtype">char</span>* buff, <span class="keywordtype">size_t</span> size) {</div>
+<div class="line"><a name="l00067"></a><span class="lineno"><a class="line" href="classHandleTCP.html#aadd33b9bceb0c66ec843c29d9ea664e3">   67</a></span>&#160;    ssize_t <a class="code" href="classHandleTCP.html#aadd33b9bceb0c66ec843c29d9ea664e3">receive</a>(<span class="keywordtype">char</span>* buff, <span class="keywordtype">size_t</span> size) {</div>
 <div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;        <span class="keywordflow">return</span> readn(fd, buff, size); <span class="comment">// modificare in readn</span></div>
 <div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    }</div>
 <div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160; </div>
@@ -385,7 +385,9 @@ $(function() {
 <div class="ttc" id="aclassConnTcp_html_ae003a9c8a10c2b54aa34f0fa0165077f"><div class="ttname"><a href="classConnTcp.html#ae003a9c8a10c2b54aa34f0fa0165077f">ConnTcp::update</a></div><div class="ttdeci">void update()</div><div class="ttdoc">Non-blocking polling over the managed set of Handle objects. It should be used to check whether Handl...</div><div class="ttdef"><b>Definition:</b> tcp.hpp:164</div></div>
 <div class="ttc" id="aclassConnType_html"><div class="ttname"><a href="classConnType.html">ConnType</a></div><div class="ttdef"><b>Definition:</b> protocolInterface.hpp:10</div></div>
 <div class="ttc" id="aclassHandleTCP_html"><div class="ttname"><a href="classHandleTCP.html">HandleTCP</a></div><div class="ttdef"><b>Definition:</b> tcp.hpp:26</div></div>
-<div class="ttc" id="aclassHandle_html"><div class="ttname"><a href="classHandle.html">Handle</a></div><div class="ttdef"><b>Definition:</b> handle.hpp:10</div></div>
+<div class="ttc" id="aclassHandleTCP_html_aa98ddb8e0a689064ad2429b3a325749c"><div class="ttname"><a href="classHandleTCP.html#aa98ddb8e0a689064ad2429b3a325749c">HandleTCP::send</a></div><div class="ttdeci">ssize_t send(const char *buff, size_t size)</div><div class="ttdoc">Send size byte of buff to the remote end connected to this Handle. Wait until all data has been sent ...</div><div class="ttdef"><b>Definition:</b> tcp.hpp:62</div></div>
+<div class="ttc" id="aclassHandleTCP_html_aadd33b9bceb0c66ec843c29d9ea664e3"><div class="ttname"><a href="classHandleTCP.html#aadd33b9bceb0c66ec843c29d9ea664e3">HandleTCP::receive</a></div><div class="ttdeci">ssize_t receive(char *buff, size_t size)</div><div class="ttdoc">Read at most size byte into buff from the remote end connected to this Handle. Wait until all size da...</div><div class="ttdef"><b>Definition:</b> tcp.hpp:67</div></div>
+<div class="ttc" id="aclassHandle_html"><div class="ttname"><a href="classHandle.html">Handle</a></div><div class="ttdef"><b>Definition:</b> handle.hpp:9</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

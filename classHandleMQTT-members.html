@@ -62,21 +62,25 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="headertitle">
-<div class="title">HandleTCP Member List</div>  </div>
+<div class="title">HandleMQTT Member List</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>This is the complete list of members for <a class="el" href="classHandleTCP.html">HandleTCP</a>, including all inherited members.</p>
+<p>This is the complete list of members for <a class="el" href="classHandleMQTT.html">HandleMQTT</a>, including all inherited members.</p>
 <table class="directory">
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>closed</b> (defined in <a class="el" href="classHandle.html">Handle</a>)</td><td class="entry"><a class="el" href="classHandle.html">Handle</a></td><td class="entry"><span class="mlabel">protected</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>fd</b> (defined in <a class="el" href="classHandleTCP.html">HandleTCP</a>)</td><td class="entry"><a class="el" href="classHandleTCP.html">HandleTCP</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>Handle</b>(ConnType *parent, bool busy=false) (defined in <a class="el" href="classHandle.html">Handle</a>)</td><td class="entry"><a class="el" href="classHandle.html">Handle</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>HandleTCP</b>(ConnType *parent, int fd, bool busy=true) (defined in <a class="el" href="classHandleTCP.html">HandleTCP</a>)</td><td class="entry"><a class="el" href="classHandleTCP.html">HandleTCP</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>client</b> (defined in <a class="el" href="classHandleMQTT.html">HandleMQTT</a>)</td><td class="entry"><a class="el" href="classHandleMQTT.html">HandleMQTT</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>closed</b> (defined in <a class="el" href="classHandle.html">Handle</a>)</td><td class="entry"><a class="el" href="classHandle.html">Handle</a></td><td class="entry"><span class="mlabel">protected</span></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>closing</b> (defined in <a class="el" href="classHandleMQTT.html">HandleMQTT</a>)</td><td class="entry"><a class="el" href="classHandleMQTT.html">HandleMQTT</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>Handle</b>(ConnType *parent, bool busy=false) (defined in <a class="el" href="classHandle.html">Handle</a>)</td><td class="entry"><a class="el" href="classHandle.html">Handle</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>HandleMQTT</b>(ConnType *parent, mqtt::client *client, mqtt::string out_topic, mqtt::string in_topic, bool busy=true) (defined in <a class="el" href="classHandleMQTT.html">HandleMQTT</a>)</td><td class="entry"><a class="el" href="classHandleMQTT.html">HandleMQTT</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>in_topic</b> (defined in <a class="el" href="classHandleMQTT.html">HandleMQTT</a>)</td><td class="entry"><a class="el" href="classHandleMQTT.html">HandleMQTT</a></td><td class="entry"></td></tr>
   <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>isBusy</b>() (defined in <a class="el" href="classHandle.html">Handle</a>)</td><td class="entry"><a class="el" href="classHandle.html">Handle</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr><td class="entry"><a class="el" href="classHandleTCP.html#aadd33b9bceb0c66ec843c29d9ea664e3">receive</a>(char *buff, size_t size)</td><td class="entry"><a class="el" href="classHandleTCP.html">HandleTCP</a></td><td class="entry"><span class="mlabel">inline</span><span class="mlabel">virtual</span></td></tr>
-  <tr class="even"><td class="entry"><a class="el" href="classHandleTCP.html#aa98ddb8e0a689064ad2429b3a325749c">send</a>(const char *buff, size_t size)</td><td class="entry"><a class="el" href="classHandleTCP.html">HandleTCP</a></td><td class="entry"><span class="mlabel">inline</span><span class="mlabel">virtual</span></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>messages</b> (defined in <a class="el" href="classHandleMQTT.html">HandleMQTT</a>)</td><td class="entry"><a class="el" href="classHandleMQTT.html">HandleMQTT</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>out_topic</b> (defined in <a class="el" href="classHandleMQTT.html">HandleMQTT</a>)</td><td class="entry"><a class="el" href="classHandleMQTT.html">HandleMQTT</a></td><td class="entry"></td></tr>
+  <tr><td class="entry"><a class="el" href="classHandleMQTT.html#a6f04868c34771fd2fdcef7c82dcb0108">receive</a>(char *buff, size_t size)</td><td class="entry"><a class="el" href="classHandleMQTT.html">HandleMQTT</a></td><td class="entry"><span class="mlabel">inline</span><span class="mlabel">virtual</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="classHandleMQTT.html#ac96774835293691040caa0de4c1369cf">send</a>(const char *buff, size_t size)</td><td class="entry"><a class="el" href="classHandleMQTT.html">HandleMQTT</a></td><td class="entry"><span class="mlabel">inline</span><span class="mlabel">virtual</span></td></tr>
   <tr bgcolor="#f0f0f0"><td class="entry"><b>~Handle</b>() (defined in <a class="el" href="classHandle.html">Handle</a>)</td><td class="entry"><a class="el" href="classHandle.html">Handle</a></td><td class="entry"><span class="mlabel">inline</span><span class="mlabel">virtual</span></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>~HandleTCP</b>() (defined in <a class="el" href="classHandleTCP.html">HandleTCP</a>)</td><td class="entry"><a class="el" href="classHandleTCP.html">HandleTCP</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>~HandleMQTT</b>() (defined in <a class="el" href="classHandleMQTT.html">HandleMQTT</a>)</td><td class="entry"><a class="el" href="classHandleMQTT.html">HandleMQTT</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
 </table></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

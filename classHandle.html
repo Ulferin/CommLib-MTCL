@@ -78,7 +78,8 @@ Inheritance diagram for Handle:</div>
   <map id="Handle_map" name="Handle_map">
 <area href="classHandleMPI.html" alt="HandleMPI" shape="rect" coords="0,56,97,80"/>
 <area href="classHandleMPIP2P.html" alt="HandleMPIP2P" shape="rect" coords="107,56,204,80"/>
-<area href="classHandleTCP.html" alt="HandleTCP" shape="rect" coords="214,56,311,80"/>
+<area href="classHandleMQTT.html" alt="HandleMQTT" shape="rect" coords="214,56,311,80"/>
+<area href="classHandleTCP.html" alt="HandleTCP" shape="rect" coords="321,56,418,80"/>
   </map>
 </div></div>
 <table class="memberdecls">
@@ -87,11 +88,11 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a9f7c0e14de23d8e4bfad9fd28352fb47"><td class="memItemLeft" align="right" valign="top"><a id="a9f7c0e14de23d8e4bfad9fd28352fb47"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>Handle</b> (<a class="el" href="classConnType.html">ConnType</a> *parent, bool busy=false)</td></tr>
 <tr class="separator:a9f7c0e14de23d8e4bfad9fd28352fb47"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0e811bceaa343c9dfa420bf34b9aca19"><td class="memItemLeft" align="right" valign="top"><a id="a0e811bceaa343c9dfa420bf34b9aca19"></a>
-virtual ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>send</b> (const char *buff, size_t size)=0</td></tr>
+<tr class="memitem:a0e811bceaa343c9dfa420bf34b9aca19"><td class="memItemLeft" align="right" valign="top">virtual ssize_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHandle.html#a0e811bceaa343c9dfa420bf34b9aca19">send</a> (const char *buff, size_t size)=0</td></tr>
+<tr class="memdesc:a0e811bceaa343c9dfa420bf34b9aca19"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send <b>size</b> byte of <b>buff</b> to the remote end connected to this <a class="el" href="classHandle.html">Handle</a>. Wait until all data has been sent or until the peer close the connection.  <a href="classHandle.html#a0e811bceaa343c9dfa420bf34b9aca19">More...</a><br /></td></tr>
 <tr class="separator:a0e811bceaa343c9dfa420bf34b9aca19"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9540acbbb317a3204cdd2d66ebb7e856"><td class="memItemLeft" align="right" valign="top"><a id="a9540acbbb317a3204cdd2d66ebb7e856"></a>
-virtual ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>receive</b> (char *buff, size_t size)=0</td></tr>
+<tr class="memitem:a9540acbbb317a3204cdd2d66ebb7e856"><td class="memItemLeft" align="right" valign="top">virtual ssize_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHandle.html#a9540acbbb317a3204cdd2d66ebb7e856">receive</a> (char *buff, size_t size)=0</td></tr>
+<tr class="memdesc:a9540acbbb317a3204cdd2d66ebb7e856"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read at most <b>size</b> byte into <b>buff</b> from the remote end connected to this <a class="el" href="classHandle.html">Handle</a>. Wait until all <b>size</b> data has been received or until the connection is closed by the remote peer.  <a href="classHandle.html#a9540acbbb317a3204cdd2d66ebb7e856">More...</a><br /></td></tr>
 <tr class="separator:a9540acbbb317a3204cdd2d66ebb7e856"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af7dfe15ddd01953e0bd24fa7d1b8ff7b"><td class="memItemLeft" align="right" valign="top"><a id="af7dfe15ddd01953e0bd24fa7d1b8ff7b"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>isBusy</b> ()</td></tr>
@@ -115,6 +116,103 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>Manager</b></td></tr
 class&#160;</td><td class="memItemRight" valign="bottom"><b>ConnType</b></td></tr>
 <tr class="separator:aa1301868855ff45ebf2bc6734a388429"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="a9540acbbb317a3204cdd2d66ebb7e856"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9540acbbb317a3204cdd2d66ebb7e856">&#9670;&nbsp;</a></span>receive()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual ssize_t Handle::receive </td>
+          <td>(</td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>buff</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Read at most <b>size</b> byte into <b>buff</b> from the remote end connected to this <a class="el" href="classHandle.html">Handle</a>. Wait until all <b>size</b> data has been received or until the connection is closed by the remote peer. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">buff</td><td></td></tr>
+    <tr><td class="paramname">size</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>the amount of bytes read upon success, <code>0</code> in case the connection has been closed, <code>-1</code> if an error occurred. If <code>-1</code> is returned, the error can be checked via <b>errno</b>. </dd></dl>
+
+<p>Implemented in <a class="el" href="classHandleTCP.html#aadd33b9bceb0c66ec843c29d9ea664e3">HandleTCP</a>, <a class="el" href="classHandleMQTT.html#a6f04868c34771fd2fdcef7c82dcb0108">HandleMQTT</a>, <a class="el" href="classHandleMPIP2P.html#a6bec526ef5454671ea3930a9adac89b0">HandleMPIP2P</a>, and <a class="el" href="classHandleMPI.html#afbb3a1141381ab4643caae2de201b726">HandleMPI</a>.</p>
+
+</div>
+</div>
+<a id="a0e811bceaa343c9dfa420bf34b9aca19"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0e811bceaa343c9dfa420bf34b9aca19">&#9670;&nbsp;</a></span>send()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual ssize_t Handle::send </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>buff</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Send <b>size</b> byte of <b>buff</b> to the remote end connected to this <a class="el" href="classHandle.html">Handle</a>. Wait until all data has been sent or until the peer close the connection. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">buff</td><td>data to be sent </td></tr>
+    <tr><td class="paramname">size</td><td>amount of bytes to send </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>number of bytes sent to the remote end or <code>-1</code> if an error occurred. If <code>-1</code> is returned, the error can be checked via <b>errno</b>. </dd></dl>
+
+<p>Implemented in <a class="el" href="classHandleTCP.html#aa98ddb8e0a689064ad2429b3a325749c">HandleTCP</a>, <a class="el" href="classHandleMQTT.html#ac96774835293691040caa0de4c1369cf">HandleMQTT</a>, <a class="el" href="classHandleMPIP2P.html#aad5d9a7a4ad85f24a611d738814f423b">HandleMPIP2P</a>, and <a class="el" href="classHandleMPI.html#ad82a8590c3800bb0e3a88760e680f323">HandleMPI</a>.</p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li><a class="el" href="handle_8hpp_source.html">handle.hpp</a></li>
 </ul>

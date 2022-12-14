@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['update_17',['update',['../classConnType.html#ab0c4b273a40106d0090243e615dcb73f',1,'ConnType::update()'],['../classConnMPI.html#ace8c27fcc5650e34a44c7b97b3bda56e',1,'ConnMPI::update()'],['../classConnMPIP2P.html#a23f15f88c8860700f154f81d0a5ed16a',1,'ConnMPIP2P::update()'],['../classConnTcp.html#ae003a9c8a10c2b54aa34f0fa0165077f',1,'ConnTcp::update()']]]
+  ['receive_19',['receive',['../classHandle.html#a9540acbbb317a3204cdd2d66ebb7e856',1,'Handle::receive()'],['../classHandleMPI.html#afbb3a1141381ab4643caae2de201b726',1,'HandleMPI::receive()'],['../classHandleMPIP2P.html#a6bec526ef5454671ea3930a9adac89b0',1,'HandleMPIP2P::receive()'],['../classHandleMQTT.html#a6f04868c34771fd2fdcef7c82dcb0108',1,'HandleMQTT::receive()'],['../classHandleTCP.html#aadd33b9bceb0c66ec843c29d9ea664e3',1,'HandleTCP::receive()']]]
 ];

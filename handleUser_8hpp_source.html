@@ -104,26 +104,26 @@ $(function() {
 <div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;        <span class="keywordflow">return</span> newConnection;</div>
 <div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    }</div>
 <div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160; </div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    ssize_t send(<span class="keyword">const</span> <span class="keywordtype">char</span>* buff, <span class="keywordtype">size_t</span> size){</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    ssize_t send(<span class="keyword">const</span> <span class="keywordtype">char</span>* buff, <span class="keywordtype">size_t</span> size) {</div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;        newConnection = <span class="keyword">false</span>;</div>
 <div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;        <span class="keywordflow">if</span> (!realHandle || realHandle-&gt;closed) {</div>
 <div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;            errno = EBADF; <span class="comment">// the &quot;communicator&quot; is not valid or closed</span></div>
 <div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;            <span class="keywordflow">return</span> -1;</div>
 <div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;        }</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;        <span class="keywordflow">return</span> realHandle-&gt;send(buff, size);</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;        <span class="keywordflow">return</span> realHandle-&gt;<a class="code" href="classHandle.html#a0e811bceaa343c9dfa420bf34b9aca19">send</a>(buff, size);</div>
 <div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    }</div>
 <div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160; </div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    ssize_t read(<span class="keywordtype">char</span>* buff, <span class="keywordtype">size_t</span> size){</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    ssize_t read(<span class="keywordtype">char</span>* buff, <span class="keywordtype">size_t</span> size) {</div>
 <div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;        newConnection = <span class="keyword">false</span>;</div>
 <div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;        <span class="keywordflow">if</span> (!isReadable){</div>
 <div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;            errno = EINVAL; <span class="comment">// unable to read from the &quot;communicator&quot;</span></div>
 <div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;            <span class="keywordflow">return</span> -1;</div>
 <div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;        }</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;        <span class="keywordflow">if</span> (!realHandle || realHandle-&gt;closed){</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;        <span class="keywordflow">if</span> (!realHandle || realHandle-&gt;closed) {</div>
 <div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;            errno = EBADF; <span class="comment">// the &quot;communicator&quot; is not valid or closed</span></div>
 <div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;            <span class="keywordflow">return</span> -1;</div>
 <div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        };</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;        <span class="keywordflow">return</span> realHandle-&gt;receive(buff, size);</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;        <span class="keywordflow">return</span> realHandle-&gt;<a class="code" href="classHandle.html#a9540acbbb317a3204cdd2d66ebb7e856">receive</a>(buff, size);</div>
 <div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    }</div>
 <div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160; </div>
 <div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    <span class="keywordtype">void</span> close(){</div>
@@ -144,7 +144,9 @@ $(function() {
 <div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassConnType_html"><div class="ttname"><a href="classConnType.html">ConnType</a></div><div class="ttdef"><b>Definition:</b> protocolInterface.hpp:10</div></div>
 <div class="ttc" id="aclassHandleUser_html"><div class="ttname"><a href="classHandleUser.html">HandleUser</a></div><div class="ttdef"><b>Definition:</b> handleUser.hpp:7</div></div>
-<div class="ttc" id="aclassHandle_html"><div class="ttname"><a href="classHandle.html">Handle</a></div><div class="ttdef"><b>Definition:</b> handle.hpp:10</div></div>
+<div class="ttc" id="aclassHandle_html"><div class="ttname"><a href="classHandle.html">Handle</a></div><div class="ttdef"><b>Definition:</b> handle.hpp:9</div></div>
+<div class="ttc" id="aclassHandle_html_a0e811bceaa343c9dfa420bf34b9aca19"><div class="ttname"><a href="classHandle.html#a0e811bceaa343c9dfa420bf34b9aca19">Handle::send</a></div><div class="ttdeci">virtual ssize_t send(const char *buff, size_t size)=0</div><div class="ttdoc">Send size byte of buff to the remote end connected to this Handle. Wait until all data has been sent ...</div></div>
+<div class="ttc" id="aclassHandle_html_a9540acbbb317a3204cdd2d66ebb7e856"><div class="ttname"><a href="classHandle.html#a9540acbbb317a3204cdd2d66ebb7e856">Handle::receive</a></div><div class="ttdeci">virtual ssize_t receive(char *buff, size_t size)=0</div><div class="ttdoc">Read at most size byte into buff from the remote end connected to this Handle. Wait until all size da...</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
