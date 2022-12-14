@@ -55,7 +55,7 @@ int main(int argc, char** argv){
 
         // Qui la stringa è formattata come MQTT:manager_remoto:nome_coda
         // dove nome_coda è quella che verrà usata per tutte le comunicazioni
-        // sulla connessione logica creata dalla connectz
+        // sulla connessione logica creata dalla connect
         auto handle = Manager::connect(std::string("MQTT:0:").append(queue_id));
 
         std::string message("Sending something to ");

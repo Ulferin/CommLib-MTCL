@@ -54,9 +54,6 @@ public:
             out_topic(out_topic), in_topic(in_topic) {}
 
     ssize_t send(const char* buff, size_t size) {
-
-        /*TODO: check su closing prima o dopo c'è sempre il problema che potremmo
-                fare una send */
         if(closing) {
             errno = ECONNRESET;
             return -1;
@@ -111,7 +108,9 @@ public:
     }
 
 
-    ~HandleMQTT() {}
+    ~HandleMQTT() {
+        delete client;
+    }
 
 };
 
@@ -144,7 +143,6 @@ private:
 
 protected:
     
-    // TODO: clean this up when closing
     mqtt::client *newConnClient;
 
     std::atomic<bool> finalized = false;
@@ -305,6 +303,8 @@ public:
         for(auto& [handle, to_manage] : modified_connections)
             if(to_manage)
                 setAsClosed(handle);
+
+        delete newConnClient;
     }
 
 };
