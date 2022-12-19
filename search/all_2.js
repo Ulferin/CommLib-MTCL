@@ -1,9 +1,4 @@
 var searchData=
 [
-  ['handle_7',['Handle',['../classHandle.html',1,'']]],
-  ['handlempi_8',['HandleMPI',['../classHandleMPI.html',1,'']]],
-  ['handlempip2p_9',['HandleMPIP2P',['../classHandleMPIP2P.html',1,'']]],
-  ['handlemqtt_10',['HandleMQTT',['../classHandleMQTT.html',1,'']]],
-  ['handletcp_11',['HandleTCP',['../classHandleTCP.html',1,'']]],
-  ['handleuser_12',['HandleUser',['../classHandleUser.html',1,'']]]
+  ['end_8',['end',['../classConnType.html#a4781ceaf1366e6d080092b60affb0a0e',1,'ConnType::end()'],['../classConnMPI.html#a6efbf65b9aa6ceac80bb03cebec2bdbb',1,'ConnMPI::end()'],['../classConnMPIP2P.html#a1e76ad80dd1e6f82f1123109917a3f21',1,'ConnMPIP2P::end()'],['../classConnMQTT.html#a263dd19033bbd220f10f83241740877a',1,'ConnMQTT::end()'],['../classConnTcp.html#a20d0571ae4673f70372ef24b9b29332f',1,'ConnTcp::end()']]]
 ];
