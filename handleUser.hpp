@@ -6,6 +6,7 @@
 
 class HandleUser {
     friend class ConnType;
+    friend class Manager;
     Handle * realHandle;
     bool isReadable = false;
     bool newConnection = true;
@@ -35,6 +36,10 @@ public:
 
     bool isNewConnection() {
         return newConnection;
+    }
+
+    size_t getID(){
+        return (size_t)realHandle;
     }
 
     ssize_t send(const char* buff, size_t size){

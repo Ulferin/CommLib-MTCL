@@ -11,7 +11,7 @@ class ConnType {
 
     friend class Manager;
     friend class Handle;
-
+    std::string instanceName;
 protected:
 
     std::function<void(std::pair<bool, Handle*>)> addinQ;

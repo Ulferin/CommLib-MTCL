@@ -83,6 +83,9 @@ public:
         return HandleUser(el.second, true, el.first);
     }
 
+    static HandleUser* getNextPtr() {
+        return new HandleUser(std::move(getNext()));
+    }
 
     static void getReadyBackend() {
         while(!end){
@@ -109,6 +112,8 @@ public:
         protocolsMap[protocol]->addinQ = [&](std::pair<bool, Handle*> item){
             Manager::addinQ(item);
         };
+
+        protocolsMap[protocol]->instanceName = protocol;
 
     }
 
@@ -137,6 +142,11 @@ public:
         return HandleUser(nullptr, true, true);
             
     };
+
+
+    static std::string getTypeOfHandle(HandleUser& h){
+        return h.realHandle->parent->instanceName;
+    }
 
 };
 
