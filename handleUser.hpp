@@ -51,13 +51,13 @@ public:
         return realHandle->send(buff, size);
     }
 
-    ssize_t read(char* buff, size_t size){
+    ssize_t read(char* buff, size_t size) {
         newConnection = false;
         if (!isReadable){
             errno = EINVAL; // unable to read from the "communicator"
             return -1;
         }
-        if (!realHandle || realHandle->closed){
+        if (!realHandle || realHandle->closed) {
             errno = EBADF; // the "communicator" is not valid or closed
             return -1;
         };

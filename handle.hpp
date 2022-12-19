@@ -5,7 +5,6 @@
 #include <atomic>
 
 #include "protocolInterface.hpp"
-// class ConnType;
 
 class Handle {
     friend class HandleUser;
@@ -48,7 +47,31 @@ private:
 
 public:
     Handle(ConnType* parent, bool busy=false) : parent(parent), busy(busy) {}
-    virtual ssize_t send(const char* buff, size_t size) = 0; // ritorno (INT) 0 ok, -1 errore 
+
+    /**
+     * @brief Send \b size byte of \b buff to the remote end connected to this
+     * Handle. Wait until all data has been sent or until the peer close the
+     * connection.
+     * 
+     * @param buff data to be sent
+     * @param size amount of bytes to send
+     * @return number of bytes sent to the remote end or \c -1 if an error occurred.
+     * If \c -1 is returned, the error can be checked via \b errno.
+     */
+    virtual ssize_t send(const char* buff, size_t size) = 0; // ritorno (INT) 0 ok, -1 errore
+
+
+    /**
+     * @brief Read at most \b size byte into \b buff from the remote end connected
+     * to this Handle. Wait until all \b size data has been received or until the
+     * connection is closed by the remote peer.
+     * 
+     * @param buff 
+     * @param size 
+     * @return the amount of bytes read upon success, \c 0 in case the connection
+     * has been closed, \c -1 if an error occurred. If \c -1 is returned, the error
+     * can be checked via \b errno.
+     */
     virtual ssize_t receive(char* buff, size_t size) = 0; //
     
     bool isBusy() {
