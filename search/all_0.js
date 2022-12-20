@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['bimap_0',['bimap',['../classbimap.html',1,'']]]
+  ['dependencies_0',['Dependencies',['../index.html',1,'']]]
 ];
