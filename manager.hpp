@@ -54,7 +54,7 @@ private:
 public:
 
     /**
-     * Initialization of the manager. Required to use the library
+     * \brief Initialization of the manager. Required to use the library
      * 
      * Internally this call create the backend thread that performs the polling over all registered protocols.
      * 
@@ -73,7 +73,7 @@ public:
     }
 
     /**
-     * Finalize the manger closing all the pending open connections.
+     * \brief Finalize the manger closing all the pending open connections.
      * 
      * From this point on, no more interaction with the library and the manager should be done. Ideally this call must be invoked just before closing the application (return statement of the main function).
      * Internally it stops the polling thread started at the initialization and call the end method of each registered protocols.
@@ -88,7 +88,7 @@ public:
     }
 
     /**
-     * Get an handle that is ready to receive.
+     * \brief Get an handle that is ready to receive.
      * 
      * The function is blocking in case there are no ready handles. The returned value is and Handle passed by value.
     */
@@ -106,14 +106,14 @@ public:
     }
 
     /**
-     * Same as getNext method but return an handle stored in heap.
+     * \brief Same as getNext method but return an handle stored in heap.
     */
     static HandleUser* getNextPtr() {
         return new HandleUser(std::move(getNext()));
     }
 
     /**
-     * Create an instance of the protocol implementation.
+     * \brief Create an instance of the protocol implementation.
      * 
      * @tparam class representing the implementation of the protocol being register
      * @param name string representing the name of the instance of the protocol
@@ -136,7 +136,7 @@ public:
     }
 
     /**
-     * Listen on incoming connections.
+     * \brief Listen on incoming connections.
      * 
      * Perform the listen operation on a particular protocol and parameters given by the string passed as parameter.
      * 
@@ -148,7 +148,7 @@ public:
     }
 
     /**
-     * Connect to a peer
+     * \brief Connect to a peer
      * 
      * Connect to a peer following the URI passed in the connection string or following a label defined in the configuration file.
      * The URI is of the form "PROTOCOL:param:param: ... : param"
@@ -173,7 +173,7 @@ public:
     };
 
     /**
-     * Given an handle return the name of the protocol instance given in phase of registration.
+     * \brief Given an handle return the name of the protocol instance given in phase of registration.
      * 
      * Example. If TCP implementation was registered as Manager::registerType<ConnTcp>("EX"), this function on handles produced by that kind of protocol instance will return "EX".
     */
