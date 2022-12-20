@@ -18,16 +18,11 @@
 */
 class Manager {
     friend class ConnType;
-    // friend void ConnType::addinQ(std::pair<bool, Handle*>);
-
-    /*NOTE: anche questa deve essere sincronizzata dato che l'utente potrebbe
-            voler aggiungere un protocollo dopo l'inizializzazione della libreria*/
+   
     inline static std::map<std::string, std::shared_ptr<ConnType>> protocolsMap;
     
     //TODO: probabilmente una std::deque sincronizzata
     inline static std::queue<std::pair<bool, Handle*>> handleReady;
-    // std::queue<Handle*> handleready;
-    // std::queue<Handle*> handleNew;
 
     inline static std::thread t1;
     inline static bool end;
@@ -46,10 +41,27 @@ private:
         condv.notify_one();
     }
 
-public:
-    // Manager(int argc, char** argv) : argc(argc), argv(argv) {}
+    static void getReadyBackend() {
+        while(!end){
+            for(auto& [prot, conn] : protocolsMap) {
+                conn->update();
+            }
+            // To prevent starvation of application threads
+            std::this_thread::sleep_for(std::chrono::milliseconds(POLLINGTIMEOUT));
+        }
+    }
 
-    static void init(int argc, char** argv) {
+public:
+
+    /**
+     * Initialization of the manager. Required to use the library
+     * 
+     * Internally this call create the backend thread that performs the polling over all registered protocols.
+     * 
+     * @param configFile (Optional) Path of the configuration file for the application. It can be a unique configuration file containing both architecture information and application specific information (deployment included).
+     * @param configFile2 (Optional) Additional configuration file in the case architecture information and application information are splitted in two separate files. 
+    */
+    static void init(std::string configFile1 = "", std::string configFile2 = "") {
         end = false;
         initialized = true;
         for (auto &el : protocolsMap) {
@@ -60,8 +72,13 @@ public:
 
     }
 
-    // non posso fare più niente con la libreria
-    static void endM() {
+    /**
+     * Finalize the manger closing all the pending open connections.
+     * 
+     * From this point on, no more interaction with the library and the manager should be done. Ideally this call must be invoked just before closing the application (return statement of the main function).
+     * Internally it stops the polling thread started at the initialization and call the end method of each registered protocols.
+    */
+    static void finalize() {
         end = true;
         t1.join();
 
@@ -70,6 +87,11 @@ public:
         }
     }
 
+    /**
+     * Get an handle that is ready to receive.
+     * 
+     * The function is blocking in case there are no ready handles. The returned value is and Handle passed by value.
+    */
     static HandleUser getNext() {
         std::unique_lock lk(mutex);
         condv.wait(lk, [&]{return !handleReady.empty();});
@@ -83,23 +105,21 @@ public:
         return HandleUser(el.second, true, el.first);
     }
 
+    /**
+     * Same as getNext method but return an handle stored in heap.
+    */
     static HandleUser* getNextPtr() {
         return new HandleUser(std::move(getNext()));
     }
 
-    static void getReadyBackend() {
-        while(!end){
-            for(auto& [prot, conn] : protocolsMap) {
-                conn->update();
-            }
-            // To prevent starvation of application threads
-            std::this_thread::sleep_for(std::chrono::milliseconds(POLLINGTIMEOUT));
-        }
-    }
-
-
+    /**
+     * Create an instance of the protocol implementation.
+     * 
+     * @tparam class representing the implementation of the protocol being register
+     * @param name string representing the name of the instance of the protocol
+    */
     template<typename T>
-    static void registerType(std::string protocol){
+    static void registerType(std::string name){
         static_assert(std::is_base_of<ConnType,T>::value, "Not a ConnType subclass");
         if(initialized) {
             printf("Manager was already initialized. Impossible to register new protocols.\n");
@@ -108,24 +128,34 @@ public:
 
         protocolsMap[protocol] = std::shared_ptr<T>(new T);
         
-
         protocolsMap[protocol]->addinQ = [&](std::pair<bool, Handle*> item){
             Manager::addinQ(item);
         };
 
         protocolsMap[protocol]->instanceName = protocol;
-
     }
 
+    /**
+     * Listen on incoming connections.
+     * 
+     * Perform the listen operation on a particular protocol and parameters given by the string passed as parameter.
+     * 
+     * @param connectionString URI containing parameters to perform the effective listen operation
+    */
     static int listen(std::string s) {
         std::string protocol = s.substr(0, s.find(":"));
         return protocolsMap[protocol]->listen(s.substr(protocol.length(), s.length()));
     }
 
-
+    /**
+     * Connect to a peer
+     * 
+     * Connect to a peer following the URI passed in the connection string or following a label defined in the configuration file.
+     * The URI is of the form "PROTOCOL:param:param: ... : param"
+     * 
+     * @param connectionString URI of the peer or label 
+    */
     static HandleUser connect(std::string s) {
-
-        // TCP:host:port || MPI:rank:tag
         std::string protocol = s.substr(0, s.find(":"));
         printf("[MANAGER]Received connection request for: %s\n", protocol.c_str());
         if(protocol.empty())
@@ -140,10 +170,13 @@ public:
         }
 
         return HandleUser(nullptr, true, true);
-            
     };
 
-
+    /**
+     * Given an handle return the name of the protocol instance given in phase of registration.
+     * 
+     * Example. If TCP implementation was registered as Manager::registerType<ConnTcp>("EX"), this function on handles produced by that kind of protocol instance will return "EX".
+    */
     static std::string getTypeOfHandle(HandleUser& h){
         return h.realHandle->parent->instanceName;
     }
