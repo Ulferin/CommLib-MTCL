@@ -1,9 +1,11 @@
-#include "../../manager.hpp"
-#include "../../protocols/mpi.hpp"
 #include <iostream>
+#include "../commlib.hpp"
 
 int main(int argc, char** argv){
-    Manager::registerType<ConnMPI>("MPI");
+#ifdef EXCLUDE_MPI
+    std::cerr << "You must compile with MPI support this test\n";
+    return 1;
+#endif
     Manager::init(argc, argv);
 
     int rank;
@@ -28,11 +30,10 @@ int main(int argc, char** argv){
         auto h = Manager::getNext();
         if (h.isNewConnection()) {
             std::cout << "1: Received new connection!\n";
-            h.close();
-            std::cout << "1: connection closed!\n";
-            // should be an error here!
             h.send("a", 1);
             std::cout << "1: sended a\n";
+            h.close();
+            std::cout << "1: connection closed!\n";
         }
     }
 
