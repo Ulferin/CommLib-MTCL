@@ -12,6 +12,13 @@
 #include "handleUser.hpp"
 #include "protocolInterface.hpp"
 
+#include "rapidjson/rapidjson.h"
+
+#ifndef EXCLUDE_MPI
+#include "protocols/mpi.hpp"
+#include "protocols/mpip2p.hpp"
+#endif
+
 #define POLLINGTIMEOUT 10
 /**
  * Main class for the library
@@ -51,6 +58,10 @@ private:
         }
     }
 
+    static void parseConfig(std::string& f){
+
+    }
+
 public:
 
     /**
@@ -64,6 +75,15 @@ public:
     static void init(std::string configFile1 = "", std::string configFile2 = "") {
         end = false;
         initialized = true;
+
+        if (!configFile1.empty()) parseConfig(configFile1);
+        if (!configFile2.empty()) parseConfig(configFile2);
+
+#ifndef EXCLUDE_MPI
+        registerType<ConnMPI>("MPI");
+#endif
+
+
         for (auto &el : protocolsMap) {
             el.second->init();
         }
@@ -115,7 +135,7 @@ public:
     /**
      * \brief Create an instance of the protocol implementation.
      * 
-     * @tparam class representing the implementation of the protocol being register
+     * @tparam T class representing the implementation of the protocol being register
      * @param name string representing the name of the instance of the protocol
     */
     template<typename T>

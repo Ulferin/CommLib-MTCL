@@ -7,7 +7,7 @@ int main(int argc, char** argv){
     return 1;
 #endif
 
-    Manager::init(argc, argv);
+    Manager::init();
 
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -40,7 +40,7 @@ int main(int argc, char** argv){
     }
 
 
-    Manager::endM();
+    Manager::finalize();
     return 0;
 
 }
