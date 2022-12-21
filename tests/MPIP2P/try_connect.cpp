@@ -1,12 +1,3 @@
-/*
- * 1- Activate ompi-server and server executable: refer to mpi_p2p_server.cpp
- *
- * 2- run client:
- *      $ mpirun -n 1 --ompi-server file:uri_addr.txt ./mpi_p2p_ping.out "MPIP2P:<portname>"
- * 
- */
-
-
 #include <iostream>
 #include <string>
 #include <optional>
@@ -34,22 +25,15 @@ int main(int argc, char** argv){
                 char buff[5]{'p','i','n','g','\0'};
                 ssize_t size = 5;
 
-                handle.send(buff, size);
-                printf("Sent: \"%s\"\n", buff);
+                printf("Trying to read\n");
+                ssize_t count = 0;
+                if((count = handle.read(buff, size)) == 0) {
+                // if((count = handle.send(buff, size)) == 0) {
+                    printf("Server dropped connection\n");
+                    handle.close();
+                }                
             }
             // implicit handle.yield() when going out of scope
-        }
-
-        auto handle = Manager::getNext();
-        char buff[5];
-        ssize_t size = 5;
-        
-        if(handle.read(buff, size) == 0)
-            printf("Connection has been closed by the server.\n");
-        else {
-            printf("Received: \"%s\"\n", buff);
-            handle.close();
-            printf("Connection closed locally, notified the server.\n");
         }
         Manager::endM();
     }

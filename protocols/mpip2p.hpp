@@ -87,12 +87,9 @@ public:
 
 
 class ConnMPIP2P : public ConnType {
-private:
-    // enum class ConnEvent {close, yield};
-
 protected:
-    std::string address;
     char portname[MPI_MAX_PORT_NAME];
+    std::string published_label;
     
     int rank;
     std::atomic<bool> finalized = false;
@@ -128,10 +125,10 @@ public:
         return 0;
     }
 
-    void _listen(char* portname) {
+    void _listen(char* portname, const char* published_label) {
 
         listening = true;
-        MPI_Publish_name(PUBLISH_NAME, MPI_INFO_NULL, portname);
+        MPI_Publish_name(published_label, MPI_INFO_NULL, portname);
         
         while(!finalized) {
             MPI_Comm client;
@@ -149,10 +146,11 @@ public:
     }
 
     int listen(std::string s) {
+        published_label = s;
         MPI_Open_port(MPI_INFO_NULL, portname);
-        printf("Listening on portname: %s\n", portname);
+        printf("Listening on portname: %s - with label: %s\n", portname, s.c_str()+1);
 
-        t1 = std::thread([&](){_listen(portname);});
+        t1 = std::thread([&](){_listen(portname, published_label.c_str()+1);});
 
         return 0;
     }
@@ -194,11 +192,9 @@ public:
         return;        
     }
 
-    /* Probabilmente qui il parametro della connect può diventare la stringa
-     * della lookup. Attualmente inutilizzato.
-     */
+
     Handle* connect(const std::string& address) {
-        MPI_Lookup_name(PUBLISH_NAME, MPI_INFO_NULL, portname);
+        MPI_Lookup_name(address.c_str(), MPI_INFO_NULL, portname);
         MPI_Comm server_comm;
         MPI_Comm_connect(portname, MPI_INFO_NULL, 0, MPI_COMM_WORLD, &server_comm);
         printf("[MPIP2P]Connecting to: %s\n", portname);

@@ -1,5 +1,5 @@
-#ifndef MPIP2P_HPP
-#define MPIP2P_HPP
+#ifndef MQTT_HPP
+#define MQTT_HPP
 
 #include <unistd.h>
 #include <sys/socket.h>
@@ -100,7 +100,7 @@ public:
                 return 0;
             }
 
-            std::this_thread::sleep_for(std::chrono::microseconds(MQTT_SLEEP));
+            std::this_thread::sleep_for(std::chrono::milliseconds(MQTT_SLEEP));
 
         }
         
@@ -161,6 +161,9 @@ public:
     }
 
     int listen(std::string s) {
+        /*TODO: in MQTT abbiamo bisogno di definire un ID univoco per questo
+                nodo. Probabilmente si risolve costruendo il manager_name
+                con il nome dell'app dal file di configurazione*/
         manager_name = s.substr(s.find(":")+1, s.length());
         new_connection_topic = manager_name + CONNECTION_TOPIC;
         
@@ -181,10 +184,13 @@ public:
 			std::cout << "Session already present. Skipping subscribe." << std::endl;
 		}
         
+        listening = true;
         return 0;
     }
 
     void update() {
+        if(!listening) return;
+
         std::unique_lock ulock(shm, std::defer_lock);
 
         // Consume messages
