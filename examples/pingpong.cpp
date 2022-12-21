@@ -71,14 +71,11 @@ int main(int argc, char** argv){
     std::string listen_str{};
     std::string connect_str{};
 
-/*TODO: MPIP2P needs a string to specify the label published in the ompi-server
-        needed to establish connections. Right now this is hardcoded in MPIP2P
-        protocol implementation
-*/
+
 #ifdef PROT_MPIP2P
     Manager::registerType<ConnMPIP2P>("MPIP2P");
-    listen_str = {"MPIP2P"};
-    connect_str = {"MPIP2P"};
+    listen_str = {"MPIP2P:published_label"};
+    connect_str = {"MPIP2P:published_label"};
 #endif
 
 #ifdef PROT_TCP
