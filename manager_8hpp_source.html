@@ -135,9 +135,9 @@ $(function() {
 <div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;        <span class="keywordflow">if</span> (!configFile1.empty()) parseConfig(configFile1);</div>
 <div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;        <span class="keywordflow">if</span> (!configFile2.empty()) parseConfig(configFile2);</div>
 <div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160; </div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="preprocessor">#ifndef EXCLUDE_MPI</span></div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;        registerType&lt;ConnMPI&gt;(<span class="stringliteral">&quot;MPI&quot;</span>);</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="comment">// #ifndef EXCLUDE_MPI</span></div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="comment">//         registerType&lt;ConnMPI&gt;(&quot;MPI&quot;);</span></div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="comment">// #endif</span></div>
 <div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160; </div>
 <div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160; </div>
 <div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;        <span class="keywordflow">for</span> (<span class="keyword">auto</span> &amp;el : protocolsMap) {</div>
@@ -182,13 +182,13 @@ $(function() {
 <div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;            <span class="keywordflow">return</span>;</div>
 <div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;        }</div>
 <div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160; </div>
-<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;        protocolsMap[protocol] = std::shared_ptr&lt;T&gt;(<span class="keyword">new</span> T);</div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;        protocolsMap[name] = std::shared_ptr&lt;T&gt;(<span class="keyword">new</span> T);</div>
 <div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;        </div>
-<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;        protocolsMap[protocol]-&gt;addinQ = [&amp;](std::pair&lt;bool, Handle*&gt; item){</div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;        protocolsMap[name]-&gt;addinQ = [&amp;](std::pair&lt;bool, Handle*&gt; item){</div>
 <div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;            Manager::addinQ(item);</div>
 <div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;        };</div>
 <div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160; </div>
-<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;        protocolsMap[protocol]-&gt;instanceName = protocol;</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;        protocolsMap[name]-&gt;instanceName = name;</div>
 <div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;    }</div>
 <div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160; </div>
 <div class="line"><a name="l00165"></a><span class="lineno"><a class="line" href="classManager.html#a2a7189d20e75807bfc390de8fb6b2409">  165</a></span>&#160;    <span class="keyword">static</span> <span class="keywordtype">int</span> <a class="code" href="classManager.html#a2a7189d20e75807bfc390de8fb6b2409">listen</a>(std::string s) {</div>
