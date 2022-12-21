@@ -79,9 +79,9 @@ public:
         if (!configFile1.empty()) parseConfig(configFile1);
         if (!configFile2.empty()) parseConfig(configFile2);
 
-#ifndef EXCLUDE_MPI
-        registerType<ConnMPI>("MPI");
-#endif
+// #ifndef EXCLUDE_MPI
+//         registerType<ConnMPI>("MPI");
+// #endif
 
 
         for (auto &el : protocolsMap) {
@@ -146,13 +146,13 @@ public:
             return;
         }
 
-        protocolsMap[protocol] = std::shared_ptr<T>(new T);
+        protocolsMap[name] = std::shared_ptr<T>(new T);
         
-        protocolsMap[protocol]->addinQ = [&](std::pair<bool, Handle*> item){
+        protocolsMap[name]->addinQ = [&](std::pair<bool, Handle*> item){
             Manager::addinQ(item);
         };
 
-        protocolsMap[protocol]->instanceName = protocol;
+        protocolsMap[name]->instanceName = name;
     }
 
     /**
