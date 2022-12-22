@@ -32,7 +32,7 @@
  * MQTT:
  *  - start mosquitto broker: mosquitto -v
  *  - start pingpong server: ./pingpong 0
- *  - start pingpong client: ./pingpong 1 0:app0
+ *  - start pingpong client: ./pingpong 1
  * 
  * MPIP2P:
  *  - start ompi-server: ompi-server --report-uri uri_file.txt --no-daemonize
@@ -50,14 +50,7 @@
 #include <optional>
 #include <thread>
 
-#include <mpi.h>
-
-
-#include "../manager.hpp"
-#include "../protocols/tcp.hpp"
-#include "../protocols/mpi.hpp"
-#include "../protocols/mqtt.hpp"
-#include "../protocols/mpip2p.hpp"
+#include "../commlib.hpp"
 
 #define MAX_NUM_CLIENTS 4
 
@@ -73,13 +66,11 @@ int main(int argc, char** argv){
 
 
 #ifdef PROT_MPIP2P
-    Manager::registerType<ConnMPIP2P>("MPIP2P");
     listen_str = {"MPIP2P:published_label"};
     connect_str = {"MPIP2P:published_label"};
 #endif
 
 #ifdef PROT_TCP
-    Manager::registerType<ConnTcp>("TCP");
     listen_str = {"TCP:0.0.0.0:42000"};
     connect_str = {"TCP:0.0.0.0:42000"};
 #endif
@@ -88,14 +79,12 @@ int main(int argc, char** argv){
         to make the Manager happy in this "protocol-agnostic" example.
 */
 #ifdef PROT_MPI
-    Manager::registerType<ConnMPI>("MPI");
     listen_str = {"MPI:"};
     connect_str = {"MPI:0:5"};
 #endif
 
 
 #ifdef PROT_MQTT
-    Manager::registerType<ConnMQTT>("MQTT");
     listen_str = {"MQTT:0"};
     connect_str = {"MQTT:0:app0"};
 #endif

@@ -14,15 +14,7 @@
  */
 
 #include <iostream>
-#include <string>
-#include <optional>
-#include <thread>
-
-#include <mpi.h>
-
-
-#include "../manager.hpp"
-#include "../protocols/tcp.hpp"
+#include "../commlib.hpp"
 
 int main(int argc, char** argv){
 
@@ -31,13 +23,11 @@ int main(int argc, char** argv){
         return 1;
     }
 
-    Manager::registerType<ConnTcp>("TCP");
-
     int rank = atoi(argv[1]);
-
+    Manager::init();
     // Listening for new connection, sending hello message to connected client
     if(rank == 0) {
-        Manager::init();
+        
         Manager::listen("TCP:0.0.0.0:42000");
 
         auto handle = Manager::getNext();
@@ -55,8 +45,6 @@ int main(int argc, char** argv){
     }
     // Connecting to server, waiting for hello message
     else {
-
-        Manager::init();
         
         auto handle = Manager::connect("TCP:0.0.0.0:42000");
         if(handle.isValid()) {

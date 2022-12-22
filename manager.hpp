@@ -11,12 +11,21 @@
 #include "handle.hpp"
 #include "handleUser.hpp"
 #include "protocolInterface.hpp"
+#include "protocols/tcp.hpp"
 
+#ifdef ENABLE_CONFIGFILE
 #include "rapidjson/rapidjson.h"
+#include <rapidjson/istreamwrapper.h>
+#include <rapidjson/document.h>
+#endif
 
-#ifndef EXCLUDE_MPI
+#ifdef ENABLE_MPI
 #include "protocols/mpi.hpp"
 #include "protocols/mpip2p.hpp"
+#endif
+
+#ifdef ENABLE_MQTT
+#include "protocols/mqtt.hpp"
 #endif
 
 #define POLLINGTIMEOUT 10
@@ -30,6 +39,11 @@ class Manager {
     
     //TODO: probabilmente una std::deque sincronizzata
     inline static std::queue<std::pair<bool, Handle*>> handleReady;
+
+#ifdef ENABLE_CONFIGFILE
+    inline static std::map<std::string, std::pair<std::vector<std::string>, std::vector<std::string>>> pools;
+    inline static std::map<std::string, std::tuple<std::string, std::vector<std::string>, std::vector<std::string>>> components;
+#endif
 
     inline static std::thread t1;
     inline static bool end;
@@ -58,9 +72,53 @@ private:
         }
     }
 
-    static void parseConfig(std::string& f){
-
+#ifdef ENABLE_CONFIGFILE
+    static std::vector<std::string> JSONArray2VectorString(rapidjson::GenericArray& arr){
+        std::vector<std::string> output;
+        for(auto& e : arr)  
+            output.push_back(e.GetString());
+        
+        return output;
     }
+    
+    static void parseConfig(std::string& f){
+        std::ifstream ifs(f);
+        if ( !ifs.is_open() )
+        {
+            std::cerr << "Could not open file for reading!\n";
+            return EXIT_FAILURE;
+        }
+        rapidjson::IStreamWrapper isw { ifs };
+        rapidjson::Document doc;
+        doc.ParseStream( isw );
+
+        assert(doc.IsObject());
+
+        if (doc.HasMember("pools") && doc["pools"].IsArray())
+            // architecture 
+            for (auto& c : doc["pools"].GetArray())
+                if (c.IsObject() && c.HasMember("name") && c["name"].IsString() && c.HasMember("proxyIPs") && c["proxyIPs"].IsArray() && c.HasMember("nodes") && c["nodes"].IsArray()){
+                    auto name = c["name"].GetString();
+                    if (pools.count(name)) 
+                        std::cerr << "One pool element is duplicate on configuration file. I'm overwriting it.\n";
+                    
+                    pools[name] = std::make_pair(JSONArray2VectorString(c["proxyIPs"].GetArray()), JSONArray2VectorString(c["nodes"].GetArray()));
+                } else 
+                        std::cerr << "A object in pool is not well defined. Skipping it.\n";
+        
+        if (doc.HasMember("components") && doc["components"].IsArray())
+            // components
+            for(auto& c : doc["components"].GetArray())
+                if (c.IsObject() && c.HasMember("name") && c["name"].IsString() && c.HasMember("host") && c["host"].IsString() && c.HasMember("protocols") && c["protocols"].IsArray()){
+                    auto name = c["name"].GetString();
+                    if (components.count(name))
+                        std::cerr << "One component element is duplicate on configuration file. I'm overwriting it.\n";
+                    auto listen_strs = (c.HasMember("listen-endpoints") && c["listen-endpoints"].IsArray()) ? JSONArray2VectorString(c["listen-endpoints"].GetArray()) : {};
+                    components[name] = std::make_tuple(c["host"].GetString(), JSONArray2VectorString(c["protocols"].GetArray(), listen_strs);
+                } else
+                    std::cerr << "A object in components is not well defined. Skipping it.\n";
+    }
+#endif
 
 public:
 
@@ -76,18 +134,30 @@ public:
         end = false;
         initialized = true;
 
+        registerType<ConnTcp>("TCP");
+
+#ifdef ENABLE_MPI
+        registerType<ConnMPI>("MPI");
+        registerType<ConnMPIP2P>("MPIP2P");
+#endif
+
+#ifdef ENABLE_MQTT
+        registerType<ConnMQTT>("MQTT");
+#endif
+
+#ifdef ENABLE_CONFIGFILE
         if (!configFile1.empty()) parseConfig(configFile1);
         if (!configFile2.empty()) parseConfig(configFile2);
-
-// #ifndef EXCLUDE_MPI
-//         registerType<ConnMPI>("MPI");
-// #endif
-
+#else
+     // 
+#endif
 
         for (auto &el : protocolsMap) {
             el.second->init();
         }
-
+#ifdef ENABLE_CONFIGFILE
+        // listen da file di config se ce ne sono
+#endif
         t1 = std::thread([&](){Manager::getReadyBackend();});
 
     }
@@ -128,9 +198,9 @@ public:
     /**
      * \brief Same as getNext method but return an handle stored in heap.
     */
-    static HandleUser* getNextPtr() {
+    /*static HandleUser* getNextPtr() {
         return new HandleUser(std::move(getNext()));
-    }
+    }*/
 
     /**
      * \brief Create an instance of the protocol implementation.
@@ -164,6 +234,12 @@ public:
     */
     static int listen(std::string s) {
         std::string protocol = s.substr(0, s.find(":"));
+        
+        if (!protocolsMap.count(protocol)){
+            std::cerr << "Protocol not registered in the runtime!\n";
+            return -1;
+        }
+
         return protocolsMap[protocol]->listen(s.substr(protocol.length(), s.length()));
     }
 
