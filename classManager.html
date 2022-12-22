@@ -83,13 +83,9 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a59a45bb53f976859df1eda9b0bf3c94d"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classHandleUser.html">HandleUser</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classManager.html#a59a45bb53f976859df1eda9b0bf3c94d">getNext</a> ()</td></tr>
 <tr class="memdesc:a59a45bb53f976859df1eda9b0bf3c94d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get an handle that is ready to receive.  <a href="classManager.html#a59a45bb53f976859df1eda9b0bf3c94d">More...</a><br /></td></tr>
 <tr class="separator:a59a45bb53f976859df1eda9b0bf3c94d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad0adb3616cc3ab80abb67cb03cde9d84"><td class="memItemLeft" align="right" valign="top"><a id="ad0adb3616cc3ab80abb67cb03cde9d84"></a>
-static <a class="el" href="classHandleUser.html">HandleUser</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classManager.html#ad0adb3616cc3ab80abb67cb03cde9d84">getNextPtr</a> ()</td></tr>
-<tr class="memdesc:ad0adb3616cc3ab80abb67cb03cde9d84"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as getNext method but return an handle stored in heap. <br /></td></tr>
-<tr class="separator:ad0adb3616cc3ab80abb67cb03cde9d84"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af0d2ab1463c5877b990cd7cd3fcb986d"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
 <tr class="memitem:af0d2ab1463c5877b990cd7cd3fcb986d"><td class="memTemplItemLeft" align="right" valign="top">static void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classManager.html#af0d2ab1463c5877b990cd7cd3fcb986d">registerType</a> (std::string name)</td></tr>
-<tr class="memdesc:af0d2ab1463c5877b990cd7cd3fcb986d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an instance of the protocol implementation.  <a href="classManager.html#af0d2ab1463c5877b990cd7cd3fcb986d">More...</a><br /></td></tr>
+<tr class="memdesc:af0d2ab1463c5877b990cd7cd3fcb986d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as getNext method but return an handle stored in heap.  <a href="classManager.html#af0d2ab1463c5877b990cd7cd3fcb986d">More...</a><br /></td></tr>
 <tr class="separator:af0d2ab1463c5877b990cd7cd3fcb986d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2a7189d20e75807bfc390de8fb6b2409"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classManager.html#a2a7189d20e75807bfc390de8fb6b2409">listen</a> (std::string s)</td></tr>
 <tr class="memdesc:a2a7189d20e75807bfc390de8fb6b2409"><td class="mdescLeft">&#160;</td><td class="mdescRight">Listen on incoming connections.  <a href="classManager.html#a2a7189d20e75807bfc390de8fb6b2409">More...</a><br /></td></tr>
@@ -226,7 +222,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>ConnType</b></td></t
 </div><div class="memdoc">
 
 <p>Given an handle return the name of the protocol instance given in phase of registration. </p>
-<p>Example. If TCP implementation was registered as <a class="el" href="classManager.html#af0d2ab1463c5877b990cd7cd3fcb986d" title="Create an instance of the protocol implementation.">Manager::registerType&lt;ConnTcp&gt;</a>("EX"), this function on handles produced by that kind of protocol instance will return "EX". </p>
+<p>Example. If TCP implementation was registered as <a class="el" href="classManager.html#af0d2ab1463c5877b990cd7cd3fcb986d" title="Same as getNext method but return an handle stored in heap.">Manager::registerType&lt;ConnTcp&gt;</a>("EX"), this function on handles produced by that kind of protocol instance will return "EX". </p>
 
 </div>
 </div>
@@ -337,7 +333,8 @@ template&lt;typename T &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Create an instance of the protocol implementation. </p>
+<p>Same as getNext method but return an handle stored in heap. </p>
+<p>Create an instance of the protocol implementation.</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">T</td><td>class representing the implementation of the protocol being register </td></tr>
