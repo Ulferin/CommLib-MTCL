@@ -53,7 +53,7 @@ public:
             Handle(parent, busy), client(client),
             out_topic(out_topic), in_topic(in_topic) {}
 
-    ssize_t send(const char* buff, size_t size) {
+    ssize_t send(const void* buff, size_t size) {
         if(closing) {
             errno = ECONNRESET;
             return -1;
@@ -64,7 +64,7 @@ public:
         return size;
     }
 
-    ssize_t receive(char* buff, size_t size){
+    ssize_t receive(void* buff, size_t size){
 
         while(true) {
             if(!messages.empty()) {

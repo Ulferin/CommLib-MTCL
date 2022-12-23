@@ -8,13 +8,12 @@ else
 endif
 
 ifdef TPROTOCOL
-	TPROTO +=-DPROT_${TPROTOCOL}
-else
-	TPROTO +=-DPROTO_TCP
+	TPROTO +=-DENABLE_${TPROTOCOL}
 endif
 
 ifeq ($(findstring MPI,$(TPROTOCOL)),MPI)
-	CXX 	= mpicxx
+	CXX 	  = mpicxx
+	CXXFLAGS += $(TPROTO)
 ifdef MPI_HOME
 	INCS   += `pkg-config --cflags-only-I $(MPI_HOME)/lib/pkgconfig/ompi-cxx.pc`
 	LIBS   += `pkg-config --libs $(MPI_HOME)/lib/pkgconfig/ompi-cxx.pc`
@@ -47,8 +46,8 @@ TARGET               = $(SOURCES:.cpp=)
 all: $(TARGET)
 
 clean: 
-	-rm -fr *.o *~
+	-rm -fr $(TARGET) *~
 cleanall: clean
-	-rm -fr $(TARGET) *.d ./socket*
+	-rm -fr *.d 
 
 include $(SOURCES:.cpp=.d)

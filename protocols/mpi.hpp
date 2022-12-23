@@ -25,7 +25,7 @@ public:
     int tag;
     HandleMPI(ConnType* parent, int rank, int tag, bool busy=true): Handle(parent,busy), rank(rank), tag(tag){}
 
-    ssize_t send(const char* buff, size_t size) {
+    ssize_t send(const void* buff, size_t size) {
         MPI_Request request;
         if (MPI_Isend(buff, size, MPI_BYTE, rank, tag, MPI_COMM_WORLD, &request) != MPI_SUCCESS){
             errno = ECOMM;
@@ -46,7 +46,7 @@ public:
         return size;
     }
 
-    ssize_t receive(char* buff, size_t size){
+    ssize_t receive(void* buff, size_t size){
         MPI_Status status; 
         int count;
         int flag = 0;

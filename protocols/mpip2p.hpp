@@ -37,7 +37,7 @@ public:
     bool closing = false;
     HandleMPIP2P(ConnType* parent, MPI_Comm server_comm, bool busy=true) : Handle(parent, busy), server_comm(server_comm) {}
 
-    ssize_t send(const char* buff, size_t size) {
+    ssize_t send(const void* buff, size_t size) {
         MPI_Request request;
         if (MPI_Isend(buff, size, MPI_BYTE, 0, 0, server_comm, &request) != MPI_SUCCESS)
             return -1;
@@ -56,7 +56,7 @@ public:
         return size;
     }
 
-    ssize_t receive(char* buff, size_t size){
+    ssize_t receive(void* buff, size_t size){
         MPI_Status status; 
         int count, flag;
         while(true) {

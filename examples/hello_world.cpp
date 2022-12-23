@@ -6,8 +6,23 @@
  *  - client: 
  *       ./hello_world 1
  * 
+ * to stop the server pkill -HUP server
+ *
+ * MPI:
+ *   mpirun -n 1 ./hello_world 0 : -n 3 ./hello_world 1
+ *
+ * MPIP2P: (va compilato stop_accept ?????? da rivedere)
+ *  /home/massimo/DistributedFF/ompi-install/bin/ompi-server --report-uri uri_file.txt --no-daemonize
+ *  funziona se piu' client si lanciano con diverse mpirun
+ *
+ * MQTT:
+ *   https://github.com/eclipse/paho.mqtt.c   (API)
+ *   https://test.mosquitto.org   (BROKER)
+ *
+ *
  */
 
+#include <csignal>
 #include <cassert>
 #include <iostream>
 #include "commlib.hpp"
@@ -17,13 +32,18 @@ std::string welcome{"Hello!"};
 std::string bye{"Bye!"};
 const int max_msg_size=100;
 
+static volatile sig_atomic_t stop=0;
+
+
 // It waits for new connections, sends a welcome message to the connected client,
 // then echoes the input message to the client up to the bye message.
 void Server() {	
 	Manager::listen("TCP:0.0.0.0:42000");
+	//Manager::listen("MPI:0:10");
+	//Manager::listen("MPIP2P:test");
 
 	char buff[max_msg_size+1];
-	for(;;) {
+	while(!stop) {
 		// Is there something ready?
 		auto handle = Manager::getNext();
 
@@ -59,12 +79,15 @@ void Server() {
 			handle.close();
 		}
 	}
+	std::cout << "server exit!\n";
 }
 // It connects to the server waiting for the welcome message. Then it sends the string
 // "ciao" incrementally to the server, receiving each message back from the server.
 void Client() {
 	char buff[10];
 	auto handle = Manager::connect("TCP:0.0.0.0:42000");
+	//auto handle = Manager::connect("MPI:0:10");
+	//auto handle = Manager::connect("MPIP2P:test");
 	do {
 		if(handle.isValid()) {
 			// wait for the welcome message

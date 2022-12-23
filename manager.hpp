@@ -21,6 +21,9 @@
 
 #ifdef ENABLE_MPI
 #include "protocols/mpi.hpp"
+#endif
+
+#ifdef ENABLE_MPIP2P
 #include "protocols/mpip2p.hpp"
 #endif
 
@@ -137,6 +140,12 @@ public:
 
 #ifdef ENABLE_MPI
         registerType<ConnMPI>("MPI");
+#endif
+
+#ifdef ENABLE_MPIP2P
+
+		printf("CI PASSO\n");
+		
         registerType<ConnMPIP2P>("MPIP2P");
 #endif
 
@@ -180,7 +189,7 @@ public:
     /**
      * \brief Get an handle that is ready to receive.
      * 
-     * The function is blocking in case there are no ready handles. The returned value is and Handle passed by value.
+     * The function is blocking in case there are no ready handles. The returned value is an Handle passed by value.
     */
     static HandleUser getNext() {
         std::unique_lock lk(mutex);
