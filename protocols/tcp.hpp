@@ -133,7 +133,7 @@ public:
    ConnTcp(){};
    ~ConnTcp(){};
 
-    int init() {
+    int init(std::string) {
         return 0;
     }
 

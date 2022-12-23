@@ -42,6 +42,8 @@ class Manager {
     
     //TODO: probabilmente una std::deque sincronizzata
     inline static std::queue<std::pair<bool, Handle*>> handleReady;
+    
+    inline static std::string appName;
 
 #ifdef ENABLE_CONFIGFILE
     inline static std::map<std::string, std::pair<std::vector<std::string>, std::vector<std::string>>> pools;
@@ -130,10 +132,13 @@ public:
      * 
      * Internally this call creates the backend thread that performs the polling over all registered protocols.
      * 
+     * @param appName Application ID for this application instance
      * @param configFile (Optional) Path of the configuration file for the application. It can be a unique configuration file containing both architecture information and application specific information (deployment included).
      * @param configFile2 (Optional) Additional configuration file in the case architecture information and application information are splitted in two separate files. 
     */
-    static void init(std::string configFile1 = "", std::string configFile2 = "") {
+    static void init(std::string appName, std::string configFile1 = "", std::string configFile2 = "") {
+
+        Manager::appName = appName;
 
 		// default transport protocol
         registerType<ConnTcp>("TCP");
@@ -161,7 +166,7 @@ public:
 #endif
 		end = false;
         for (auto &el : protocolsMap) {
-            el.second->init();
+            el.second->init(appName);
         }
 #ifdef ENABLE_CONFIGFILE
         // listen da file di config se ce ne sono

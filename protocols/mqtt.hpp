@@ -69,7 +69,7 @@ public:
         while(true) {
             if(!messages.empty()) {
                 auto msg = messages.front();
-                strncpy(buff, msg.first.c_str(), msg.second+1);
+                strncpy((char*)buff, msg.first.c_str(), msg.second+1);
                 messages.pop();
                 return msg.second;
             }
@@ -90,7 +90,7 @@ public:
                 if(msg->get_topic() == in_topic) {
                     /*TODO: overflow??? Se i messaggi nel broker sono FIFO non
                             dovrebbero esserci problemi */
-                    strncpy(buff, msg->get_payload().c_str(), size);
+                    strncpy((char*)buff, msg->get_payload().c_str(), size);
                     return size;
                 }
             }
@@ -156,33 +156,29 @@ public:
    ConnMQTT(){};
    ~ConnMQTT(){};
 
-    int init() {    
-        return 0;
-    }
-
-    int listen(std::string s) {
-        /*TODO: in MQTT abbiamo bisogno di definire un ID univoco per questo
-                nodo. Probabilmente si risolve costruendo il manager_name
-                con il nome dell'app dal file di configurazione*/
-        manager_name = s.substr(s.find(":")+1, s.length());
-        new_connection_topic = manager_name + CONNECTION_TOPIC;
-        
-        newConnClient = new mqtt::client(SERVER_ADDRESS, manager_name);
+    int init(std::string s) {    
+        newConnClient = new mqtt::client(SERVER_ADDRESS, s);
         auto connOpts = mqtt::connect_options_builder()
             .keep_alive_interval(std::chrono::seconds(30))
             .automatic_reconnect(std::chrono::seconds(2), std::chrono::seconds(30))
             .clean_session(true)
             .finalize();
 
-
 		mqtt::connect_response rsp = newConnClient->connect(connOpts);
-        if (!rsp.is_session_present()) {
-            // TODO: check the QoS value
-			newConnClient->subscribe({new_connection_topic}, {0});
-		}
-		else {
-			std::cout << "Session already present. Skipping subscribe." << std::endl;
-		}
+        if(rsp.is_session_present()) {
+            printf("Session already present. Use a different ID for the MQTT client\n");
+            return 1;
+        }
+
+        return 0;
+    }
+
+    int listen(std::string s) {
+        manager_name = s.substr(s.find(":")+1, s.length());
+        new_connection_topic = manager_name + CONNECTION_TOPIC;
+        printf("Manager name: %s - connection topic: %s\n", manager_name.c_str(), new_connection_topic.c_str());
+        
+        newConnClient->subscribe({new_connection_topic}, {0});
         
         listening = true;
         return 0;
@@ -269,6 +265,7 @@ public:
         client->connect(connOpts);
         client->subscribe({topic_out, topic_out+"exit"}, {0,0});
 
+        printf("Connecting to: %s\n", (manager_id+CONNECTION_TOPIC).c_str());
 		auto pubmsg = mqtt::make_message(manager_id + CONNECTION_TOPIC, topic);
 		pubmsg->set_qos(1);
 		client->publish(pubmsg);

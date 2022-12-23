@@ -21,6 +21,11 @@ ifdef MPI_HOME
 endif
 endif
 
+ifeq ($(TPROTOCOL), MQTT)
+	LIBS += -lpthread -lpaho-mqtt3a -lpaho-mqttpp3
+	CXXFLAGS += $(TPROTO)
+endif
+
 CXXFLAGS            += -Wall
 LIBS                += -pthread
 INCLUDES             = $(INCS)

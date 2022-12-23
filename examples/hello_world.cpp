@@ -29,6 +29,11 @@
  * ^^^^^^^^^^^^^
  *   https://github.com/eclipse/paho.mqtt.c   (API)
  *   https://test.mosquitto.org   (BROKER)
+ * 
+ *   $> TPROTOCOL=MQTT make cleanall hello_world
+ *   $> mosquitto -v
+ *   $> ./hello_world 0
+ *   $> ./hello_world 1 appName
  *
  *
  */
@@ -50,9 +55,10 @@ void signal_handler(int) { stop=1; }
 // It waits for new connections, sends a welcome message to the connected client,
 // then echoes the input message to the client up to the bye message.
 void Server() {	
-	Manager::listen("TCP:0.0.0.0:42000");
+	// Manager::listen("TCP:0.0.0.0:42000");
 	//Manager::listen("MPI:0:10");
 	//Manager::listen("MPIP2P:test");
+    Manager::listen("MQTT:label_app0");
 
 	char buff[max_msg_size+1];
 	while(!stop) {
@@ -98,9 +104,10 @@ void Server() {
 // "ciao" incrementally to the server, receiving each message back from the server.
 void Client() {
 	char buff[10];
-	auto handle = Manager::connect("TCP:0.0.0.0:42000");
+	// auto handle = Manager::connect("TCP:0.0.0.0:42000");
 	//auto handle = Manager::connect("MPI:0:10");
 	//auto handle = Manager::connect("MPIP2P:test");
+	auto handle = Manager::connect("MQTT:label_app0:label_client");
 	do {
 		if(handle.isValid()) {
 			// wait for the welcome message
@@ -127,8 +134,8 @@ void Client() {
 }
 
 int main(int argc, char** argv){
-    if(argc < 2) {
-		std::cerr << "Usage:" << argv[0] << " <0|1>\n";
+    if(argc < 3) {
+		std::cerr << "Usage:" << argv[0] << " <0|1> <appName>\n";
         return -1;
     }
 	std::signal(SIGHUP,  signal_handler);
@@ -136,7 +143,7 @@ int main(int argc, char** argv){
 	std::signal(SIGTERM, signal_handler);
 	std::signal(SIGQUIT, signal_handler);
 
-    Manager::init();   
+    Manager::init(argv[2]);   
     if (std::stol(argv[1]) == 0)
 		Server();            
     else

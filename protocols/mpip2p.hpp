@@ -109,7 +109,7 @@ public:
    ConnMPIP2P(){};
    ~ConnMPIP2P(){};
 
-    int init() {
+    int init(std::string) {
         int provided;
         if (MPI_Init_thread(NULL, NULL, MPI_THREAD_MULTIPLE, &provided) != MPI_SUCCESS)
             return -1;
