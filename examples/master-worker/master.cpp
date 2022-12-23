@@ -54,10 +54,10 @@ int main(int argc, char** argv){
     });
 
     int receivedEOS = 0;
-    char output[50];
+    char output[500];
     while(receivedEOS < workers){
         auto h = Manager::getNext();
-        size_t sz = h.read(output, 50);
+        size_t sz = h.read(output, 500);
         if (sz) std::cout << output << std::endl;
         if (sz == 0) receivedEOS++;
     }

@@ -23,7 +23,7 @@ public:
         h.realHandle = nullptr;
     }
     
-    // notifico il manager che l'handle lo gestisce lui
+    // releases the handle to the manager
     void yield() {
         isReadable = false;
         newConnection = false;
@@ -42,7 +42,7 @@ public:
         return (size_t)realHandle;
     }
 
-    ssize_t send(const char* buff, size_t size){
+    ssize_t send(const void* buff, size_t size){
         newConnection = false;
         if (!realHandle || realHandle->closed) {
             errno = EBADF; // the "communicator" is not valid or closed
@@ -51,7 +51,7 @@ public:
         return realHandle->send(buff, size);
     }
 
-    ssize_t read(char* buff, size_t size) {
+    ssize_t receive(void* buff, size_t size) {
         newConnection = false;
         if (!isReadable){
             errno = EINVAL; // unable to read from the "communicator"

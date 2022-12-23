@@ -46,10 +46,6 @@
  */
 
 #include <iostream>
-#include <string>
-#include <optional>
-#include <thread>
-
 #include "../commlib.hpp"
 
 #define MAX_NUM_CLIENTS 4
@@ -105,7 +101,7 @@ int main(int argc, char** argv){
                 printf("Got new connection\n");
                 char buff[5];
                 size_t size = 5;
-                if(handle.read(buff, size) == 0)
+                if(handle.receive(buff, size) == 0)
                     printf("Connection closed by peer\n");
                 else {
                     std::string res{buff};
@@ -120,7 +116,7 @@ int main(int argc, char** argv){
                 printf("Waiting for connection close...\n");
                 char tmp;
                 size_t size = 1;
-                if(handle.read(&tmp, size) == 0) {
+                if(handle.receive(&tmp, size) == 0) {
                     printf("Connection closed by peer\n");
                     handle.close();
                     count++;
@@ -158,7 +154,7 @@ int main(int argc, char** argv){
         char buff[5];
         ssize_t size = 5;
         
-        if(handle.read(buff, size) == 0)
+        if(handle.receive(buff, size) == 0)
             printf("Connection has been closed by the server.\n");
         else {
             printf("Received: \"%s\"\n", buff);

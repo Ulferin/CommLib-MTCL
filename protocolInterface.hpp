@@ -56,7 +56,7 @@ public:
      * Must return control to the Manager after the polling phase is completed.
      * 
      */
-    virtual void update() = 0; // chiama il thread del manager
+    virtual void update() = 0; 
     
 
     /**

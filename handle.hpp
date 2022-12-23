@@ -58,7 +58,7 @@ public:
      * @return number of bytes sent to the remote end or \c -1 if an error occurred.
      * If \c -1 is returned, the error can be checked via \b errno.
      */
-    virtual ssize_t send(const char* buff, size_t size) = 0; // ritorno (INT) 0 ok, -1 errore
+    virtual ssize_t send(const void* buff, size_t size) = 0; 
 
 
     /**
@@ -72,7 +72,7 @@ public:
      * has been closed, \c -1 if an error occurred. If \c -1 is returned, the error
      * can be checked via \b errno.
      */
-    virtual ssize_t receive(char* buff, size_t size) = 0; //
+    virtual ssize_t receive(void* buff, size_t size) = 0; 
     
     bool isBusy() {
         return this->busy;

@@ -59,15 +59,13 @@ public:
     int fd; // File descriptor of the connection represented by this Handle
     HandleTCP(ConnType* parent, int fd, bool busy=true) : Handle(parent, busy), fd(fd) {}
 
-    ssize_t send(const char* buff, size_t size) {
-        return writen(fd, buff, size); //modificare in writen
+    ssize_t send(const void* buff, size_t size) {
+        return writen(fd, (const char*)buff, size); 
     }
 
-
-    ssize_t receive(char* buff, size_t size) {
-        return readn(fd, buff, size); // modificare in readn
+    ssize_t receive(void* buff, size_t size) {
+        return readn(fd, (char*)buff, size); 
     }
-
 
     ~HandleTCP() {}
 

@@ -125,15 +125,14 @@ public:
     /**
      * \brief Initialization of the manager. Required to use the library
      * 
-     * Internally this call create the backend thread that performs the polling over all registered protocols.
+     * Internally this call creates the backend thread that performs the polling over all registered protocols.
      * 
      * @param configFile (Optional) Path of the configuration file for the application. It can be a unique configuration file containing both architecture information and application specific information (deployment included).
      * @param configFile2 (Optional) Additional configuration file in the case architecture information and application information are splitted in two separate files. 
     */
     static void init(std::string configFile1 = "", std::string configFile2 = "") {
-        end = false;
-        initialized = true;
 
+		// default transport protocol
         registerType<ConnTcp>("TCP");
 
 #ifdef ENABLE_MPI
@@ -151,7 +150,7 @@ public:
 #else
      // 
 #endif
-
+		end = false;
         for (auto &el : protocolsMap) {
             el.second->init();
         }
@@ -160,6 +159,7 @@ public:
 #endif
         t1 = std::thread([&](){Manager::getReadyBackend();});
 
+        initialized = true;
     }
 
     /**
@@ -169,7 +169,7 @@ public:
      * Internally it stops the polling thread started at the initialization and call the end method of each registered protocols.
     */
     static void finalize() {
-        end = true;
+		end = true;
         t1.join();
 
         for (auto [_,v]: protocolsMap) {
@@ -196,13 +196,6 @@ public:
     }
 
     /**
-     * \brief Same as getNext method but return an handle stored in heap.
-    */
-    /*static HandleUser* getNextPtr() {
-        return new HandleUser(std::move(getNext()));
-    }*/
-
-    /**
      * \brief Create an instance of the protocol implementation.
      * 
      * @tparam T class representing the implementation of the protocol being register
@@ -212,7 +205,7 @@ public:
     static void registerType(std::string name){
         static_assert(std::is_base_of<ConnType,T>::value, "Not a ConnType subclass");
         if(initialized) {
-            printf("Manager was already initialized. Impossible to register new protocols.\n");
+			std::cerr << "The Manager was already initialized. Impossible to register new protocols.\n";
             return;
         }
 
