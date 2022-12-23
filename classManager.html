@@ -74,9 +74,9 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a10812c24f7c5534d6da5b12968d0d618"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classManager.html#a10812c24f7c5534d6da5b12968d0d618">init</a> (std::string configFile1=&quot;&quot;, std::string configFile2=&quot;&quot;)</td></tr>
-<tr class="memdesc:a10812c24f7c5534d6da5b12968d0d618"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialization of the manager. Required to use the library.  <a href="classManager.html#a10812c24f7c5534d6da5b12968d0d618">More...</a><br /></td></tr>
-<tr class="separator:a10812c24f7c5534d6da5b12968d0d618"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae01d0f9607b9f59c4781f0f4f582594c"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classManager.html#ae01d0f9607b9f59c4781f0f4f582594c">init</a> (std::string appName, std::string configFile1=&quot;&quot;, std::string configFile2=&quot;&quot;)</td></tr>
+<tr class="memdesc:ae01d0f9607b9f59c4781f0f4f582594c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialization of the manager. Required to use the library.  <a href="classManager.html#ae01d0f9607b9f59c4781f0f4f582594c">More...</a><br /></td></tr>
+<tr class="separator:ae01d0f9607b9f59c4781f0f4f582594c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4ac2bbb9d72ac637066a079976eaf106"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classManager.html#a4ac2bbb9d72ac637066a079976eaf106">finalize</a> ()</td></tr>
 <tr class="memdesc:a4ac2bbb9d72ac637066a079976eaf106"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finalize the manger closing all the pending open connections.  <a href="classManager.html#a4ac2bbb9d72ac637066a079976eaf106">More...</a><br /></td></tr>
 <tr class="separator:a4ac2bbb9d72ac637066a079976eaf106"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -227,8 +227,8 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>ConnType</b></td></t
 
 </div>
 </div>
-<a id="a10812c24f7c5534d6da5b12968d0d618"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a10812c24f7c5534d6da5b12968d0d618">&#9670;&nbsp;</a></span>init()</h2>
+<a id="ae01d0f9607b9f59c4781f0f4f582594c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae01d0f9607b9f59c4781f0f4f582594c">&#9670;&nbsp;</a></span>init()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -239,6 +239,12 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>ConnType</b></td></t
         <tr>
           <td class="memname">static void Manager::init </td>
           <td>(</td>
+          <td class="paramtype">std::string&#160;</td>
+          <td class="paramname"><em>appName</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">std::string&#160;</td>
           <td class="paramname"><em>configFile1</em> = <code>&quot;&quot;</code>, </td>
         </tr>
@@ -265,6 +271,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>ConnType</b></td></t
 <p>Internally this call creates the backend thread that performs the polling over all registered protocols.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
+    <tr><td class="paramname">appName</td><td>Application ID for this application instance </td></tr>
     <tr><td class="paramname">configFile</td><td>(Optional) Path of the configuration file for the application. It can be a unique configuration file containing both architecture information and application specific information (deployment included). </td></tr>
     <tr><td class="paramname">configFile2</td><td>(Optional) Additional configuration file in the case architecture information and application information are splitted in two separate files. </td></tr>
   </table>
