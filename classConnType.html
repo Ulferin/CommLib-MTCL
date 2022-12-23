@@ -86,9 +86,9 @@ Inheritance diagram for ConnType:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a04b73c9c5f1971dce1d50bc9d2932ba8"><td class="memItemLeft" align="right" valign="top">virtual int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConnType.html#a04b73c9c5f1971dce1d50bc9d2932ba8">init</a> ()=0</td></tr>
-<tr class="memdesc:a04b73c9c5f1971dce1d50bc9d2932ba8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the <a class="el" href="classConnType.html">ConnType</a> object.  <a href="classConnType.html#a04b73c9c5f1971dce1d50bc9d2932ba8">More...</a><br /></td></tr>
-<tr class="separator:a04b73c9c5f1971dce1d50bc9d2932ba8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa60417a1d8df8135bc22a94a26a5f468"><td class="memItemLeft" align="right" valign="top">virtual int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConnType.html#aa60417a1d8df8135bc22a94a26a5f468">init</a> (std::string)=0</td></tr>
+<tr class="memdesc:aa60417a1d8df8135bc22a94a26a5f468"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the <a class="el" href="classConnType.html">ConnType</a> object.  <a href="classConnType.html#aa60417a1d8df8135bc22a94a26a5f468">More...</a><br /></td></tr>
+<tr class="separator:aa60417a1d8df8135bc22a94a26a5f468"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad2c79c4f2ea8946bc65a25165c2d3682"><td class="memItemLeft" align="right" valign="top">virtual int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConnType.html#ad2c79c4f2ea8946bc65a25165c2d3682">listen</a> (std::string s)=0</td></tr>
 <tr class="memdesc:ad2c79c4f2ea8946bc65a25165c2d3682"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start listening for new connections at the specified address <b>s</b>.  <a href="classConnType.html#ad2c79c4f2ea8946bc65a25165c2d3682">More...</a><br /></td></tr>
 <tr class="separator:ad2c79c4f2ea8946bc65a25165c2d3682"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -169,8 +169,8 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>Handle</b></td></tr>
 
 </div>
 </div>
-<a id="a04b73c9c5f1971dce1d50bc9d2932ba8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a04b73c9c5f1971dce1d50bc9d2932ba8">&#9670;&nbsp;</a></span>init()</h2>
+<a id="aa60417a1d8df8135bc22a94a26a5f468"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa60417a1d8df8135bc22a94a26a5f468">&#9670;&nbsp;</a></span>init()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -181,6 +181,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>Handle</b></td></tr>
         <tr>
           <td class="memname">virtual int ConnType::init </td>
           <td>(</td>
+          <td class="paramtype">std::string&#160;</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
@@ -194,6 +195,8 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>Handle</b></td></tr>
 
 <p>Initialize the <a class="el" href="classConnType.html">ConnType</a> object. </p>
 <dl class="section return"><dt>Returns</dt><dd><code>0</code> if success, error code otherwise </dd></dl>
+
+<p>Implemented in <a class="el" href="classConnTcp.html#a7ba3a6df1197edf7ab85791b0cdd4c4c">ConnTcp</a>, <a class="el" href="classConnMPIP2P.html#a03959e60e91fff207262836000dd0abe">ConnMPIP2P</a>, <a class="el" href="classConnMPI.html#a9e4bb43c76fd34acacdc6c12283c6de9">ConnMPI</a>, and <a class="el" href="classConnMQTT.html#a3e92b658ece6631d9b9bc67407759167">ConnMQTT</a>.</p>
 
 </div>
 </div>
