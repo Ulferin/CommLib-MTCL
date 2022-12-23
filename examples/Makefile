@@ -14,6 +14,7 @@ endif
 ifeq ($(findstring MPI,$(TPROTOCOL)),MPI)
 	CXX 	  = mpicxx
 	CXXFLAGS += $(TPROTO)
+	TARGET    = ../protocols/stop_accept
 ifdef MPI_HOME
 	INCS   += `pkg-config --cflags-only-I $(MPI_HOME)/lib/pkgconfig/ompi-cxx.pc`
 	LIBS   += `pkg-config --libs $(MPI_HOME)/lib/pkgconfig/ompi-cxx.pc`
@@ -25,7 +26,7 @@ LIBS                += -pthread
 INCLUDES             = $(INCS)
 
 SOURCES              = $(wildcard *.cpp)
-TARGET               = $(SOURCES:.cpp=)
+TARGET              += $(SOURCES:.cpp=)
 
 .PHONY: all clean cleanall 
 .SUFFIXES: .c .cpp .o
@@ -48,6 +49,6 @@ all: $(TARGET)
 clean: 
 	-rm -fr $(TARGET) *~
 cleanall: clean
-	-rm -fr *.d 
+	-rm -fr *.d uri_file.txt ../protocols/stop_accept
 
 include $(SOURCES:.cpp=.d)

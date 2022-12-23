@@ -1,26 +1,32 @@
 /*
- * Simple "hello world" example client-server example.
+ * Simple "hello world" client-server example.
  * To run the server:  ./hello_world 0
  * To run the client:  ./hello_world 1
  * 
  * Testing TCP:
  * ^^^^^^^^^^^^
- *   $> make cleanall all
+ *   $> make cleanall hello_world
  *   $> ./hello_world 0 &
  *   $> mpirun -n 4 ./hello_world 1
  *   $> pkill -HUP hello_world
  *
  * Testing (plain) MPI:
  * ^^^^^^^^^^^^^^^^^^^^
- *   $> TPROTOCOL=MPI make cleanall all
+ *   $> TPROTOCOL=MPI make cleanall hello_world
  *   $> mpirun -n 1 ./hello_world 0 : -n 3 ./hello_world 1 &
  *   $> sleep 3; pkill -HUP ./hello_world
  *
- * MPIP2P: (va compilato stop_accept ?????? da rivedere)
- *  /home/massimo/DistributedFF/ompi-install/bin/ompi-server --report-uri uri_file.txt --no-daemonize
- *  funziona se piu' client si lanciano con diverse mpirun
+ * Testing MPIP2P (point-to-point MPI):
+ * ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ *   $> TPROTOCOL=MPIP2P make cleanall hello_world ../protocols/stop_accept
+ *   $> ${MPI_HOME}/bin/ompi-server --report-uri uri_file.txt
+ *   $> mpirun -n 1 --ompi-server file:uri_file.txt ./hello_world 0 &
+ *   $> mpirun -n 1 --ompi-server file:uri_file.txt ./hello_world 1
+ *   $> pkill -HUP hello_world ompi-server
+ *   BUG: currently multiple clients cannot be spawned with a single mpirun
  *
- * MQTT:
+ * Testing MQTT:
+ * ^^^^^^^^^^^^^
  *   https://github.com/eclipse/paho.mqtt.c   (API)
  *   https://test.mosquitto.org   (BROKER)
  *

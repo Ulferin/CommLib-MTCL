@@ -27,7 +27,7 @@
 
 #define MPIP2PSLEEPUS 1000
 #define DISCONNECTTAG 42
-#define STOP_PROCESS "stop_accept.out"
+#define STOP_PROCESS "stop_accept"
 #define PUBLISH_NAME "test_server"
 
 class HandleMPIP2P : public Handle {
