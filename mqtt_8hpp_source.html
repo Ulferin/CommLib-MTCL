@@ -124,7 +124,7 @@ $(function() {
 <div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;            <a class="code" href="classHandle.html">Handle</a>(parent, busy), client(client),</div>
 <div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;            out_topic(out_topic), in_topic(in_topic) {}</div>
 <div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160; </div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    ssize_t send(<span class="keyword">const</span> <span class="keywordtype">char</span>* buff, <span class="keywordtype">size_t</span> size) {</div>
+<div class="line"><a name="l00056"></a><span class="lineno"><a class="line" href="classHandleMQTT.html#a750e03ab4897ea7bec9eee88e1119b3f">   56</a></span>&#160;    ssize_t <a class="code" href="classHandleMQTT.html#a750e03ab4897ea7bec9eee88e1119b3f">send</a>(<span class="keyword">const</span> <span class="keywordtype">void</span>* buff, <span class="keywordtype">size_t</span> size) {</div>
 <div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;        <span class="keywordflow">if</span>(closing) {</div>
 <div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;            errno = ECONNRESET;</div>
 <div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;            <span class="keywordflow">return</span> -1;</div>
@@ -135,7 +135,7 @@ $(function() {
 <div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;        <span class="keywordflow">return</span> size;</div>
 <div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    }</div>
 <div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160; </div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    ssize_t receive(<span class="keywordtype">char</span>* buff, <span class="keywordtype">size_t</span> size){</div>
+<div class="line"><a name="l00067"></a><span class="lineno"><a class="line" href="classHandleMQTT.html#a7cf56407f80b658c41196ed2eaef524b">   67</a></span>&#160;    ssize_t <a class="code" href="classHandleMQTT.html#a7cf56407f80b658c41196ed2eaef524b">receive</a>(<span class="keywordtype">void</span>* buff, <span class="keywordtype">size_t</span> size){</div>
 <div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160; </div>
 <div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;        <span class="keywordflow">while</span>(<span class="keyword">true</span>) {</div>
 <div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;            <span class="keywordflow">if</span>(!messages.empty()) {</div>
@@ -398,6 +398,8 @@ $(function() {
 <div class="ttc" id="aclassConnType_html"><div class="ttname"><a href="classConnType.html">ConnType</a></div><div class="ttdef"><b>Definition:</b> protocolInterface.hpp:10</div></div>
 <div class="ttc" id="aclassConnType_html_a6bdb335c3f00795a1e4d8b25ba3127f4"><div class="ttname"><a href="classConnType.html#a6bdb335c3f00795a1e4d8b25ba3127f4">ConnType::connect</a></div><div class="ttdeci">virtual Handle * connect(const std::string &amp;s)=0</div><div class="ttdoc">Create a new Handle object establishing a connection to the remote peer specified by string s.</div></div>
 <div class="ttc" id="aclassHandleMQTT_html"><div class="ttname"><a href="classHandleMQTT.html">HandleMQTT</a></div><div class="ttdef"><b>Definition:</b> mqtt.hpp:42</div></div>
+<div class="ttc" id="aclassHandleMQTT_html_a750e03ab4897ea7bec9eee88e1119b3f"><div class="ttname"><a href="classHandleMQTT.html#a750e03ab4897ea7bec9eee88e1119b3f">HandleMQTT::send</a></div><div class="ttdeci">ssize_t send(const void *buff, size_t size)</div><div class="ttdoc">Send size byte of buff to the remote end connected to this Handle. Wait until all data has been sent ...</div><div class="ttdef"><b>Definition:</b> mqtt.hpp:56</div></div>
+<div class="ttc" id="aclassHandleMQTT_html_a7cf56407f80b658c41196ed2eaef524b"><div class="ttname"><a href="classHandleMQTT.html#a7cf56407f80b658c41196ed2eaef524b">HandleMQTT::receive</a></div><div class="ttdeci">ssize_t receive(void *buff, size_t size)</div><div class="ttdoc">Read at most size byte into buff from the remote end connected to this Handle. Wait until all size da...</div><div class="ttdef"><b>Definition:</b> mqtt.hpp:67</div></div>
 <div class="ttc" id="aclassHandle_html"><div class="ttname"><a href="classHandle.html">Handle</a></div><div class="ttdef"><b>Definition:</b> handle.hpp:9</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
