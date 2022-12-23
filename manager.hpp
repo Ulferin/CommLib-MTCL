@@ -191,17 +191,17 @@ public:
      * 
      * The function is blocking in case there are no ready handles. The returned value is an Handle passed by value.
     */
-    static HandleUser getNext() {
+    static HandleUser getNext(std::chrono::microseconds us=std::chrono::hours(87600)) { // 10 years should be enough!
         std::unique_lock lk(mutex);
-        condv.wait(lk, [&]{return !handleReady.empty();});
-
-        auto el = handleReady.front();
-        handleReady.pop();
-        lk.unlock();
-        // el.second->incrementReferenceCounter();
-        el.second->setBusy(true);
-
-        return HandleUser(el.second, true, el.first);
+        if (condv.wait_for(lk, us, [&]{return !handleReady.empty();})) {
+			auto el = handleReady.front();
+			handleReady.pop();
+			lk.unlock();
+			// el.second->incrementReferenceCounter();
+			el.second->setBusy(true);
+			return HandleUser(el.second, true, el.first);
+		}
+        return HandleUser(nullptr, true, true);
     }
 
     /**

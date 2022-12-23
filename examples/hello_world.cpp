@@ -1,15 +1,20 @@
 /*
- * Simple TCP-based "hello world" example.
+ * Simple "hello world" example client-server example.
+ * To run the server:  ./hello_world 0
+ * To run the client:  ./hello_world 1
  * 
- *  - server: 
- *       ./hello_world 0
- *  - client: 
- *       ./hello_world 1
- * 
- * to stop the server pkill -HUP server
+ * Testing TCP:
+ * ^^^^^^^^^^^^
+ *   $> make cleanall all
+ *   $> ./hello_world 0 &
+ *   $> mpirun -n 4 ./hello_world 1
+ *   $> pkill -HUP hello_world
  *
- * MPI:
- *   mpirun -n 1 ./hello_world 0 : -n 3 ./hello_world 1
+ * Testing (plain) MPI:
+ * ^^^^^^^^^^^^^^^^^^^^
+ *   $> TPROTOCOL=MPI make cleanall all
+ *   $> mpirun -n 1 ./hello_world 0 : -n 3 ./hello_world 1 &
+ *   $> sleep 3; pkill -HUP ./hello_world
  *
  * MPIP2P: (va compilato stop_accept ?????? da rivedere)
  *  /home/massimo/DistributedFF/ompi-install/bin/ompi-server --report-uri uri_file.txt --no-daemonize
@@ -27,13 +32,14 @@
 #include <iostream>
 #include "commlib.hpp"
 
-// welcome and bye message
-std::string welcome{"Hello!"};
-std::string bye{"Bye!"};
-const int max_msg_size=100;
+using namespace std::chrono_literals;
 
+std::string welcome{"Hello!"}; // welcome message
+std::string bye{"Bye!"};       // bye bye message
+const int max_msg_size=100;    // max size
+// for a gentle exit 
 static volatile sig_atomic_t stop=0;
-
+void signal_handler(int) { stop=1; }
 
 // It waits for new connections, sends a welcome message to the connected client,
 // then echoes the input message to the client up to the bye message.
@@ -45,7 +51,8 @@ void Server() {
 	char buff[max_msg_size+1];
 	while(!stop) {
 		// Is there something ready?
-		auto handle = Manager::getNext();
+		auto handle = Manager::getNext(300ms);
+		if (!handle.isValid()) continue; // timeout expires
 
 		// Yes. Is it a new connection?
 		if(handle.isNewConnection()) {
@@ -118,6 +125,10 @@ int main(int argc, char** argv){
 		std::cerr << "Usage:" << argv[0] << " <0|1>\n";
         return -1;
     }
+	std::signal(SIGHUP,  signal_handler);
+	std::signal(SIGINT,  signal_handler);
+	std::signal(SIGTERM, signal_handler);
+	std::signal(SIGQUIT, signal_handler);
 
     Manager::init();   
     if (std::stol(argv[1]) == 0)
