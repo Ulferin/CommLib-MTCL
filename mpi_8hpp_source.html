@@ -96,7 +96,7 @@ $(function() {
 <div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;    <span class="keywordtype">int</span> tag;</div>
 <div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;    <a class="code" href="classHandleMPI.html">HandleMPI</a>(<a class="code" href="classConnType.html">ConnType</a>* parent, <span class="keywordtype">int</span> rank, <span class="keywordtype">int</span> tag, <span class="keywordtype">bool</span> busy=<span class="keyword">true</span>): <a class="code" href="classHandle.html">Handle</a>(parent,busy), rank(rank), tag(tag){}</div>
 <div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160; </div>
-<div class="line"><a name="l00028"></a><span class="lineno"><a class="line" href="classHandleMPI.html#ad82a8590c3800bb0e3a88760e680f323">   28</a></span>&#160;    ssize_t <a class="code" href="classHandleMPI.html#ad82a8590c3800bb0e3a88760e680f323">send</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* buff, <span class="keywordtype">size_t</span> size) {</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;    ssize_t send(<span class="keyword">const</span> <span class="keywordtype">char</span>* buff, <span class="keywordtype">size_t</span> size) {</div>
 <div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;        MPI_Request request;</div>
 <div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;        <span class="keywordflow">if</span> (MPI_Isend(buff, size, MPI_BYTE, rank, tag, MPI_COMM_WORLD, &amp;request) != MPI_SUCCESS){</div>
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;            errno = ECOMM;</div>
@@ -117,7 +117,7 @@ $(function() {
 <div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;        <span class="keywordflow">return</span> size;</div>
 <div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    }</div>
 <div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160; </div>
-<div class="line"><a name="l00049"></a><span class="lineno"><a class="line" href="classHandleMPI.html#afbb3a1141381ab4643caae2de201b726">   49</a></span>&#160;    ssize_t <a class="code" href="classHandleMPI.html#afbb3a1141381ab4643caae2de201b726">receive</a>(<span class="keywordtype">char</span>* buff, <span class="keywordtype">size_t</span> size){</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    ssize_t receive(<span class="keywordtype">char</span>* buff, <span class="keywordtype">size_t</span> size){</div>
 <div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;        MPI_Status status; </div>
 <div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;        <span class="keywordtype">int</span> count;</div>
 <div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;        <span class="keywordtype">int</span> flag = 0;</div>
@@ -310,8 +310,6 @@ $(function() {
 <div class="ttc" id="aclassConnMPI_html_ace8c27fcc5650e34a44c7b97b3bda56e"><div class="ttname"><a href="classConnMPI.html#ace8c27fcc5650e34a44c7b97b3bda56e">ConnMPI::update</a></div><div class="ttdeci">void update()</div><div class="ttdoc">Non-blocking polling over the managed set of Handle objects. It should be used to check whether Handl...</div><div class="ttdef"><b>Definition:</b> mpi.hpp:130</div></div>
 <div class="ttc" id="aclassConnType_html"><div class="ttname"><a href="classConnType.html">ConnType</a></div><div class="ttdef"><b>Definition:</b> protocolInterface.hpp:10</div></div>
 <div class="ttc" id="aclassHandleMPI_html"><div class="ttname"><a href="classHandleMPI.html">HandleMPI</a></div><div class="ttdef"><b>Definition:</b> mpi.hpp:20</div></div>
-<div class="ttc" id="aclassHandleMPI_html_ad82a8590c3800bb0e3a88760e680f323"><div class="ttname"><a href="classHandleMPI.html#ad82a8590c3800bb0e3a88760e680f323">HandleMPI::send</a></div><div class="ttdeci">ssize_t send(const char *buff, size_t size)</div><div class="ttdoc">Send size byte of buff to the remote end connected to this Handle. Wait until all data has been sent ...</div><div class="ttdef"><b>Definition:</b> mpi.hpp:28</div></div>
-<div class="ttc" id="aclassHandleMPI_html_afbb3a1141381ab4643caae2de201b726"><div class="ttname"><a href="classHandleMPI.html#afbb3a1141381ab4643caae2de201b726">HandleMPI::receive</a></div><div class="ttdeci">ssize_t receive(char *buff, size_t size)</div><div class="ttdoc">Read at most size byte into buff from the remote end connected to this Handle. Wait until all size da...</div><div class="ttdef"><b>Definition:</b> mpi.hpp:49</div></div>
 <div class="ttc" id="aclassHandle_html"><div class="ttname"><a href="classHandle.html">Handle</a></div><div class="ttdef"><b>Definition:</b> handle.hpp:9</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

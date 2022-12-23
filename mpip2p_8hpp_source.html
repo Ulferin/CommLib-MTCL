@@ -108,7 +108,7 @@ $(function() {
 <div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    <span class="keywordtype">bool</span> closing = <span class="keyword">false</span>;</div>
 <div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    <a class="code" href="classHandleMPIP2P.html">HandleMPIP2P</a>(<a class="code" href="classConnType.html">ConnType</a>* parent, MPI_Comm server_comm, <span class="keywordtype">bool</span> busy=<span class="keyword">true</span>) : <a class="code" href="classHandle.html">Handle</a>(parent, busy), server_comm(server_comm) {}</div>
 <div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160; </div>
-<div class="line"><a name="l00040"></a><span class="lineno"><a class="line" href="classHandleMPIP2P.html#aad5d9a7a4ad85f24a611d738814f423b">   40</a></span>&#160;    ssize_t <a class="code" href="classHandleMPIP2P.html#aad5d9a7a4ad85f24a611d738814f423b">send</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* buff, <span class="keywordtype">size_t</span> size) {</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    ssize_t send(<span class="keyword">const</span> <span class="keywordtype">char</span>* buff, <span class="keywordtype">size_t</span> size) {</div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;        MPI_Request request;</div>
 <div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;        <span class="keywordflow">if</span> (MPI_Isend(buff, size, MPI_BYTE, 0, 0, server_comm, &amp;request) != MPI_SUCCESS)</div>
 <div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;            <span class="keywordflow">return</span> -1;</div>
@@ -127,7 +127,7 @@ $(function() {
 <div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;        <span class="keywordflow">return</span> size;</div>
 <div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    }</div>
 <div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160; </div>
-<div class="line"><a name="l00059"></a><span class="lineno"><a class="line" href="classHandleMPIP2P.html#a6bec526ef5454671ea3930a9adac89b0">   59</a></span>&#160;    ssize_t <a class="code" href="classHandleMPIP2P.html#a6bec526ef5454671ea3930a9adac89b0">receive</a>(<span class="keywordtype">char</span>* buff, <span class="keywordtype">size_t</span> size){</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    ssize_t receive(<span class="keywordtype">char</span>* buff, <span class="keywordtype">size_t</span> size){</div>
 <div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        MPI_Status status; </div>
 <div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        <span class="keywordtype">int</span> count, flag;</div>
 <div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;        <span class="keywordflow">while</span>(<span class="keyword">true</span>) {</div>
@@ -337,8 +337,6 @@ $(function() {
 <div class="ttc" id="aclassConnMPIP2P_html_ac926b83dc6f345b8562d9983baf87c59"><div class="ttname"><a href="classConnMPIP2P.html#ac926b83dc6f345b8562d9983baf87c59">ConnMPIP2P::init</a></div><div class="ttdeci">int init()</div><div class="ttdoc">Initialize the ConnType object.</div><div class="ttdef"><b>Definition:</b> mpip2p.hpp:112</div></div>
 <div class="ttc" id="aclassConnType_html"><div class="ttname"><a href="classConnType.html">ConnType</a></div><div class="ttdef"><b>Definition:</b> protocolInterface.hpp:10</div></div>
 <div class="ttc" id="aclassHandleMPIP2P_html"><div class="ttname"><a href="classHandleMPIP2P.html">HandleMPIP2P</a></div><div class="ttdef"><b>Definition:</b> mpip2p.hpp:33</div></div>
-<div class="ttc" id="aclassHandleMPIP2P_html_a6bec526ef5454671ea3930a9adac89b0"><div class="ttname"><a href="classHandleMPIP2P.html#a6bec526ef5454671ea3930a9adac89b0">HandleMPIP2P::receive</a></div><div class="ttdeci">ssize_t receive(char *buff, size_t size)</div><div class="ttdoc">Read at most size byte into buff from the remote end connected to this Handle. Wait until all size da...</div><div class="ttdef"><b>Definition:</b> mpip2p.hpp:59</div></div>
-<div class="ttc" id="aclassHandleMPIP2P_html_aad5d9a7a4ad85f24a611d738814f423b"><div class="ttname"><a href="classHandleMPIP2P.html#aad5d9a7a4ad85f24a611d738814f423b">HandleMPIP2P::send</a></div><div class="ttdeci">ssize_t send(const char *buff, size_t size)</div><div class="ttdoc">Send size byte of buff to the remote end connected to this Handle. Wait until all data has been sent ...</div><div class="ttdef"><b>Definition:</b> mpip2p.hpp:40</div></div>
 <div class="ttc" id="aclassHandle_html"><div class="ttname"><a href="classHandle.html">Handle</a></div><div class="ttdef"><b>Definition:</b> handle.hpp:9</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
