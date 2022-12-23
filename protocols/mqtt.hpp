@@ -118,6 +118,8 @@ public:
 class ConnMQTT : public ConnType {
 private:
     std::string manager_name, new_connection_topic;
+    std::string appName;
+    size_t count = 0;
     // enum class ConnEvent {close, yield};
 
     void createClient(mqtt::string topic, mqtt::client *aux_cli) {
@@ -156,8 +158,9 @@ public:
    ConnMQTT(){};
    ~ConnMQTT(){};
 
-    int init(std::string s) {    
-        newConnClient = new mqtt::client(SERVER_ADDRESS, s);
+    int init(std::string s) {
+        appName = s;
+        newConnClient = new mqtt::client(SERVER_ADDRESS, appName);
         auto connOpts = mqtt::connect_options_builder()
             .keep_alive_interval(std::chrono::seconds(30))
             .automatic_reconnect(std::chrono::seconds(2), std::chrono::seconds(30))
@@ -253,11 +256,11 @@ public:
     // String for connection composed of manager_id:topic
     Handle* connect(const std::string& address) {
         std::string manager_id = address.substr(0, address.find(":"));
-        std::string topic = address.substr(manager_id.length()+1, address.length());
+        std::string topic = appName + std::to_string(count++);
         mqtt::string topic_out = topic+OUT_SUFFIX;
         mqtt::string topic_in = topic+IN_SUFFIX;
 
-        mqtt::client *client = new mqtt::client(SERVER_ADDRESS, address+(USER_SUFFIX)+(OUT_SUFFIX));
+        mqtt::client *client = new mqtt::client(SERVER_ADDRESS, topic);
         mqtt::connect_options connOpts;
 	    connOpts.set_keep_alive_interval(20);
         connOpts.set_clean_session(true);

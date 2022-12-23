@@ -27,7 +27,7 @@ public:
      * 
      * @return \c 0 if success, error code otherwise
      */
-    virtual int init() = 0;
+    virtual int init(std::string) = 0;
 
 
     /**

@@ -33,7 +33,7 @@
  *   $> TPROTOCOL=MQTT make cleanall hello_world
  *   $> mosquitto -v
  *   $> ./hello_world 0
- *   $> ./hello_world 1 appName
+ *   $> for i in {1..4}; do ./hello_world 1 "app$i" & done
  *
  *
  */
@@ -107,7 +107,7 @@ void Client() {
 	// auto handle = Manager::connect("TCP:0.0.0.0:42000");
 	//auto handle = Manager::connect("MPI:0:10");
 	//auto handle = Manager::connect("MPIP2P:test");
-	auto handle = Manager::connect("MQTT:label_app0:label_client");
+	auto handle = Manager::connect("MQTT:label_app0");
 	do {
 		if(handle.isValid()) {
 			// wait for the welcome message
