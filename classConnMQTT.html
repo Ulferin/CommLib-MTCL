@@ -63,6 +63,7 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="classConnMQTT-members.html">List of all members</a>  </div>
   <div class="headertitle">
@@ -105,6 +106,12 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memdesc:a263dd19033bbd220f10f83241740877a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stop listening for new connections and terminate existing <a class="el" href="classHandle.html">Handle</a><em>s</em>. <br /></td></tr>
 <tr class="separator:a263dd19033bbd220f10f83241740877a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
+Protected Member Functions</h2></td></tr>
+<tr class="memitem:a38491db4a399adf30bc13b1c7507ead1"><td class="memItemLeft" align="right" valign="top"><a id="a38491db4a399adf30bc13b1c7507ead1"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>REMOVE_CODE_IF</b> (std::shared_mutex shm)</td></tr>
+<tr class="separator:a38491db4a399adf30bc13b1c7507ead1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
 <tr class="memitem:ac1de9583b5f01c6a0aac5902994d5c8b"><td class="memItemLeft" align="right" valign="top"><a id="ac1de9583b5f01c6a0aac5902994d5c8b"></a>
@@ -119,9 +126,6 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>listening</b> = false
 <tr class="memitem:a5ffaa2ad3646779c581cf43793a013c0"><td class="memItemLeft" align="right" valign="top"><a id="a5ffaa2ad3646779c581cf43793a013c0"></a>
 std::map&lt; <a class="el" href="classHandleMQTT.html">HandleMQTT</a> *, bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>connections</b></td></tr>
 <tr class="separator:a5ffaa2ad3646779c581cf43793a013c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9fc0616635eee5acc094a3ee4b8ae9d2"><td class="memItemLeft" align="right" valign="top"><a id="a9fc0616635eee5acc094a3ee4b8ae9d2"></a>
-std::shared_mutex&#160;</td><td class="memItemRight" valign="bottom"><b>shm</b></td></tr>
-<tr class="separator:a9fc0616635eee5acc094a3ee4b8ae9d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_attribs_classConnType"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_classConnType')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="classConnType.html">ConnType</a></td></tr>
 <tr class="memitem:a2ac7d82693aad45e51ac2732665d6388 inherit pro_attribs_classConnType"><td class="memItemLeft" align="right" valign="top"><a id="a2ac7d82693aad45e51ac2732665d6388"></a>
 std::function&lt; void(std::pair&lt; bool, <a class="el" href="classHandle.html">Handle</a> * &gt;)&gt;&#160;</td><td class="memItemRight" valign="bottom"><b>addinQ</b></td></tr>

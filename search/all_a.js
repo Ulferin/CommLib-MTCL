@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['receive_22',['receive',['../classHandle.html#a9050a62bad7183e263f1eb55bb251780',1,'Handle::receive()'],['../classHandleMPI.html#a4f418644d25dde36202814fc7dec1598',1,'HandleMPI::receive()'],['../classHandleMPIP2P.html#a1d90f20898ffdbfa30da984f3980f319',1,'HandleMPIP2P::receive()'],['../classHandleMQTT.html#a7cf56407f80b658c41196ed2eaef524b',1,'HandleMQTT::receive()'],['../classHandleTCP.html#a780d4e7b349e37963c815bd2ae3de56a',1,'HandleTCP::receive()']]],
-  ['registertype_23',['registerType',['../classManager.html#af0d2ab1463c5877b990cd7cd3fcb986d',1,'Manager']]]
+  ['send_24',['send',['../classHandle.html#aae538673ad7023a3f7c298a7cfd5f513',1,'Handle::send()'],['../classHandleMPI.html#a528e2453243e9cb95e546cf4063aa8b1',1,'HandleMPI::send()'],['../classHandleMPIP2P.html#a3b8e310ed39877c1632e1f22b8bb49aa',1,'HandleMPIP2P::send()'],['../classHandleMQTT.html#a750e03ab4897ea7bec9eee88e1119b3f',1,'HandleMQTT::send()'],['../classHandleTCP.html#a553bae775bc0545f41bc6badfecf5c11',1,'HandleTCP::send()']]]
 ];

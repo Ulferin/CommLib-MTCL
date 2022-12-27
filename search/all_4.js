@@ -1,5 +1,9 @@
 var searchData=
 [
-  ['getnext_9',['getNext',['../classManager.html#a13ef8962565fa814360e541e2aaa0d21',1,'Manager']]],
-  ['gettypeofhandle_10',['getTypeOfHandle',['../classManager.html#a52731c2088e57556428ec505b44e1839',1,'Manager']]]
+  ['handle_10',['Handle',['../classHandle.html',1,'']]],
+  ['handlempi_11',['HandleMPI',['../classHandleMPI.html',1,'']]],
+  ['handlempip2p_12',['HandleMPIP2P',['../classHandleMPIP2P.html',1,'']]],
+  ['handlemqtt_13',['HandleMQTT',['../classHandleMQTT.html',1,'']]],
+  ['handletcp_14',['HandleTCP',['../classHandleTCP.html',1,'']]],
+  ['handleuser_15',['HandleUser',['../classHandleUser.html',1,'']]]
 ];

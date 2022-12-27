@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>CommLib: Dependencies</title>
+<title>CommLib: Multi Transport Communication Library (MTCL)</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -62,13 +62,24 @@ $(function() {
 
 <div class="PageDoc"><div class="header">
   <div class="headertitle">
-<div class="title">Dependencies </div>  </div>
+<div class="title">Multi Transport Communication Library (MTCL) </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="md_README"></a></p><ul>
-<li><b>MPI</b> (OPTIONAL) : It is required for using MPI as transport protocol. It cannot be included compiling the application defining EXCLUDE_MPI macro</li>
-<li><b>Paho MQTT Cpp</b> (OPTIONAL) : It is required for using MQTT as transport protocol. It cannot be included compiling applications defining EXCLUDE_MQTT macro</li>
-<li><b>RapidJSON</b> - (REQUIRED) : We use RapidJSON to parse configuration files </li>
+<div class="textblock"><p><a class="anchor" id="md_README"></a></p>
+<h2><a class="anchor" id="autotoc_md1"></a>
+Dependencies</h2>
+<ul>
+<li><p class="startli">** MPI ** (OPTIONAL) :</p>
+<p class="startli">OpenMPI is required for using the MPI library as transport protocol. By default, it is disabled. It can be enabled by defining the environmental variable TPROTOCOL=MPI and by properly setting MPI_HOME to point to the OpenMPI install dir.</p>
+</li>
+<li><p class="startli">** MQTT ** (OPTIONAL) :</p>
+<p class="startli">For using the MQTT protocol as transport layer, Paho MQTT Cpp and a MQTT broker/server are needed. By default, MQTT is disabled. It can be enabled by defining the environmental variable TPROTOCOL=MQTT and by properly setting MQTT_HOME to point to the Paho MQTT Cpp install dir. As MQTT broker/server Mosquitto is one of the options. Under Linux Ubuntu it can be installed using 'sudo apt install mosquitto'. &mdash; How to compile and install Paho MQTT Cpp -&mdash; Download Paho MQTT C from github: <a href="https://github.com/eclipse/paho.mqtt.c">https://github.com/eclipse/paho.mqtt.c</a> export MQTT_HOME=&lt;where-you-want-to-install-paho&gt; cd paho.mqtt.c prefix=${MQTT_HOME} make install Download Paho MQTT Cpp from github: <a href="https://github.com/eclipse/paho.mqtt.cpp">https://github.com/eclipse/paho.mqtt.cpp</a> <br  />
+ cd paho.mqtt.cpp cmake -Bbuild -H. -DCMAKE_INSTALL_PREFIX=${MQTT_HOME} \ -DCMAKE_PREFIX_PATH=${MQTT_HOME} cd build make install</p>
+</li>
+<li>** UCX ** (OPTIONAL) :</li>
+<li><p class="startli">** RapidJSON **</p>
+<p class="startli">We use RapidJSON to parse configuration files. If you do not want to use the config file you don't need to install it. </p>
+</li>
 </ul>
 </div></div><!-- PageDoc -->
 </div><!-- contents -->
