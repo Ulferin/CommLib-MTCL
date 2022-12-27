@@ -1,14 +1,20 @@
+ifndef CXX
 CXX 	   = g++
+endif
 CXXFLAGS  += -std=c++17
 INCS       = -I ..
 ifdef DEBUG
-    OPTIMIZE_FLAGS  += -g -fno-inline-functions
+	OPTIMIZE_FLAGS  += -g -fno-inline-functions
 else
-    OPTIMIZE_FLAGS  += -O3 -finline-functions -DNDEBUG
+	OPTIMIZE_FLAGS  += -O3 -finline-functions -DNDEBUG
 endif
 
 ifdef TPROTOCOL
 	TPROTO +=-DENABLE_${TPROTOCOL}
+endif
+
+ifdef SINGLE_IO_THREAD
+	CXXFLAGS +=-DSINGLE_IO_THREAD
 endif
 
 ifeq ($(findstring MPI,$(TPROTOCOL)),MPI)
@@ -22,26 +28,30 @@ endif
 endif
 
 ifeq ($(TPROTOCOL), MQTT)
-	LIBS += -lpthread -lpaho-mqtt3a -lpaho-mqttpp3
+ifdef PAHO_HOME
+	INCS += -I${PAHO_HOME}/include
+	LIBS += -L${PAHO_HOME}/lib
+endif
+	LIBS     += -Wl,-rpath,${PAHO_HOME}/lib -lpaho-mqttpp3 -lpaho-mqtt3as -lpaho-mqtt3a
 	CXXFLAGS += $(TPROTO)
 endif
 
-CXXFLAGS            += -Wall
-LIBS                += -pthread
-INCLUDES             = $(INCS)
+CXXFLAGS         += -Wall
+LIBS             += -pthread
+INCLUDES          = $(INCS)
 
-SOURCES              = $(wildcard *.cpp)
-TARGET              += $(SOURCES:.cpp=)
+SOURCES           = $(wildcard *.cpp)
+TARGET           += $(SOURCES:.cpp=)
 
 .PHONY: all clean cleanall 
 .SUFFIXES: .c .cpp .o
 
 %.d: %.cpp
-	set -e; $(CXX) -MM $(INCLUDES) $(CXXFLAGS) $< \
+	@set -e; $(CXX) -MM $(INCLUDES) $(CXXFLAGS) $< \
 		| sed 's/\($*\)\.o[ :]*/\1 $@ : /g' > $@; \
 		[ -s $@ ] || rm -f $@
 %.d: %.c
-	set -e; $(CC) -MM $(INCLUDES) $(CFLAGS)  $< \
+	@set -e; $(CC) -MM $(INCLUDES) $(CFLAGS)  $< \
 		| sed 's/\($*\)\.o[ :]*/\1 $@ : /g' > $@; \
 		[ -s $@ ] || rm -f $@
 %.o: %.c

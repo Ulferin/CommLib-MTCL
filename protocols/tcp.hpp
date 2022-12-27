@@ -20,8 +20,6 @@
 #include "../protocolInterface.hpp"
 
 #define IOVMAXCOUNT 2
-#define MAXRETRY 32
-#define SELECTTIMEOUT 100000    // usec
 
 class HandleTCP : public Handle {
 
@@ -84,10 +82,12 @@ protected:
 
     fd_set set, tmpset;
     int listen_sck;
+#if defined(SINGLE_IO_THREAD)
+	int fdmax;
+#else	
     std::atomic<int> fdmax;
-
     std::shared_mutex shm;
-
+#endif
 
 private:
     /**
@@ -97,14 +97,14 @@ private:
      */
     int _init() {
         if ((listen_sck=socket(AF_INET, SOCK_STREAM, 0)) < 0){
-            printf("Error creating the socket\n"); 
+			MTCL_TCP_ERROR("socket ERROR: errno=%d -- %s\n", errno, strerror(errno));
             return -1;
         }
 
         int enable = 1;
         // enable the reuse of the address
         if (setsockopt(listen_sck, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0) {
-            printf("setsockopt(SO_REUSEADDR) failed\n");
+			MTCL_TCP_ERROR("setsockopt ERROR: errno=%d -- %s\n", errno, strerror(errno));
             return -1;
         }
 
@@ -115,12 +115,12 @@ private:
 
         int bind_err;
         if ((bind_err = bind(listen_sck, (struct sockaddr*)&serv_addr,sizeof(serv_addr))) < 0){
-            printf("Error binding: %d -- %s\n", bind_err, strerror(errno));
+			MTCL_TCP_ERROR("bind ERROR: errno=%d -- %s\n", errno, strerror(errno));
             return -1;
         }
 
-        if (::listen(listen_sck, MAXRETRY) < 0){
-            printf("Error listening\n");
+        if (::listen(listen_sck, TCP_BACKLOG) < 0){
+			MTCL_TCP_ERROR("listen ERROR: errno=%d -- %s\n", errno, strerror(errno));
             return -1;
         }
 
@@ -134,6 +134,12 @@ public:
    ~ConnTcp(){};
 
     int init(std::string) {
+		// For clients who do just connect, the communication thread anyway calls
+		// the update method, and we do not want to call the select function with
+		// invalid fields.
+        FD_ZERO(&set);
+        FD_ZERO(&tmpset);
+		fdmax = -1;
         return 0;
     }
 
@@ -144,7 +150,7 @@ public:
         if(this->_init())
             return -1;
 
-        printf("Listening on: %s\n", address.c_str());
+        MTCL_TCP_PRINT("listening on: %s\n", address.c_str());
 
         // intialize both sets (master, temp)
         FD_ZERO(&set);
@@ -162,39 +168,37 @@ public:
     void update() {
         // copy the master set to the temporary
 
-        std::unique_lock ulock(shm, std::defer_lock);
-        std::shared_lock shlock(shm, std::defer_lock);
+        REMOVE_CODE_IF(std::unique_lock ulock(shm, std::defer_lock));
+        //std::shared_lock shlock(shm, std::defer_lock);  <-----------????
 
-        ulock.lock();
+        REMOVE_CODE_IF(ulock.lock());
         tmpset = set;
-        ulock.unlock();
+        REMOVE_CODE_IF(ulock.unlock());
 
-        struct timeval wait_time = {.tv_sec=0, .tv_usec=SELECTTIMEOUT};
-
-        switch(select(fdmax+1, &tmpset, NULL, NULL, &wait_time)){
-            case -1: printf("Error on selecting socket\n");
-            case  0: {return;}
+        struct timeval wait_time = {.tv_sec=0, .tv_usec=TCP_POLL_TIMEOUT};
+		int nready=0;
+        switch(nready=select(fdmax+1, &tmpset, NULL, NULL, &wait_time)) {
+		case -1: MTCL_TCP_ERROR("select ERROR: errno=%d -- %s\n", errno, strerror(errno));
+		case  0: return;
         }
 
-        for(int idx=0; idx <= fdmax; idx++){
+        for(int idx=0; idx <= fdmax && nready>0; idx++){
             if (FD_ISSET(idx, &tmpset)){
                 if (idx == this->listen_sck) {
                     int connfd = accept(this->listen_sck, (struct sockaddr*)NULL ,NULL);
                     if (connfd == -1){
-                        printf("Error accepting client\n");
+						MTCL_TCP_ERROR("accept ERROR: errno=%d -- %s\n", errno, strerror(errno));
                         return;
                     }
 
-                    ulock.lock();
+                    REMOVE_CODE_IF(ulock.lock());
                     FD_SET(connfd, &set);
                     if(connfd > fdmax) fdmax = connfd;
                     connections[connfd] = new HandleTCP(this, connfd, false);
                     addinQ({true, connections[connfd]});
-                    ulock.unlock();
-                    
-                }
-                else {
-                    ulock.lock();
+                    REMOVE_CODE_IF(ulock.unlock());                    
+                } else {
+                    REMOVE_CODE_IF(ulock.lock());
                     // Updates ready connections and removes from listening
                     FD_CLR(idx, &set);
 
@@ -208,19 +212,17 @@ public:
                         }
                     // ready.push(connections[idx]);
                     addinQ({false, connections[idx]});
-                    ulock.unlock();
+                    REMOVE_CODE_IF(ulock.unlock());
 
                 }
-                
+				--nready;
             }
         }
-
-        return;        
     }
 
     // URL: host:prot || label: stringa utente
     Handle* connect(const std::string& address/*, const std::string& label=std::string()*/) {
-        printf("[TCP]Connecting to: %s\n", address.c_str());
+		MTCL_TCP_PRINT("connect to %s\n", address.c_str());
 
         int fd;
 
@@ -259,19 +261,20 @@ public:
             return nullptr;
 
         HandleTCP *handle = new HandleTCP(this, fd);
-        std::unique_lock lock(shm);
-        connections[fd] = handle;
-        lock.unlock();
+		{
+			REMOVE_CODE_IF(std::unique_lock lock(shm));
+			connections[fd] = handle;
+		}
         return handle;
     }
 
     void notify_close(Handle* h) {
         int fd = reinterpret_cast<HandleTCP*>(h)->fd;
         close(fd);
-        std::unique_lock lock(shm);
+        REMOVE_CODE_IF(std::unique_lock lock(shm));
         connections.erase(fd);
         FD_CLR(fd, &set);
-
+		
         // update the maximum file descriptor
         if (fd == fdmax)
             for(int ii=(fdmax-1);ii>=0;--ii) {
@@ -285,7 +288,7 @@ public:
 
     void notify_yield(Handle* h) override {
         int fd = reinterpret_cast<HandleTCP*>(h)->fd;
-        std::unique_lock l(shm);
+		REMOVE_CODE_IF(std::unique_lock l(shm));
         FD_SET(fd, &set);
         if(fd > fdmax) {
             fdmax = fd;
@@ -300,7 +303,7 @@ public:
     }
 
     bool isSet(int fd){
-        std::shared_lock s(shm);
+        REMOVE_CODE_IF(std::shared_lock s(shm));
         return FD_ISSET(fd, &set);
     }
 

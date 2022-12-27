@@ -18,7 +18,18 @@ public:
 
     HandleUser(const HandleUser&) = delete;
     HandleUser& operator=(HandleUser const&) = delete;
-
+    HandleUser& operator=(HandleUser && o) {
+		if (this != &o) {
+			realHandle    = o.realHandle;
+			isReadable    = o.isReadable;
+			newConnection = o.newConnection;
+			o.realHandle  = nullptr;
+			o.isReadable  = false;
+			o.newConnection=false;
+		}
+		return *this;
+	}
+	
     HandleUser(HandleUser&& h) : realHandle(h.realHandle), isReadable(h.isReadable), newConnection(h.newConnection){
         h.realHandle = nullptr;
     }

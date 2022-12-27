@@ -25,10 +25,6 @@
 #include "../handle.hpp"
 #include "../protocolInterface.hpp"
 
-#define MPIP2PSLEEPUS 1000
-#define DISCONNECTTAG 42
-#define STOP_PROCESS "stop_accept"
-#define PUBLISH_NAME "test_server"
 
 class HandleMPIP2P : public Handle {
 
@@ -39,8 +35,11 @@ public:
 
     ssize_t send(const void* buff, size_t size) {
         MPI_Request request;
-        if (MPI_Isend(buff, size, MPI_BYTE, 0, 0, server_comm, &request) != MPI_SUCCESS)
+        if (MPI_Isend(buff, size, MPI_BYTE, 0, 0, server_comm, &request) != MPI_SUCCESS) {
+			MTCL_MPIP2P_ERROR("send: MPI_Isend error\n");
+            errno = ECOMM;	
             return -1;
+		}
 
         int flag = 0;
         MPI_Status status;
@@ -61,11 +60,16 @@ public:
         int count, flag;
         while(true) {
             if(MPI_Iprobe(MPI_ANY_SOURCE, 0, server_comm, &flag, &status)!=MPI_SUCCESS) {
-                printf("Error in probe\n");
+				MTCL_MPIP2P_ERROR("receive: MPI_Iprobe error\n");
+				errno = ECOMM;
                 return -1;
             }
             if(flag) {
-                MPI_Recv(buff, size, MPI_BYTE, MPI_ANY_SOURCE, MPI_ANY_TAG, server_comm, &status);
+                if (MPI_Recv(buff, size, MPI_BYTE, MPI_ANY_SOURCE, MPI_ANY_TAG, server_comm, &status) != MPI_SUCCESS) {
+					MTCL_MPIP2P_ERROR("receive: MPI_Recv error\n");
+					errno = ECOMM;
+					return -1;
+				}
                 MPI_Get_count(&status, MPI_BYTE, &count);
                 return count;
             }
@@ -74,15 +78,13 @@ public:
                 return 0;
             }
 
-            std::this_thread::sleep_for(std::chrono::microseconds(MPIP2PSLEEPUS));
+            std::this_thread::sleep_for(std::chrono::microseconds(MPIP2P_POLL_TIMEOUT));
         }
         
         return 0;
     }
 
-
     ~HandleMPIP2P() {}
-
 };
 
 
@@ -111,46 +113,52 @@ public:
 
     int init(std::string) {
         int provided;
-        if (MPI_Init_thread(NULL, NULL, MPI_THREAD_MULTIPLE, &provided) != MPI_SUCCESS)
+        if (MPI_Init_thread(NULL, NULL, MPI_THREAD_MULTIPLE, &provided) != MPI_SUCCESS) {
+			MTCL_MPIP2P_ERROR("init: MPI_Init_thread error\n");
+			errno = EINVAL;
             return -1;
+		}
 
         // no thread support 
         if (provided < MPI_THREAD_MULTIPLE){
-            printf("No thread support by MPI\n");
-            return -1;
+			MTCL_MPIP2P_ERROR("init: MPI_Init_thread error\n");
+			errno = EINVAL;
+			return -1;
         }
 
         MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
         return 0;
     }
 
-    void _listen(char* portname, const char* published_label) {
+    void listen_threadF(char* portname, const char* published_label) {
 
         listening = true;
         MPI_Publish_name(published_label, MPI_INFO_NULL, portname);
         
         while(!finalized) {
             MPI_Comm client;
-            MPI_Comm_accept(portname, MPI_INFO_NULL, 0, MPI_COMM_WORLD, &client);
+            if (MPI_Comm_accept(portname, MPI_INFO_NULL, 0, MPI_COMM_WORLD, &client) != MPI_SUCCESS) {
+				MTCL_MPIP2P_ERROR("listen_threadF: MPI_Comm_accept error\n");
+				continue;
+			}
 
             HandleMPIP2P* handle = new HandleMPIP2P(this, client, false);
-            
-            std::unique_lock ulock(shm);
-            connections.insert({handle, false});
-            addinQ({true, handle});
+			{
+				std::unique_lock ulock(shm);
+				connections.insert({handle, false});
+				ADD_CODE_IF(addinQ({true, handle}));  
+			}
+			REMOVE_CODE_IF(addinQ({true, handle}));
         }
-
-        printf("Accept thread finalized.\n");
-        
+		MTCL_MPIP2P_PRINT("Accept thread finalized.\n");        
     }
 
     int listen(std::string s) {
         published_label = s;
         MPI_Open_port(MPI_INFO_NULL, portname);
-        printf("Listening on portname: %s - with label: %s\n", portname, s.c_str()+1);
+        MTCL_MPIP2P_PRINT("Listening on portname: %s - with label: %s\n", portname, s.c_str()+1);
 
-        t1 = std::thread([&](){_listen(portname, published_label.c_str()+1);});
+        t1 = std::thread([&](){listen_threadF(portname, published_label.c_str()+1);});
 
         return 0;
     }
@@ -166,30 +174,30 @@ public:
 
                 if(flag) {
                     to_manage = false;
-                    addinQ({false, handle});
+					// NOTE: called with shm lock hold. Double lock if there is the IO-thread!
+                    addinQ({false, handle});  
                 }
             }
 
-            MPI_Iprobe(MPI_ANY_SOURCE, DISCONNECTTAG, handle->server_comm, &flag, &status);
+            MPI_Iprobe(MPI_ANY_SOURCE, MPIP2P_DISCONNECT_TAG, handle->server_comm, &flag, &status);
             if(flag) {
-                if(status.MPI_TAG == DISCONNECTTAG) {
+                if(status.MPI_TAG == MPIP2P_DISCONNECT_TAG) {
                     int headersLen;
                     MPI_Get_count(&status, MPI_INT, &headersLen);
                     int header[headersLen];
                     
-                    if (MPI_Recv(header, headersLen, MPI_INT, status.MPI_SOURCE, DISCONNECTTAG, handle->server_comm, &status) != MPI_SUCCESS) {
+                    if (MPI_Recv(header, headersLen, MPI_INT, status.MPI_SOURCE, MPIP2P_DISCONNECT_TAG, handle->server_comm, &status) != MPI_SUCCESS) {
                         printf("Error on Recv disconnect tag\n");
                         throw;
                     }
                     handle->closing = true;
 
                     to_manage = false;
+					// NOTE: called with shm lock hold. Double lock if there is the IO-thread!
                     addinQ({false, handle});
                 }
             }
-        }
-
-        return;        
+        }		
     }
 
 
@@ -197,7 +205,7 @@ public:
         MPI_Lookup_name(address.c_str(), MPI_INFO_NULL, portname);
         MPI_Comm server_comm;
         MPI_Comm_connect(portname, MPI_INFO_NULL, 0, MPI_COMM_WORLD, &server_comm);
-        printf("[MPIP2P]Connecting to: %s\n", portname);
+        MTCL_MPIP2P_PRINT("Connecting to: %s\n", portname);
 
 
         HandleMPIP2P* handle = new HandleMPIP2P(this, server_comm, true);
@@ -213,7 +221,10 @@ public:
         HandleMPIP2P* handle = reinterpret_cast<HandleMPIP2P*>(h);
         if (!handle->closing){
             int aux = 0;
-            MPI_Send(&aux, 1, MPI_INT, 0, DISCONNECTTAG, handle->server_comm);
+            if (MPI_Send(&aux, 1, MPI_INT, 0, MPIP2P_DISCONNECT_TAG, handle->server_comm) != MPI_SUCCESS) {
+				MTCL_MPIP2P_ERROR("notify_close: MPI_Send error\n");
+			}
+				
             MPI_Comm_disconnect(&handle->server_comm);
         }
         connections.erase(reinterpret_cast<HandleMPIP2P*>(h));
@@ -241,16 +252,15 @@ public:
             /* Spawns utility MPI process to issue a fake MPI_Comm_connect and
              * wake up the blocking accept
              */
-            MPI_Comm_spawn(STOP_PROCESS, a, 1, MPI_INFO_NULL, 0, MPI_COMM_SELF, &c, MPI_ERRCODES_IGNORE);
+            MPI_Comm_spawn(MPIP2P_STOP_PROCESS, a, 1, MPI_INFO_NULL, 0, MPI_COMM_SELF, &c, MPI_ERRCODES_IGNORE);
             
             t1.join();
 
-            MPI_Unpublish_name(PUBLISH_NAME, MPI_INFO_NULL, portname);
+            MPI_Unpublish_name(MPIP2P_PUBLISH_NAME, MPI_INFO_NULL, portname);
             MPI_Close_port(portname);
         }
 
         MPI_Finalize();
-        printf("Finalized\n");
     }
 
 };

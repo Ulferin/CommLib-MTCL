@@ -1,6 +1,8 @@
 #ifndef MANAGER_HPP
 #define MANAGER_HPP
 
+#include <csignal>
+#include <cstdlib>
 #include <map>
 #include <vector>
 #include <queue>
@@ -31,7 +33,8 @@
 #include "protocols/mqtt.hpp"
 #endif
 
-#define POLLINGTIMEOUT 10
+bool mtcl_verbose=false;
+
 /**
  * Main class for the library
 */
@@ -50,7 +53,7 @@ class Manager {
     inline static std::map<std::string, std::tuple<std::string, std::vector<std::string>, std::vector<std::string>>> components;
 #endif
 
-    inline static std::thread t1;
+    REMOVE_CODE_IF(inline static std::thread t1);
     inline static bool end;
     inline static bool initialized = false;
 
@@ -60,20 +63,26 @@ class Manager {
 private:
     Manager() {}
 
-    static void addinQ(std::pair<bool, Handle*> el) {
+#if defined(SINGLE_IO_THREAD)
+	static inline void addinQ(std::pair<bool, Handle*> el) {
+		handleReady.push(el);
+	}
+#else	
+    static inline void addinQ(std::pair<bool, Handle*> el) {
         std::unique_lock lk(mutex);
         handleReady.push(el);
+		condv.notify_one();
         lk.unlock();
-        condv.notify_one();
     }
-
+#endif
+	
     static void getReadyBackend() {
         while(!end){
             for(auto& [prot, conn] : protocolsMap) {
                 conn->update();
             }
             // To prevent starvation of application threads
-            std::this_thread::sleep_for(std::chrono::milliseconds(POLLINGTIMEOUT));
+            std::this_thread::sleep_for(std::chrono::milliseconds(IO_THREAD_POLLING_TIMEOUT));
         }
     }
 
@@ -88,10 +97,10 @@ private:
     
     static void parseConfig(std::string& f){
         std::ifstream ifs(f);
-        if ( !ifs.is_open() )
-        {
-            std::cerr << "Could not open file for reading!\n";
-            return EXIT_FAILURE;
+        if ( !ifs.is_open() ) {
+			MTCL_ERROR("[Manager]:\t", "parseConfig: cannot open file %s for reading, skip it\n",
+					   f.c_str());
+            return;
         }
         rapidjson::IStreamWrapper isw { ifs };
         rapidjson::Document doc;
@@ -104,12 +113,12 @@ private:
             for (auto& c : doc["pools"].GetArray())
                 if (c.IsObject() && c.HasMember("name") && c["name"].IsString() && c.HasMember("proxyIPs") && c["proxyIPs"].IsArray() && c.HasMember("nodes") && c["nodes"].IsArray()){
                     auto name = c["name"].GetString();
-                    if (pools.count(name)) 
-                        std::cerr << "One pool element is duplicate on configuration file. I'm overwriting it.\n";
+                    if (pools.count(name))
+						MTCL_ERROR("[Manager]:\t", "parseConfig: one pool element is duplicate on configuration file. I'm overwriting it.\n");
                     
                     pools[name] = std::make_pair(JSONArray2VectorString(c["proxyIPs"].GetArray()), JSONArray2VectorString(c["nodes"].GetArray()));
-                } else 
-                        std::cerr << "A object in pool is not well defined. Skipping it.\n";
+                } else
+					MTCL_ERROR("[Manager]:\t", "parseConfig: an object in pool is not well defined. Skipping it.\n");
         
         if (doc.HasMember("components") && doc["components"].IsArray())
             // components
@@ -117,11 +126,12 @@ private:
                 if (c.IsObject() && c.HasMember("name") && c["name"].IsString() && c.HasMember("host") && c["host"].IsString() && c.HasMember("protocols") && c["protocols"].IsArray()){
                     auto name = c["name"].GetString();
                     if (components.count(name))
-                        std::cerr << "One component element is duplicate on configuration file. I'm overwriting it.\n";
+						MTCL_ERROR("[Manager]:\t", "parseConfig: one component element is duplicate on configuration file. I'm overwriting it.\n");
+					
                     auto listen_strs = (c.HasMember("listen-endpoints") && c["listen-endpoints"].IsArray()) ? JSONArray2VectorString(c["listen-endpoints"].GetArray()) : {};
                     components[name] = std::make_tuple(c["host"].GetString(), JSONArray2VectorString(c["protocols"].GetArray(), listen_strs);
                 } else
-                    std::cerr << "A object in components is not well defined. Skipping it.\n";
+					  MTCL_ERROR("[Manager]:\t", "parseConfig: an object in components is not well defined. Skipping it.\n");
     }
 #endif
 
@@ -137,7 +147,10 @@ public:
      * @param configFile2 (Optional) Additional configuration file in the case architecture information and application information are splitted in two separate files. 
     */
     static void init(std::string appName, std::string configFile1 = "", std::string configFile2 = "") {
+		std::signal(SIGPIPE, SIG_IGN);
 
+		if (std::getenv("MTCL_VERBOSE")) mtcl_verbose=true;
+		
         Manager::appName = appName;
 
 		// default transport protocol
@@ -148,9 +161,6 @@ public:
 #endif
 
 #ifdef ENABLE_MPIP2P
-
-		printf("CI PASSO\n");
-		
         registerType<ConnMPIP2P>("MPIP2P");
 #endif
 
@@ -171,7 +181,8 @@ public:
 #ifdef ENABLE_CONFIGFILE
         // listen da file di config se ce ne sono
 #endif
-        t1 = std::thread([&](){Manager::getReadyBackend();});
+
+        REMOVE_CODE_IF(t1 = std::thread([&](){Manager::getReadyBackend();}));
 
         initialized = true;
     }
@@ -184,7 +195,7 @@ public:
     */
     static void finalize() {
 		end = true;
-        t1.join();
+        REMOVE_CODE_IF(t1.join());
 
         for (auto [_,v]: protocolsMap) {
             v->end();
@@ -192,11 +203,40 @@ public:
     }
 
     /**
-     * \brief Get an handle that is ready to receive.
+     * \brief Get an handle ready to receive.
      * 
-     * The function is blocking in case there are no ready handles. The returned value is an Handle passed by value.
-    */
-    static HandleUser getNext(std::chrono::microseconds us=std::chrono::hours(87600)) { // 10 years should be enough!
+     * The returned value is an Handle passed by value.
+    */  
+#if defined(SINGLE_IO_THREAD)
+    static inline HandleUser getNext(std::chrono::microseconds us=std::chrono::hours(87600)) {
+		if (!handleReady.empty()) {
+			auto el = handleReady.front();
+			handleReady.pop();
+			el.second->setBusy(true);
+			return HandleUser(el.second, true, el.first);
+		}
+		// if us is not multiple of the IO_THREAD_POLLING_TIMEOUT we wait a bit less....
+		size_t niter = us/std::chrono::milliseconds(IO_THREAD_POLLING_TIMEOUT);
+		if (niter==0) niter++;
+		size_t i=0;
+		do { 
+			for(auto& [prot, conn] : protocolsMap) {
+				conn->update();
+			}
+			if (!handleReady.empty()) {
+				auto el = handleReady.front();
+				handleReady.pop();
+				el.second->setBusy(true);
+				return HandleUser(el.second, true, el.first);
+			}
+			if (i >= niter) break;
+			++i;
+			std::this_thread::sleep_for(std::chrono::milliseconds(IO_THREAD_POLLING_TIMEOUT));	
+		} while(true);
+		return HandleUser(nullptr, true, true);
+    }	
+#else	
+    static inline HandleUser getNext(std::chrono::microseconds us=std::chrono::hours(87600)) { 
         std::unique_lock lk(mutex);
         if (condv.wait_for(lk, us, [&]{return !handleReady.empty();})) {
 			auto el = handleReady.front();
@@ -208,7 +248,8 @@ public:
 		}
         return HandleUser(nullptr, true, true);
     }
-
+#endif
+	
     /**
      * \brief Create an instance of the protocol implementation.
      * 
@@ -219,7 +260,7 @@ public:
     static void registerType(std::string name){
         static_assert(std::is_base_of<ConnType,T>::value, "Not a ConnType subclass");
         if(initialized) {
-			std::cerr << "The Manager was already initialized. Impossible to register new protocols.\n";
+			MTCL_ERROR("[Manager]:\t", "The Manager has been already initialized. Impossible to register new protocols.\n");
             return;
         }
 
@@ -243,10 +284,9 @@ public:
         std::string protocol = s.substr(0, s.find(":"));
         
         if (!protocolsMap.count(protocol)){
-            std::cerr << "Protocol not registered in the runtime!\n";
+			errno=EPROTO;
             return -1;
         }
-
         return protocolsMap[protocol]->listen(s.substr(protocol.length(), s.length()));
     }
 
@@ -260,7 +300,6 @@ public:
     */
     static HandleUser connect(std::string s) {
         std::string protocol = s.substr(0, s.find(":"));
-        printf("[MANAGER]Received connection request for: %s\n", protocol.c_str());
         if(protocol.empty())
             return HandleUser(nullptr, true, true);
 

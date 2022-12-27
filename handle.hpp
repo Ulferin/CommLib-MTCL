@@ -27,7 +27,7 @@ class Handle {
         }
     }
 protected:
-        std::atomic<bool> closed = false;
+	std::atomic<bool> closed = false;
 private:
     void yield() {
         setBusy(false);

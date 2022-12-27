@@ -46,9 +46,7 @@
  */
 
 #include <iostream>
-#include "../commlib.hpp"
-
-#define MAX_NUM_CLIENTS 4
+#include "mtcl.hpp"
 
 int main(int argc, char** argv){
 
@@ -60,36 +58,14 @@ int main(int argc, char** argv){
     std::string listen_str{};
     std::string connect_str{};
 
-
-#ifdef PROT_MPIP2P
-    listen_str = {"MPIP2P:published_label"};
-    connect_str = {"MPIP2P:published_label"};
-#endif
-
-#ifdef PROT_TCP
     listen_str = {"TCP:0.0.0.0:42000"};
     connect_str = {"TCP:0.0.0.0:42000"};
-#endif
-
-/*NOTE: MPI has no need to call the listen function. We build the listen_str
-        to make the Manager happy in this "protocol-agnostic" example.
-*/
-#ifdef PROT_MPI
-    listen_str = {"MPI:"};
-    connect_str = {"MPI:0:5"};
-#endif
-
-
-#ifdef PROT_MQTT
-    listen_str = {"MQTT:0"};
-    connect_str = {"MQTT:0:app0"};
-#endif
 
     int rank = atoi(argv[1]);
 
     // Listening for new connections, expecting "ping", sending "pong"
     if(rank == 0) {
-        Manager::init();
+        Manager::init("ping");
         Manager::listen(listen_str);
 
         int count = 0;
