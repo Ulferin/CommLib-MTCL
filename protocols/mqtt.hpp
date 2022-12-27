@@ -64,7 +64,7 @@ public:
 
             // A message has been received (either on "in_topic" or "in_topic+exit")
             if(res) {
-                if(msg->get_topic() == in_topic+"exit") {
+                if(msg->get_topic() == in_topic+MQTT_EXIT_TOPIC) {
                     errno = ECONNRESET;
                     closing = true;
                     return 0;
@@ -120,7 +120,7 @@ private:
 
         // "listening" on topic-in
         if (!rsp.is_session_present()) {
-            aux_cli->subscribe({topic, topic+"exit"}, {0, 0});
+            aux_cli->subscribe({topic, topic+MQTT_EXIT_TOPIC}, {0, 0});
         }
         else {
 			MTCL_MQTT_PRINT("createClient: session already present. Skipping subscribe.\n");
@@ -144,7 +144,7 @@ public:
    ~ConnMQTT(){};
 
     int init(std::string s) {
-        appName = s;
+        appName = s + ":";
         newConnClient = new mqtt::client(MQTT_SERVER_ADDRESS, appName);
         auto connOpts = mqtt::connect_options_builder()
             .keep_alive_interval(std::chrono::seconds(30))
@@ -190,7 +190,7 @@ public:
                 
                 mqtt::client* aux_cli =
                     new mqtt::client(MQTT_SERVER_ADDRESS,
-                        msg->to_string().append(MQTT_USER_SUFFIX).append(MQTT_IN_SUFFIX));
+                        msg->to_string().append(MQTT_IN_SUFFIX));
                 createClient(msg->to_string().append(MQTT_IN_SUFFIX), aux_cli);
 
                 // Must send the ACK to the remote end otherwise I can miss some
@@ -227,7 +227,7 @@ public:
                 mqtt::const_message_ptr msg;
                 bool res = handle->client->try_consume_message(&msg);
                 if(res) {
-                    if(msg->get_topic() == handle->out_topic+"exit") {
+                    if(msg->get_topic() == handle->out_topic+MQTT_EXIT_TOPIC) {
                         handle->closing = true;
                     }
                     else {
@@ -256,7 +256,7 @@ public:
         connOpts.set_clean_session(true);
 
         client->connect(connOpts);
-        client->subscribe({topic_out, topic_out+"exit"}, {0,0});
+        client->subscribe({topic_out, topic_out+MQTT_EXIT_TOPIC}, {0,0});
 
 		MTCL_MQTT_PRINT("connecting to: %s\n", (manager_id+MQTT_CONNECTION_TOPIC).c_str());
 		
@@ -282,7 +282,7 @@ public:
         HandleMQTT* handle = reinterpret_cast<HandleMQTT*>(h);
         if (!handle->closing){
             std::string aux("");
-            handle->client->publish(mqtt::make_message(handle->out_topic+"exit", aux));
+            handle->client->publish(mqtt::make_message(handle->out_topic+MQTT_EXIT_TOPIC, aux));
             handle->client->disconnect();
         }
         connections.erase(reinterpret_cast<HandleMQTT*>(h));

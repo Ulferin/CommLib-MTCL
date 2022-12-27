@@ -25,9 +25,9 @@ const int MQTT_POLL_TIMEOUT    = 10;   // milliseconds
 const int MQTT_CONNECT_TIMEOUT = 100;  // milliseconds    // <----- ??????
 const std::string MQTT_OUT_SUFFIX{"-out"};
 const std::string MQTT_IN_SUFFIX{"-in"};
-const std::string MQTT_USER_SUFFIX{"-user"};
 const std::string MQTT_MANAGER_PSWD{"manager_passwd"};
 const std::string MQTT_CONNECTION_TOPIC{"-new_connection"};
+const std::string MQTT_EXIT_TOPIC {"-exit"};
 const std::string MQTT_SERVER_ADDRESS{ "tcp://localhost:1883" };   // <--- ?????
 
 
