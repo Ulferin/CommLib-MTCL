@@ -227,9 +227,9 @@ $(function() {
 <div class="line"><a name="l00156"></a><span class="lineno"><a class="line" href="classConnMPIP2P.html#ac859f3a3c3b7b0b41bfd764e05e49114">  156</a></span>&#160;    <span class="keywordtype">int</span> <a class="code" href="classConnMPIP2P.html#ac859f3a3c3b7b0b41bfd764e05e49114">listen</a>(std::string s) {</div>
 <div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;        published_label = s;</div>
 <div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;        MPI_Open_port(MPI_INFO_NULL, portname);</div>
-<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;        MTCL_MPIP2P_PRINT(<span class="stringliteral">&quot;Listening on portname: %s - with label: %s\n&quot;</span>, portname, s.c_str()+1);</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;        MTCL_MPIP2P_PRINT(<span class="stringliteral">&quot;Listening on portname: %s - with label: %s\n&quot;</span>, portname, s.c_str());</div>
 <div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160; </div>
-<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;        t1 = std::thread([&amp;](){listen_threadF(portname, published_label.c_str()+1);});</div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;        t1 = std::thread([&amp;](){listen_threadF(portname, published_label.c_str());});</div>
 <div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160; </div>
 <div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;        <span class="keywordflow">return</span> 0;</div>
 <div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;    }</div>

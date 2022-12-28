@@ -236,7 +236,7 @@ $(function() {
 <div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;        manager_name = s.substr(s.find(<span class="stringliteral">&quot;:&quot;</span>)+1, s.length());</div>
 <div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;        new_connection_topic = manager_name + MQTT_CONNECTION_TOPIC;</div>
 <div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160; </div>
-<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;        MTCL_MQTT_PRINT(<span class="stringliteral">&quot;listening on the connection topic: %s\n&quot;</span>, new_connection_topic.c_str());</div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;        MTCL_MQTT_PRINT(<span class="stringliteral">&quot;listening on: %s ; connection topic: %s\n&quot;</span>, s.c_str(), new_connection_topic.c_str());</div>
 <div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;        </div>
 <div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;        newConnClient-&gt;subscribe({new_connection_topic}, {0});</div>
 <div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;        </div>
