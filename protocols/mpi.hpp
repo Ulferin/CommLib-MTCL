@@ -102,7 +102,8 @@ public:
         return 0;
     }
 
-    int listen(std::string) {
+    int listen(std::string s) {
+		MTCL_MPI_PRINT("listening on: %s\n", s.c_str());
         return 0;
     }
 

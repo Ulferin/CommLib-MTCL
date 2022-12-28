@@ -156,9 +156,9 @@ public:
     int listen(std::string s) {
         published_label = s;
         MPI_Open_port(MPI_INFO_NULL, portname);
-        MTCL_MPIP2P_PRINT("Listening on portname: %s - with label: %s\n", portname, s.c_str()+1);
+        MTCL_MPIP2P_PRINT("Listening on portname: %s - with label: %s\n", portname, s.c_str());
 
-        t1 = std::thread([&](){listen_threadF(portname, published_label.c_str()+1);});
+        t1 = std::thread([&](){listen_threadF(portname, published_label.c_str());});
 
         return 0;
     }

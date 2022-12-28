@@ -287,7 +287,7 @@ public:
 			errno=EPROTO;
             return -1;
         }
-        return protocolsMap[protocol]->listen(s.substr(protocol.length(), s.length()));
+        return protocolsMap[protocol]->listen(s.substr(protocol.length()+1, s.length()));
     }
 
     /**

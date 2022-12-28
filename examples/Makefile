@@ -11,6 +11,7 @@ endif
 
 ifdef TPROTOCOL
 	TPROTO +=-DENABLE_${TPROTOCOL}
+	CXXFLAGS += $(TPROTO)
 endif
 
 ifdef SINGLE_IO_THREAD
@@ -19,7 +20,6 @@ endif
 
 ifeq ($(findstring MPI,$(TPROTOCOL)),MPI)
 	CXX 	  = mpicxx
-	CXXFLAGS += $(TPROTO)
 	TARGET    = ../protocols/stop_accept
 ifdef MPI_HOME
 	INCS   += `pkg-config --cflags-only-I $(MPI_HOME)/lib/pkgconfig/ompi-cxx.pc`
@@ -33,7 +33,6 @@ ifdef PAHO_HOME
 	LIBS += -L${PAHO_HOME}/lib
 endif
 	LIBS     += -Wl,-rpath,${PAHO_HOME}/lib -lpaho-mqttpp3 -lpaho-mqtt3as -lpaho-mqtt3a
-	CXXFLAGS += $(TPROTO)
 endif
 
 CXXFLAGS         += -Wall

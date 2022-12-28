@@ -144,13 +144,13 @@ public:
     }
 
     int listen(std::string s) {
-        address = s.substr(s.find(":")+1, s.length());
-        port = stoi(address.substr(address.find(":")+1, address.length()));
+        address = s.substr(0, s.find(":"));
+        port = stoi(s.substr(address.length()+1));
 
-        if(this->_init())
-            return -1;
-
-        MTCL_TCP_PRINT("listening on: %s\n", address.c_str());
+		if (this->_init())
+			return -1;
+		
+        MTCL_TCP_PRINT("listening on: %s:%d\n", address.c_str(),port);
 
         // intialize both sets (master, temp)
         FD_ZERO(&set);
@@ -222,7 +222,10 @@ public:
 
     // URL: host:prot || label: stringa utente
     Handle* connect(const std::string& address/*, const std::string& label=std::string()*/) {
-		MTCL_TCP_PRINT("connect to %s\n", address.c_str());
+		const std::string host = address.substr(0, address.find(":"));
+		const std::string svc  = address.substr(host.length()+1);
+		
+		MTCL_TCP_PRINT("connect to %s:%s\n", host.c_str(), svc.c_str());
 
         int fd;
 
@@ -236,11 +239,7 @@ public:
         hints.ai_protocol = IPPROTO_TCP;            /* Allow only TCP */
 
         // resolve the address (assumo stringa formattata come host:port)
-        if (getaddrinfo(
-                    (address.substr(0, address.find(":"))).c_str(),
-                    (address.substr(address.find(":")+1, address.length())).c_str(),
-                    &hints, &result)
-                != 0)
+        if (getaddrinfo(host.c_str(), svc.c_str(), &hints, &result) != 0)
             return nullptr;
 
         // try to connect to a possible one of the resolution results

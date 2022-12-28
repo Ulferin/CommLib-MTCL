@@ -165,7 +165,7 @@ public:
         manager_name = s.substr(s.find(":")+1, s.length());
         new_connection_topic = manager_name + MQTT_CONNECTION_TOPIC;
 
-		MTCL_MQTT_PRINT("listening on the connection topic: %s\n", new_connection_topic.c_str());
+		MTCL_MQTT_PRINT("listening on: %s ; connection topic: %s\n", s.c_str(), new_connection_topic.c_str());
         
         newConnClient->subscribe({new_connection_topic}, {0});
         
