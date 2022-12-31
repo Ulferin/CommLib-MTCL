@@ -80,9 +80,9 @@ $(function() {
 <div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160; </div>
 <div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;    <a class="code" href="classConnType.html">ConnType</a>* parent;</div>
 <div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;    std::atomic&lt;bool&gt; busy;</div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160; </div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;    std::atomic&lt;int&gt; counter = 0;</div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160; </div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;    std::atomic&lt;int&gt; counter = 0;</div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;    std::string handleName{<span class="stringliteral">&quot;no-name-provided&quot;</span>};</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;    </div>
 <div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;    <span class="keywordtype">void</span> incrementReferenceCounter(){</div>
 <div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;        counter++;</div>
 <div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;    }</div>
@@ -124,16 +124,18 @@ $(function() {
 <div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;        <span class="keywordflow">return</span> this-&gt;busy;</div>
 <div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    }</div>
 <div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160; </div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    <span class="keyword">virtual</span> ~<a class="code" href="classHandle.html">Handle</a>() {};</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160; </div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;};</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160; </div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160; </div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="keywordtype">void</span> ConnType::setAsClosed(<a class="code" href="classHandle.html">Handle</a>* h){</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    h-&gt;close();</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;}</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160; </div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    <span class="keywordtype">void</span> setName(<span class="keyword">const</span> std::string &amp;name) { handleName = name; }</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    <span class="keyword">const</span> std::string&amp; getName() { <span class="keywordflow">return</span> handleName; }</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    </div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    <span class="keyword">virtual</span> ~<a class="code" href="classHandle.html">Handle</a>() {};</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;};</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160; </div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160; </div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="keywordtype">void</span> ConnType::setAsClosed(<a class="code" href="classHandle.html">Handle</a>* h){</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    h-&gt;close();</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;}</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160; </div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassConnType_html"><div class="ttname"><a href="classConnType.html">ConnType</a></div><div class="ttdef"><b>Definition:</b> protocolInterface.hpp:10</div></div>
 <div class="ttc" id="aclassConnType_html_a87399427d64cc8f2355d4f1eb325ec71"><div class="ttname"><a href="classConnType.html#a87399427d64cc8f2355d4f1eb325ec71">ConnType::notify_yield</a></div><div class="ttdeci">virtual void notify_yield(Handle *h)=0</div><div class="ttdoc">Manage the notification of an Handle object h issuing a yield operation. After this method is complet...</div></div>
 <div class="ttc" id="aclassConnType_html_acc40e536c6fcb25fa4833320f4097a41"><div class="ttname"><a href="classConnType.html#acc40e536c6fcb25fa4833320f4097a41">ConnType::notify_close</a></div><div class="ttdeci">virtual void notify_close(Handle *h)=0</div><div class="ttdoc">Manage the notification of an Handle object h issuing a close operation. The Handle is invalidated an...</div></div>

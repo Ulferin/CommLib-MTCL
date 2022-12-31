@@ -130,7 +130,7 @@ $(function() {
 <div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;                MPI_Get_count(&amp;status, MPI_BYTE, &amp;count);</div>
 <div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;                <span class="keywordflow">return</span> count;</div>
 <div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;            } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (closing) <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;            std::this_thread::sleep_for(std::chrono::microseconds(500));</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;            std::this_thread::sleep_for(std::chrono::microseconds(MPI_POLL_TIMEOUT));</div>
 <div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;        }</div>
 <div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;        <span class="keywordflow">return</span> -1;</div>
 <div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    }</div>
