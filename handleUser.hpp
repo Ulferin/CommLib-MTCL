@@ -12,8 +12,9 @@ class HandleUser {
     bool newConnection = true;
 public:
     HandleUser() : HandleUser(nullptr, false, false) {}
-    HandleUser(Handle* h, bool r, bool n) : realHandle(h), isReadable(r), newConnection(n) {
-        if (h) h->incrementReferenceCounter();
+    HandleUser(Handle* h, bool r, bool n):
+		realHandle(h), isReadable(r), newConnection(n) {
+		if (h) h->incrementReferenceCounter();
     }
 
     HandleUser(const HandleUser&) = delete;
@@ -30,7 +31,7 @@ public:
 		return *this;
 	}
 	
-    HandleUser(HandleUser&& h) : realHandle(h.realHandle), isReadable(h.isReadable), newConnection(h.newConnection){
+    HandleUser(HandleUser&& h) : realHandle(h.realHandle), isReadable(h.isReadable), newConnection(h.newConnection) {
         h.realHandle = nullptr;
     }
     
@@ -53,6 +54,9 @@ public:
         return (size_t)realHandle;
     }
 
+	const std::string& getName() { return realHandle->getName(); }
+	void setName(const std::string& name) { realHandle->setName(name);}
+	
     ssize_t send(const void* buff, size_t size){
         newConnection = false;
         if (!realHandle || realHandle->closed) {

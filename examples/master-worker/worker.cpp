@@ -1,60 +1,79 @@
-
+/*
+ * See master.cpp file to know how to run one master and multiple workers.
+ *
+ */
+#include <cassert>
 #include <iostream>
 #include <string>
-#include <optional>
-#include <thread>
-#include <cstring>
+#include <fstream>
+#include <algorithm>
 
+#include <mtcl.hpp>
 
-#include "../../manager.hpp"
-
-#ifdef TCPWORKER
-#include "../../protocols/tcp.hpp"
-#endif
-
-#ifdef MPIWORKER
-#include "../../protocols/mpi.hpp"
-#endif
+const int headersize = 3;
+const int maxpayload = 100; 
 
 int main(int argc, char** argv){
-#ifdef MPIWORKER
-    Manager::registerType<ConnMPI>("MPI");
-#endif
+    Manager::init("client");
 
-#ifdef TCPWORKER
-    Manager::registerType<ConnTcp>("TCP");
-#endif
-    Manager::init(argc, argv);
-
-#ifdef TCPWORKER
-    Manager::listen("TCP:0.0.0.0:8000");
-#endif
-
-    bool EOSreceived = false;
-    char buffer[50];
+	int myid=0;	
+	std::ifstream input("workers.list");
+    for( std::string line; getline( input, line ); ){
+		if (line.empty()) continue;
+		if (Manager::listen(line) == 0) break;
+		++myid;
+    }
+	input.close();
+	size_t nmsgs=0;
+	bool EOSreceived=false;
     while(!EOSreceived){
         auto h = Manager::getNext();
-        if (h.isNewConnection()) continue;
-        size_t sz2 = 0;
-        h.read((char*) &sz2, 4);
+        if (h.isNewConnection()) {
+			fprintf(stderr, "worker%d ricevuta connessione\n",myid);
+			continue;
+		}
+        char len[headersize+1];
+		ssize_t r;
+        if ((r=h.receive(len, headersize)) == -1) {
+			MTCL_ERROR("[Client]:\t", "ERROR receiving the header errno=%d\n", errno);
+			h.close();
+			break;
+		}
+		if (r==0) {
+			MTCL_ERROR("[Client]:\t", "ERROR unexpected connection close (1)\n");
+			h.close();
+			break;
+		}			
+		len[headersize]='\0';
+		size_t size = std::stoi(len);
+		char buff[size+1];
+		if ((r=h.receive(buff, size)) == -1) {
+			MTCL_ERROR("[Client]:\t", "ERROR receiving the payload errno=%d\n", errno);
+			h.close();
+			break;
+		}
+		if (r==0 || (size_t)r<size) {
+			MTCL_ERROR("[Client]:\t", "ERROR unexpected connection close (2)\n");
+			h.close();
+			break;
+		}			
+		buff[size]='\0';
 
-        size_t sz = h.read(buffer, sz2);
-        if (sz == 50) {
-            int i = 0;
-            while(buffer[i]) {
-                buffer[i] = toupper(buffer[i]);
-                i++;
-            }
-            h.send(buffer, 50);
-        }
-
-        if (sz == 3){
-            EOSreceived = true;
-            h.close();
-        }
+		if (std::string(buff) == "EOS") {
+			MTCL_PRINT("[Client]:\t", "worker%d got EOS, closing!\n", myid);
+			EOSreceived = true;
+			h.close();
+		} else {
+			MTCL_PRINT("[Client]:\t", "worker%d received '%s'\n", myid, buff);
+			++nmsgs;
+			if (h.send(&buff[0], 1) == -1) {
+				MTCL_ERROR("[Client]:\t", "ERROR sending the ack errno=%d\n", errno);
+				h.close();
+				break;
+			}
+		}
     }
-
-    Manager::endM();
-   
+    Manager::finalize();
+	std::cout << "worker" << myid << " received " << nmsgs << " messages\n";
     return 0;
 }

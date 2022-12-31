@@ -59,7 +59,7 @@ public:
                 MPI_Get_count(&status, MPI_BYTE, &count);
                 return count;
             } else if (closing) return 0;
-            std::this_thread::sleep_for(std::chrono::microseconds(500));
+            std::this_thread::sleep_for(std::chrono::microseconds(MPI_POLL_TIMEOUT));
         }
         return -1;
     }
@@ -99,7 +99,7 @@ public:
         }
 
         MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-        return 0;
+		return 0;
     }
 
     int listen(std::string s) {

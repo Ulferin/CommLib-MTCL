@@ -4,13 +4,14 @@
  */
 
 #include <cassert>
+#include <cmath>
 #include <iostream>
 #include <iomanip>
 #include <vector>
 #include "mtcl.hpp"
 
 const int     NROUND = 5;
-const int          N = 18;
+const int          N = 19;
 const size_t minsize = 16;              // bytes
 const size_t maxsize = (1<<N)*minsize;
 
@@ -69,7 +70,7 @@ void Client(const char serveraddr[]) {
 	assert(buff);
 	memset(buff, 'a', maxsize);
 
-	std::vector<std::pair<size_t, double>> times;
+	std::vector<std::pair<double, double>> times;
 	
 	for(size_t size=minsize; size<=maxsize; size *= 2) {
 		std::chrono::duration<double> V[NROUND];
@@ -93,14 +94,26 @@ void Client(const char serveraddr[]) {
 			V[i] = end-start;
 			sum += V[i].count();
 		}
-		times.push_back(std::make_pair(size, sum/NROUND));
+		double mean = sum/NROUND;
+		double s{0.0};
+		for(int i=0;i<NROUND;++i) {
+			s += std::pow(V[i].count() - mean, 2);
+		}
+		times.push_back(std::make_pair(sum/NROUND, std::sqrt(s/(NROUND-1))));
 	}
 	delete [] buff;
 	handle.close();
 
-	for(auto& p:times) {
-		std::cout << std::fixed << std::setprecision(3) << "size: " << p.first << " time: "
-				  << p.second*1000.0 << " (ms)\n";
+	size_t size = minsize;
+	std::cout << "   size      avg (ms)       std (ms)        Bw (MB/s)\n";
+	std::cout << "-----------------------------------------------------\n";
+	for(auto& p:times) {		
+		std::cout << std::fixed << std::setprecision(3)
+				  << std::setw(7) << size << "        "
+				  << std::setw(6) << p.first*1000.0 << "         "
+				  << std::setw(6) << p.second*1000.0 << "        "
+				  << std::setw(9) << size/(1048576*p.first) << "\n";
+		size *= 2;
 	}
 	
 }

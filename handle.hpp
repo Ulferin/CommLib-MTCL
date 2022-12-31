@@ -13,9 +13,9 @@ class Handle {
 
     ConnType* parent;
     std::atomic<bool> busy;
-
     std::atomic<int> counter = 0;
-
+	std::string handleName{"no-name-provided"};
+	
     void incrementReferenceCounter(){
         counter++;
     }
@@ -78,8 +78,10 @@ public:
         return this->busy;
     }
 
+	void setName(const std::string &name) { handleName = name; }
+	const std::string& getName() { return handleName; }
+	
     virtual ~Handle() {};
-
 };
 
 

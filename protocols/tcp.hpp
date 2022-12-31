@@ -90,24 +90,23 @@ protected:
 #endif
 
 private:
-    /**
+
+	/**
      * @brief Initializes the main listening socket for this Handle
      * 
      * @return int status code
      */
     int _init() {
         if ((listen_sck=socket(AF_INET, SOCK_STREAM, 0)) < 0){
-			MTCL_TCP_ERROR("socket ERROR: errno=%d -- %s\n", errno, strerror(errno));
             return -1;
         }
 
         int enable = 1;
         // enable the reuse of the address
         if (setsockopt(listen_sck, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0) {
-			MTCL_TCP_ERROR("setsockopt ERROR: errno=%d -- %s\n", errno, strerror(errno));
             return -1;
         }
-
+#if 0
         struct sockaddr_in serv_addr;
         serv_addr.sin_family = AF_INET; 
         serv_addr.sin_addr.s_addr = INADDR_ANY; // listening on any interface
@@ -115,12 +114,31 @@ private:
 
         int bind_err;
         if ((bind_err = bind(listen_sck, (struct sockaddr*)&serv_addr,sizeof(serv_addr))) < 0){
-			MTCL_TCP_ERROR("bind ERROR: errno=%d -- %s\n", errno, strerror(errno));
             return -1;
         }
+#else
+		struct addrinfo hints;
+		struct addrinfo *result, *rp;
+		memset(&hints, 0, sizeof(hints));
+		hints.ai_family   = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
+		hints.ai_socktype = SOCK_STREAM;  /* Stream socket */
+		hints.ai_flags    = AI_PASSIVE;
+		hints.ai_protocol = IPPROTO_TCP;  /* Allow only TCP */
+		if (getaddrinfo(address.c_str(), std::to_string(port).c_str(), &hints, &result) != 0)
+			return -1;
 
+		bool ok = false;
+		for (rp = result; rp != NULL; rp = rp->ai_next) {
+			if (bind(listen_sck, rp->ai_addr, (int)rp->ai_addrlen) < 0){
+				continue;
+			}
+			ok = true;
+			break;
+		}
+		free(result);
+		if (!ok) return -1;
+#endif		
         if (::listen(listen_sck, TCP_BACKLOG) < 0){
-			MTCL_TCP_ERROR("listen ERROR: errno=%d -- %s\n", errno, strerror(errno));
             return -1;
         }
 
@@ -139,6 +157,7 @@ public:
 		// invalid fields.
         FD_ZERO(&set);
         FD_ZERO(&tmpset);
+		listen_sck=-1;
 		fdmax = -1;
         return 0;
     }
