@@ -101,19 +101,19 @@ int main(int argc, char** argv){
             if(handle.isNewConnection()) {             
                 char buff[5];
                 if(handle.receive(buff, sizeof(buff)) == 0) {
-                    MTCL_PRINT("[Server]:\t", "Connection closed by peer\n");
+                    MTCL_PRINT(0, "[Server]:\t", "Connection closed by peer\n");
 				} else {
-					MTCL_PRINT("[Server]:\t", "Received \"%s\"\n", buff);
+					MTCL_PRINT(0, "[Server]:\t", "Received \"%s\"\n", buff);
 				}
                 char reply[5]{'p','o','n','g','\0'};
                 if (handle.send(reply, sizeof(reply)) != 5) {
 					MTCL_ERROR("[Server]:\t", "ERROR sending pong message\n");
 				} else {
-					MTCL_PRINT("[Server]:\t", "Sent: \"%s\"\n",reply);
+					MTCL_PRINT(0, "[Server]:\t", "Sent: \"%s\"\n",reply);
 				}
             }
             else {
-				MTCL_PRINT("[Server]:\t", "Connection closed by peer\n");
+				MTCL_PRINT(0, "[Server]:\t", "Connection closed by peer\n");
 				handle.close();
 				count++;
 			}
@@ -130,17 +130,17 @@ int main(int argc, char** argv){
 					MTCL_ERROR("[Client]:\t", "ERROR sending ping message\n");
 					break;
 				}
-				MTCL_PRINT("Client]:\t", "Sent: \"%s\"\n", buff);
+				MTCL_PRINT(0, "Client]:\t", "Sent: \"%s\"\n", buff);
 				connected=true;
 				break;
 			} else { // implicit handle.yield() when going out of scope
-				MTCL_PRINT("Client]:\t", "connection failed\n");
+				MTCL_PRINT(0, "Client]:\t", "connection failed\n");
 				std::this_thread::sleep_for(std::chrono::seconds(1));
-				MTCL_PRINT("Client]:\t", "retry....\n");
+				MTCL_PRINT(0, "Client]:\t", "retry....\n");
 			}
 		}
 		if (!connected) {
-			MTCL_PRINT("[Client]:\t", "unable to connect to the server, exit!\n");
+			MTCL_PRINT(0, "[Client]:\t", "unable to connect to the server, exit!\n");
 			Manager::finalize();
 			return -1;
 		}
@@ -155,10 +155,10 @@ int main(int argc, char** argv){
 			if (r != sizeof(buff)) {
 				MTCL_ERROR("[Client]:\t", "ERROR receiving pong message\n");
 			} else {
-				MTCL_PRINT("[Client]:\t", "Received: \"%s\"\n", buff);
+				MTCL_PRINT(0, "[Client]:\t", "Received: \"%s\"\n", buff);
 			}
             handle.close();
-			MTCL_PRINT("[Client]:\t", "Connection closed locally, notified the server.\n");
+			MTCL_PRINT(0, "[Client]:\t", "Connection closed locally, notified the server.\n");
         }
     }
 

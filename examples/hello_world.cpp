@@ -66,7 +66,7 @@ void Server() {
 		// Is there something ready?
 		auto handle = Manager::getNext(300ms);
 		if (!handle.isValid()) { // timeout expires
-			MTCL_PRINT("[SERVER]:\t", "timeout expires\n");
+			MTCL_PRINT(10, "[SERVER]:\t", "timeout expires\n");
 			continue; 
 		}
 
@@ -93,7 +93,7 @@ void Server() {
 		}
 		buff[size]='\0';
 		if (std::string(buff) == bye) {
-			MTCL_PRINT("[SERVER]:\t", "The client sent the bye message! Goodbye!\n");
+			MTCL_PRINT(0, "[SERVER]:\t", "The client sent the bye message! Goodbye!\n");
 			handle.close();
 			continue;
 		}		
@@ -102,7 +102,7 @@ void Server() {
 			handle.close();
 		}
 	}
-	MTCL_PRINT("[SERVER]:\t", "Goodbye!\n");
+	MTCL_PRINT(0,"[SERVER]:\t", "Goodbye!\n");
 }
 // It connects to the server waiting for the welcome message. Then it sends the string
 // "ciao" incrementally to the server, receiving each message back from the server.

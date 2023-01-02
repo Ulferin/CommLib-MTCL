@@ -14,11 +14,11 @@
  *    MPI:1:10
  *
  *  start one worker on node1 and one worker on node2:
- *  $node1> MTCL_VERBOSE=1 ./worker 
- *  $node2> MTCL_VERBOSE=1 ./worker
+ *  $node1> MTCL_VERBOSE=all ./worker 
+ *  $node2> MTCL_VERBOSE=all ./worker
  *  then execute
- *  mpirun -n 2 --host node3,node4 -x MTCL_VERBOSE=1 ./worker : \
- *         -n 1 --host node5 -x MTCL_VERBOSE=1 ./master
+ *  mpirun -n 2 --host node3,node4 -x MTCL_VERBOSE=all ./worker : \
+ *         -n 1 --host node5 -x MTCL_VERBOSE=all ./master
  *
  */
 
@@ -65,7 +65,7 @@ int main(int argc, char** argv){
     }
 	input.close();
     for( auto& c: conns) {
-        MTCL_PRINT("[Server]:\t", "Connecting to: %s\n", c.c_str());
+        MTCL_PRINT(10, "[Server]:\t", "Connecting to: %s\n", c.c_str());
 		for(int i=0;i<5;++i) {
 			auto h = Manager::connect(c);
 			if (!h.isValid()) {
@@ -73,8 +73,8 @@ int main(int argc, char** argv){
 				continue;
 			}
 			writeHandles.emplace_back(std::move(h));
-			writeHandles.back().setName("worker" + std::to_string(writeHandles.size()));
-			MTCL_PRINT("[Server]:\t", "connected to %s\n", writeHandles.back().getName().c_str());
+			writeHandles.back().setName("worker" + std::to_string(writeHandles.size()-1));
+			MTCL_PRINT(10, "[Server]:\t", "connected to %s\n", writeHandles.back().getName().c_str());
 			break;
 		}
 	}
@@ -89,7 +89,7 @@ int main(int argc, char** argv){
 					  for(int i = 0; i < NMSGS; i++) {
 						  int sz = (rand() % maxpayload) + 1;						  
 						  std::string str = random_string(sz);
-						  MTCL_PRINT("[Server]:\t", "sending %s to worker%d (%s)\n", str.c_str()+headersize, i%workers, writeHandles[i%workers].getName().c_str());
+						  MTCL_PRINT(1, "[Server]:\t", "sending %s to worker %s\n", str.c_str()+headersize, writeHandles[i%workers].getName().c_str());
 						  
 						  if (writeHandles[i % workers].send(str.c_str(), headersize) == -1) {
 							  MTCL_ERROR("[Server]:\t", "ERROR sending the header message, errno=%d\n", errno);
@@ -97,7 +97,7 @@ int main(int argc, char** argv){
 						  if (writeHandles[i % workers].send(str.c_str()+headersize, sz) == -1) {
 							  MTCL_ERROR("[Server]:\t", "ERROR sending the header message, errno=%d\n", errno);
 						  }
-						  /// NOTE: for MPI-based connections, send and receive must be paired calls, therefore a single send delivering
+						  /// NOTE: for MPI-based connections, send and receive calls must be paired, thus a single send delivering
 						  /// the header and payload together doesn't work if the peer try to receive them in two distinct receives.
 						  /// if (writeHandles[i % workers].send(str.c_str(), sz+headersize) == -1) {
 						  ///   MTCL_ERROR("[Server]:\t", "ERROR sending the message, errno=%d\n", errno);
@@ -116,7 +116,7 @@ int main(int argc, char** argv){
 							  writeHandles[i].close();
 							  continue;
 						  }
-						  MTCL_PRINT("[Server]:\t", "Sent EOS to worker%d, %s\n", i, writeHandles[i].getName().c_str());
+						  MTCL_PRINT(10, "[Server]:\t", "Sent EOS to worker%d, %s\n", i, writeHandles[i].getName().c_str());
 					  }
 				  });
 
@@ -128,7 +128,7 @@ int main(int argc, char** argv){
         ssize_t r;
 		if ((r=h.receive(&ack, 1)) == -1) {
 			if (errno==ECONNRESET) {
-				MTCL_PRINT("[Server]:\t", "connection closed by worker %s\n", h.getName().c_str());
+				MTCL_PRINT(1, "[Server]:\t", "connection closed by worker %s\n", h.getName().c_str());
 				--workers;
 				h.close();
 				continue;
@@ -138,18 +138,18 @@ int main(int argc, char** argv){
 			}
 		}
         if (r == 0)	{
-			MTCL_PRINT("[Server]:\t", "connection closed by worker %s\n", h.getName().c_str());
+			MTCL_PRINT(1, "[Server]:\t", "connection closed by worker %s\n", h.getName().c_str());
 			--workers;
 			h.close();
-		} else MTCL_PRINT("[Server]:\t", "received ack from worker %s\n", h.getName().c_str()); 
+		} else MTCL_PRINT(10, "[Server]:\t", "received ack from worker %s\n", h.getName().c_str()); 
     }
 
-	MTCL_PRINT("[Server]:\t", "closing handles\n");
+	MTCL_PRINT(10, "[Server]:\t", "closing handles\n");
 	for(auto& h : writeHandles)	h.close(); 
 	
     t.join();
 
-	MTCL_PRINT("[Server]:\t", "finalizing\n");
+	MTCL_PRINT(10, "[Server]:\t", "finalizing\n");
     Manager::finalize();
    
     return 0;

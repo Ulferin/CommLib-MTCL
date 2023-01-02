@@ -60,6 +60,7 @@ public:
     ssize_t send(const void* buff, size_t size){
         newConnection = false;
         if (!realHandle || realHandle->closed) {
+			MTCL_PRINT(0, "[internal]:\t", "HandleUser::send EBADF\n");
             errno = EBADF; // the "communicator" is not valid or closed
             return -1;
         }
@@ -69,10 +70,12 @@ public:
     ssize_t receive(void* buff, size_t size) {
         newConnection = false;
         if (!isReadable){
+			MTCL_PRINT(0, "[internal]:\t", "HandleUser::receive EINVAL\n");
             errno = EINVAL; // unable to read from the "communicator"
             return -1;
         }
         if (!realHandle || realHandle->closed) {
+			MTCL_PRINT(0, "[internal]:\t", "HandleUser::receive EBADF\n");
             errno = EBADF; // the "communicator" is not valid or closed
             return -1;
         };

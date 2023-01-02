@@ -33,7 +33,7 @@
 #include "protocols/mqtt.hpp"
 #endif
 
-bool mtcl_verbose=false;
+int  mtcl_verbose = -1;
 
 /**
  * Main class for the library
@@ -72,7 +72,6 @@ private:
         std::unique_lock lk(mutex);
         handleReady.push(el);
 		condv.notify_one();
-        lk.unlock();
     }
 #endif
 	
@@ -80,9 +79,9 @@ private:
         while(!end){
             for(auto& [prot, conn] : protocolsMap) {
                 conn->update();
-            }
-            // To prevent starvation of application threads
-            std::this_thread::sleep_for(std::chrono::milliseconds(IO_THREAD_POLLING_TIMEOUT));
+            }			
+			if (IO_THREAD_POLL_TIMEOUT)
+				std::this_thread::sleep_for(std::chrono::microseconds(IO_THREAD_POLL_TIMEOUT));
         }
     }
 
@@ -149,7 +148,21 @@ public:
     static void init(std::string appName, std::string configFile1 = "", std::string configFile2 = "") {
 		std::signal(SIGPIPE, SIG_IGN);
 
-		if (std::getenv("MTCL_VERBOSE")) mtcl_verbose=true;
+		char *level;
+		if ((level=std::getenv("MTCL_VERBOSE"))!= NULL) {
+			if (std::string(level)=="all" ||
+				std::string(level)=="ALL" ||
+				std::string(level)=="max" ||
+				std::string(level)=="MAX")
+				mtcl_verbose = std::numeric_limits<int>::max(); // print everything
+			else
+				try {
+					mtcl_verbose=std::stoi(level);
+					if (mtcl_verbose<=0) mtcl_verbose=1;
+				} catch(...) {
+					MTCL_ERROR("[internal]:\t", "invalid MTCL_VERBOSE value, it should be a number or all|ALL|max|MAX\n");
+				}
+		}
 		
         Manager::appName = appName;
 
@@ -215,8 +228,10 @@ public:
 			el.second->setBusy(true);
 			return HandleUser(el.second, true, el.first);
 		}
-		// if us is not multiple of the IO_THREAD_POLLING_TIMEOUT we wait a bit less....
-		size_t niter = us/std::chrono::milliseconds(IO_THREAD_POLLING_TIMEOUT);
+		// if us is not multiple of the IO_THREAD_POLL_TIMEOUT we wait a bit less....
+		size_t niter = us.count(); // in case IO_THREAD_POLL_TIMEOUT is set to 0
+		if (IO_THREAD_POLL_TIMEOUT)
+			niter = us/std::chrono::milliseconds(IO_THREAD_POLL_TIMEOUT);
 		if (niter==0) niter++;
 		size_t i=0;
 		do { 
@@ -231,7 +246,8 @@ public:
 			}
 			if (i >= niter) break;
 			++i;
-			std::this_thread::sleep_for(std::chrono::milliseconds(IO_THREAD_POLLING_TIMEOUT));	
+			if (IO_THREAD_POLL_TIMEOUT)
+				std::this_thread::sleep_for(std::chrono::microseconds(IO_THREAD_POLL_TIMEOUT));	
 		} while(true);
 		return HandleUser(nullptr, true, true);
     }	

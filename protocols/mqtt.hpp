@@ -40,12 +40,11 @@ public:
 
     ssize_t send(const void* buff, size_t size) {
         if(closing) {
+			MTCL_MQTT_PRINT(100, "HandleMQTT::send connection ERROR\n");
             errno = ECONNRESET;
             return -1;
         }
-
         client->publish(out_topic, buff, size);
-
         return size;
     }
 
@@ -65,6 +64,7 @@ public:
             // A message has been received (either on "in_topic" or "in_topic+exit")
             if(res) {
                 if(msg->get_topic() == in_topic+MQTT_EXIT_TOPIC) {
+					MTCL_MQTT_PRINT(100, "HandleMQTT::receive connection ERROR\n");
                     errno = ECONNRESET;
                     closing = true;
                     return 0;
@@ -81,17 +81,13 @@ public:
             }
 
             if(closing) {
-                MTCL_MQTT_PRINT("receive: closing connection\n");
                 return 0;
             }
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(MQTT_POLL_TIMEOUT));
-
-        }
-        
+			if (MQTT_POLL_TIMEOUT) 
+				std::this_thread::sleep_for(std::chrono::milliseconds(MQTT_POLL_TIMEOUT));
+        }        
         return 0;
     }
-
 
     ~HandleMQTT() {
         delete client;
@@ -123,9 +119,8 @@ private:
             aux_cli->subscribe({topic, topic+MQTT_EXIT_TOPIC}, {0, 0});
         }
         else {
-			MTCL_MQTT_PRINT("createClient: session already present. Skipping subscribe.\n");
+			MTCL_MQTT_PRINT(100, "ConnMQTT::createClient: session already present. Skipping subscribe.\n");
         }
-
     }
 
 protected:
@@ -154,7 +149,8 @@ public:
 
 		mqtt::connect_response rsp = newConnClient->connect(connOpts);
         if(rsp.is_session_present()) {
-			MTCL_MQTT_ERROR("Session already present. Use a different ID for the MQTT client\n");
+			MTCL_MQTT_PRINT(100, "ConnMQTT::init: session already present. Use a different ID for the MQTT client\n");
+			errno = ECOMM;
             return -1;
         }
 		
@@ -165,7 +161,7 @@ public:
         manager_name = s.substr(s.find(":")+1, s.length());
         new_connection_topic = manager_name + MQTT_CONNECTION_TOPIC;
 
-		MTCL_MQTT_PRINT("listening on: %s ; connection topic: %s\n", s.c_str(), new_connection_topic.c_str());
+		MTCL_MQTT_PRINT(1, "listening on: %s ; connection topic: %s\n", s.c_str(), new_connection_topic.c_str());
         
         newConnClient->subscribe({new_connection_topic}, {0});
         
@@ -211,13 +207,13 @@ public:
         }
         else {
 			if (!newConnClient->is_connected()) {
-				MTCL_MQTT_PRINT("update: lost connection, waiting a while for reconnecting\n");
+				MTCL_MQTT_PRINT(100, "update: lost connection, waiting a while for reconnecting\n");
 				std::this_thread::sleep_for(std::chrono::milliseconds(MQTT_CONNECT_TIMEOUT));
 				if (!newConnClient->is_connected()) {
-					MTCL_MQTT_PRINT("update: no connection yet, keep going...\n");
+					MTCL_MQTT_PRINT(100, "ConnMQTT::update: no connection yet, keep going...\n");
 					return;
 				}
-				MTCL_MQTT_PRINT("update: re-established connection\n");
+				MTCL_MQTT_PRINT(100, "ConnMQTT::update: re-established connection\n");
 			}
 		}
 		
@@ -257,8 +253,6 @@ public:
 
         client->connect(connOpts);
         client->subscribe({topic_out, topic_out+MQTT_EXIT_TOPIC}, {0,0});
-
-		MTCL_MQTT_PRINT("connecting to: %s\n", (manager_id+MQTT_CONNECTION_TOPIC).c_str());
 		
 		auto pubmsg = mqtt::make_message(manager_id + MQTT_CONNECTION_TOPIC, topic);
 		pubmsg->set_qos(1);
@@ -273,6 +267,7 @@ public:
 			REMOVE_CODE_IF(std::unique_lock lock(shm));
 			connections[handle] = false;
         }
+		MTCL_MQTT_PRINT(100, "connected to: %s\n", (manager_id+MQTT_CONNECTION_TOPIC).c_str());
         return handle;
     }
 

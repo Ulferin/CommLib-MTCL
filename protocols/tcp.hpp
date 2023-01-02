@@ -98,25 +98,17 @@ private:
      */
     int _init() {
         if ((listen_sck=socket(AF_INET, SOCK_STREAM, 0)) < 0){
+			MTCL_TCP_PRINT(100, "ConnTcp::_init socket errno=%d\n", errno);
             return -1;
         }
 
         int enable = 1;
         // enable the reuse of the address
         if (setsockopt(listen_sck, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0) {
+			MTCL_TCP_PRINT(100, "ConnTcp::_init setsockopt errno=%d\n", errno);
             return -1;
         }
-#if 0
-        struct sockaddr_in serv_addr;
-        serv_addr.sin_family = AF_INET; 
-        serv_addr.sin_addr.s_addr = INADDR_ANY; // listening on any interface
-        serv_addr.sin_port = htons(port);
 
-        int bind_err;
-        if ((bind_err = bind(listen_sck, (struct sockaddr*)&serv_addr,sizeof(serv_addr))) < 0){
-            return -1;
-        }
-#else
 		struct addrinfo hints;
 		struct addrinfo *result, *rp;
 		memset(&hints, 0, sizeof(hints));
@@ -124,21 +116,27 @@ private:
 		hints.ai_socktype = SOCK_STREAM;  /* Stream socket */
 		hints.ai_flags    = AI_PASSIVE;
 		hints.ai_protocol = IPPROTO_TCP;  /* Allow only TCP */
-		if (getaddrinfo(address.c_str(), std::to_string(port).c_str(), &hints, &result) != 0)
+		if (getaddrinfo(address.c_str(), std::to_string(port).c_str(), &hints, &result) != 0) {
+			MTCL_TCP_PRINT(100, "ConnTcp::_init getaddrinfo errno=%d\n", errno);		
 			return -1;
+		}
 
 		bool ok = false;
 		for (rp = result; rp != NULL; rp = rp->ai_next) {
 			if (bind(listen_sck, rp->ai_addr, (int)rp->ai_addrlen) < 0){
+				MTCL_TCP_PRINT(100, "ConnTcp::_init bind errno=%d, continue\n", errno);
 				continue;
 			}
 			ok = true;
 			break;
 		}
 		free(result);
-		if (!ok) return -1;
-#endif		
+		if (!ok) {
+			MTCL_TCP_PRINT(100, "ConnTcp::_init bind loop exit with errno=%d\n", errno);
+			return -1;
+		}
         if (::listen(listen_sck, TCP_BACKLOG) < 0){
+			MTCL_TCP_PRINT(100, "ConnTcp::_init listen errno=%d\n", errno);
             return -1;
         }
 
@@ -166,10 +164,11 @@ public:
         address = s.substr(0, s.find(":"));
         port = stoi(s.substr(address.length()+1));
 
-		if (this->_init())
+		if (this->_init()) {			
 			return -1;
+		}
 		
-        MTCL_TCP_PRINT("listening on: %s:%d\n", address.c_str(),port);
+        MTCL_TCP_PRINT(1, "listening on: %s:%d\n", address.c_str(),port);
 
         // intialize both sets (master, temp)
         FD_ZERO(&set);
@@ -197,7 +196,7 @@ public:
         struct timeval wait_time = {.tv_sec=0, .tv_usec=TCP_POLL_TIMEOUT};
 		int nready=0;
         switch(nready=select(fdmax+1, &tmpset, NULL, NULL, &wait_time)) {
-		case -1: MTCL_TCP_ERROR("select ERROR: errno=%d -- %s\n", errno, strerror(errno));
+		case -1: MTCL_TCP_ERROR("ConnTcp::update select ERROR: errno=%d -- %s\n", errno, strerror(errno));
 		case  0: return;
         }
 
@@ -206,7 +205,7 @@ public:
                 if (idx == this->listen_sck) {
                     int connfd = accept(this->listen_sck, (struct sockaddr*)NULL ,NULL);
                     if (connfd == -1){
-						MTCL_TCP_ERROR("accept ERROR: errno=%d -- %s\n", errno, strerror(errno));
+						MTCL_TCP_ERROR("ConnTcp::update accept ERROR: errno=%d -- %s\n", errno, strerror(errno));
                         return;
                     }
 
@@ -244,7 +243,7 @@ public:
 		const std::string host = address.substr(0, address.find(":"));
 		const std::string svc  = address.substr(host.length()+1);
 		
-		MTCL_TCP_PRINT("connect to %s:%s\n", host.c_str(), svc.c_str());
+		MTCL_TCP_PRINT(100, "connect to %s:%s\n", host.c_str(), svc.c_str());
 
         int fd;
 
@@ -252,21 +251,25 @@ public:
         struct addrinfo *result, *rp;
 
         memset(&hints, 0, sizeof(hints));
-        hints.ai_family = AF_UNSPEC;                /* Allow IPv4 or IPv6 */
+        hints.ai_family   = AF_UNSPEC;              /* Allow IPv4 or IPv6 */
         hints.ai_socktype = SOCK_STREAM;            /* Stream socket */
-        hints.ai_flags = 0;
+        hints.ai_flags    = 0;
         hints.ai_protocol = IPPROTO_TCP;            /* Allow only TCP */
 
         // resolve the address (assumo stringa formattata come host:port)
-        if (getaddrinfo(host.c_str(), svc.c_str(), &hints, &result) != 0)
+        if (getaddrinfo(host.c_str(), svc.c_str(), &hints, &result) != 0) {
+			MTCL_TCP_PRINT(100, "ConnTcp::connect  getaddrinfo errno=%d\n", errno);
             return nullptr;
+		}
 
         // try to connect to a possible one of the resolution results
         for (rp = result; rp != NULL; rp = rp->ai_next) {
             fd = socket(rp->ai_family, rp->ai_socktype,
                             rp->ai_protocol);
-            if (fd == -1)
+            if (fd == -1) {
+				MTCL_TCP_PRINT(100, "ConnTcp::connect socket errno=%d\n", errno);
                 continue;
+			}
 
             if (::connect(fd, rp->ai_addr, rp->ai_addrlen) != -1)
                 break;                  /* Success */

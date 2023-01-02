@@ -4,26 +4,27 @@
 
 // -------------- some configuration parameters ----------------
 
-const int IO_THREAD_POLLING_TIMEOUT= 10;   // milliseconds
+// all timeouts are in microseconds
+const unsigned IO_THREAD_POLL_TIMEOUT  = 10; 
 
 // ------ TCP ------
-const int TCP_BACKLOG              = 128;
-const int TCP_POLL_TIMEOUT         = 10;   // microseconds
+const unsigned TCP_BACKLOG             = 128;
+const unsigned TCP_POLL_TIMEOUT        = 10; 
 
 // ------ MPI ------
-const int MPI_POLL_TIMEOUT         = 10;   // microseconds
-const int MPI_CONNECTION_TAG       = 0;
-const int MPI_DISCONNECT_TAG       = 1;
+const unsigned MPI_POLL_TIMEOUT        = 10; 
+const unsigned MPI_CONNECTION_TAG      = 0;
+const unsigned MPI_DISCONNECT_TAG      = 1;
 
 // ------ MPIP2P ------
-const int MPIP2P_POLL_TIMEOUT      = 10;   // microseconds
-const int MPIP2P_DISCONNECT_TAG    = 42;   // <----??????
+const unsigned MPIP2P_POLL_TIMEOUT     = 10; 
+const unsigned MPIP2P_DISCONNECT_TAG   = 42;   // <----??????
 const char MPIP2P_STOP_PROCESS[]   = "stop_accept";
 const char MPIP2P_PUBLISH_NAME[]   = "test_server";
 
 // ------- MQTT -----
-const int MQTT_POLL_TIMEOUT        = 10;   // milliseconds
-const int MQTT_CONNECT_TIMEOUT     = 100;  // milliseconds  // <----- ??????
+const unsigned MQTT_POLL_TIMEOUT       = 10;   // milliseconds
+const unsigned MQTT_CONNECT_TIMEOUT    = 100;  // milliseconds  // <----- ??????
 const std::string MQTT_OUT_SUFFIX{"-out"};
 const std::string MQTT_IN_SUFFIX{"-in"};
 const std::string MQTT_MANAGER_PSWD{"manager_passwd"};

@@ -29,7 +29,7 @@ int main(int argc, char** argv){
     while(!EOSreceived){
         auto h = Manager::getNext();
         if (h.isNewConnection()) {
-			fprintf(stderr, "worker%d ricevuta connessione\n",myid);
+			MTCL_PRINT(10, "[Client]:\t", "worker%d has got a new connection\n", myid);
 			continue;
 		}
         char len[headersize+1];
@@ -60,11 +60,11 @@ int main(int argc, char** argv){
 		buff[size]='\0';
 
 		if (std::string(buff) == "EOS") {
-			MTCL_PRINT("[Client]:\t", "worker%d got EOS, closing!\n", myid);
+			MTCL_PRINT(10, "[Client]:\t", "worker%d got EOS, closing!\n", myid);
 			EOSreceived = true;
 			h.close();
 		} else {
-			MTCL_PRINT("[Client]:\t", "worker%d received '%s'\n", myid, buff);
+			MTCL_PRINT(1, "[Client]:\t", "worker%d received '%s'\n", myid, buff);
 			++nmsgs;
 			if (h.send(&buff[0], 1) == -1) {
 				MTCL_ERROR("[Client]:\t", "ERROR sending the ack errno=%d\n", errno);
