@@ -127,41 +127,44 @@ $(function() {
 <div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    ssize_t send(<span class="keyword">const</span> <span class="keywordtype">void</span>* buff, <span class="keywordtype">size_t</span> size){</div>
 <div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        newConnection = <span class="keyword">false</span>;</div>
 <div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;        <span class="keywordflow">if</span> (!realHandle || realHandle-&gt;closed) {</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;            errno = EBADF; <span class="comment">// the &quot;communicator&quot; is not valid or closed</span></div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;            <span class="keywordflow">return</span> -1;</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;        }</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;        <span class="keywordflow">return</span> realHandle-&gt;<a class="code" href="classHandle.html#aae538673ad7023a3f7c298a7cfd5f513">send</a>(buff, size);</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    }</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160; </div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    ssize_t receive(<span class="keywordtype">void</span>* buff, <span class="keywordtype">size_t</span> size) {</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;        newConnection = <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;        <span class="keywordflow">if</span> (!isReadable){</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;            errno = EINVAL; <span class="comment">// unable to read from the &quot;communicator&quot;</span></div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;            <span class="keywordflow">return</span> -1;</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        }</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        <span class="keywordflow">if</span> (!realHandle || realHandle-&gt;closed) {</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;            errno = EBADF; <span class="comment">// the &quot;communicator&quot; is not valid or closed</span></div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;            <span class="keywordflow">return</span> -1;</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;        };</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;        <span class="keywordflow">return</span> realHandle-&gt;<a class="code" href="classHandle.html#a9050a62bad7183e263f1eb55bb251780">receive</a>(buff, size);</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    }</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160; </div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    <span class="keywordtype">void</span> close(){</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;        <span class="keywordflow">if</span> (realHandle) realHandle-&gt;close();</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    }</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160; </div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    ~<a class="code" href="classHandleUser.html">HandleUser</a>(){</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;        <span class="comment">// if this handle is readable and it is not closed, when i destruct this handle implicitly i&#39;m giving the control to the runtime.</span></div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        <span class="keywordflow">if</span> (isReadable &amp;&amp; realHandle &amp;&amp; !realHandle-&gt;closed) this-&gt;yield();</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160; </div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;        <span class="comment">// decrement the reference counter of the wrapped handle to manage its destruction.</span></div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;        <span class="keywordflow">if</span> (realHandle) realHandle-&gt;decrementReferenceCounter();</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    }</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160; </div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160; </div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;};</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;            MTCL_PRINT(0, <span class="stringliteral">&quot;[internal]:\t&quot;</span>, <span class="stringliteral">&quot;HandleUser::send EBADF\n&quot;</span>);</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;            errno = EBADF; <span class="comment">// the &quot;communicator&quot; is not valid or closed</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;            <span class="keywordflow">return</span> -1;</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;        }</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;        <span class="keywordflow">return</span> realHandle-&gt;<a class="code" href="classHandle.html#aae538673ad7023a3f7c298a7cfd5f513">send</a>(buff, size);</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    }</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160; </div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    ssize_t receive(<span class="keywordtype">void</span>* buff, <span class="keywordtype">size_t</span> size) {</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;        newConnection = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;        <span class="keywordflow">if</span> (!isReadable){</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;            MTCL_PRINT(0, <span class="stringliteral">&quot;[internal]:\t&quot;</span>, <span class="stringliteral">&quot;HandleUser::receive EINVAL\n&quot;</span>);</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;            errno = EINVAL; <span class="comment">// unable to read from the &quot;communicator&quot;</span></div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;            <span class="keywordflow">return</span> -1;</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        }</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;        <span class="keywordflow">if</span> (!realHandle || realHandle-&gt;closed) {</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;            MTCL_PRINT(0, <span class="stringliteral">&quot;[internal]:\t&quot;</span>, <span class="stringliteral">&quot;HandleUser::receive EBADF\n&quot;</span>);</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;            errno = EBADF; <span class="comment">// the &quot;communicator&quot; is not valid or closed</span></div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;            <span class="keywordflow">return</span> -1;</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;        };</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;        <span class="keywordflow">return</span> realHandle-&gt;<a class="code" href="classHandle.html#a9050a62bad7183e263f1eb55bb251780">receive</a>(buff, size);</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    }</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160; </div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    <span class="keywordtype">void</span> close(){</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;        <span class="keywordflow">if</span> (realHandle) realHandle-&gt;close();</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    }</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160; </div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    ~<a class="code" href="classHandleUser.html">HandleUser</a>(){</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;        <span class="comment">// if this handle is readable and it is not closed, when i destruct this handle implicitly i&#39;m giving the control to the runtime.</span></div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;        <span class="keywordflow">if</span> (isReadable &amp;&amp; realHandle &amp;&amp; !realHandle-&gt;closed) this-&gt;yield();</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160; </div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;        <span class="comment">// decrement the reference counter of the wrapped handle to manage its destruction.</span></div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;        <span class="keywordflow">if</span> (realHandle) realHandle-&gt;decrementReferenceCounter();</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;    }</div>
 <div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160; </div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160; </div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;};</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160; </div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassConnType_html"><div class="ttname"><a href="classConnType.html">ConnType</a></div><div class="ttdef"><b>Definition:</b> protocolInterface.hpp:10</div></div>
 <div class="ttc" id="aclassHandleUser_html"><div class="ttname"><a href="classHandleUser.html">HandleUser</a></div><div class="ttdef"><b>Definition:</b> handleUser.hpp:7</div></div>
 <div class="ttc" id="aclassHandle_html"><div class="ttname"><a href="classHandle.html">Handle</a></div><div class="ttdef"><b>Definition:</b> handle.hpp:9</div></div>
