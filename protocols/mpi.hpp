@@ -49,25 +49,32 @@ public:
         MPI_Status status; 
         int count;
         int flag = 0;
-        while(true){
-            if (MPI_Iprobe(rank, tag, MPI_COMM_WORLD, &flag, &status) != MPI_SUCCESS) {
-				MTCL_MPI_PRINT(100, "HandleMPI::receive MPI_Iproble ERROR\n");
-				errno = ECOMM;
-				return -1;
-			}				
-            if (flag) {
-                if (MPI_Recv(buff, size, MPI_BYTE, rank, tag, MPI_COMM_WORLD, &status) != MPI_SUCCESS) {
-					MTCL_MPI_PRINT(100, "HandleMPI::receive MPI_Recv ERROR\n");
+		if (MPI_POLL_TIMEOUT) {
+			while(true){
+				if (MPI_Iprobe(rank, tag, MPI_COMM_WORLD, &flag, &status) != MPI_SUCCESS) {
+					MTCL_MPI_PRINT(100, "HandleMPI::receive MPI_Iproble ERROR\n");
 					errno = ECOMM;
 					return -1;
-				}
-                MPI_Get_count(&status, MPI_BYTE, &count);
-                return count;
-            } else if (closing) return 0;
-			if (MPI_POLL_TIMEOUT)
+				}				
+				if (flag) {
+					if (MPI_Recv(buff, size, MPI_BYTE, rank, tag, MPI_COMM_WORLD, &status) != MPI_SUCCESS) {
+						MTCL_MPI_PRINT(100, "HandleMPI::receive MPI_Recv ERROR\n");
+						errno = ECOMM;
+						return -1;
+					}
+					MPI_Get_count(&status, MPI_BYTE, &count);
+					return count;
+				} else if (closing) return 0;
 				std::this_thread::sleep_for(std::chrono::microseconds(MPI_POLL_TIMEOUT));
+			}
         }
-        return -1;
+		if (MPI_Recv(buff, size, MPI_BYTE, rank, tag, MPI_COMM_WORLD, &status) != MPI_SUCCESS) {
+			MTCL_MPI_PRINT(100, "HandleMPI::receive MPI_Recv ERROR\n");
+			errno = ECOMM;
+			return -1;
+		}
+		MPI_Get_count(&status, MPI_BYTE, &count);
+		return count;
     }
 };
 
@@ -144,7 +151,6 @@ public:
 		}
         return handle;
     }
-
 
     void update() {
 

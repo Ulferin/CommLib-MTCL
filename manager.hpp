@@ -160,7 +160,7 @@ public:
 					mtcl_verbose=std::stoi(level);
 					if (mtcl_verbose<=0) mtcl_verbose=1;
 				} catch(...) {
-					MTCL_ERROR("[internal]:\t", "invalid MTCL_VERBOSE value, it should be a number or all|ALL|max|MAX\n");
+					MTCL_ERROR("[Manger]:\t", "invalid MTCL_VERBOSE value, it should be a number or all|ALL|max|MAX\n");
 				}
 		}
 		
@@ -189,7 +189,9 @@ public:
 #endif
 		end = false;
         for (auto &el : protocolsMap) {
-            el.second->init(appName);
+            if (el.second->init(appName) == -1) {
+				MTCL_PRINT(100, "[Manager]:\t", "ERROR initializing protocol %s\n", el.first.c_str());
+			}
         }
 #ifdef ENABLE_CONFIGFILE
         // listen da file di config se ce ne sono
@@ -229,6 +231,7 @@ public:
 			return HandleUser(el.second, true, el.first);
 		}
 		// if us is not multiple of the IO_THREAD_POLL_TIMEOUT we wait a bit less....
+		// if the poll timeout is 0, we just iterate us times
 		size_t niter = us.count(); // in case IO_THREAD_POLL_TIMEOUT is set to 0
 		if (IO_THREAD_POLL_TIMEOUT)
 			niter = us/std::chrono::milliseconds(IO_THREAD_POLL_TIMEOUT);

@@ -1,6 +1,13 @@
 /*
- *  For maximum performance, set to 0 all the *_POLL_TIMEOUT constants in the
+ *  For maximum performance, set to 0 the *_POLL_TIMEOUT constants in the
  *  config.hpp file and compile the program with SINGLE_IO_THREAD=1.
+ *
+ *  When using the MPI transport with the IO_THREAD present, then it is 
+ *  important to control thread affinity for example by using something like:
+ * 
+ *  mpirun --mca hwloc_base_binding_policy socket       \
+ *         -n 1 --host host1 ./p2p-perf 0 "MPI:0:10" :	\
+ *         -n 1 --host host2 ./p2p-perf 1 "MPI:0:10" 
  *
  */
 

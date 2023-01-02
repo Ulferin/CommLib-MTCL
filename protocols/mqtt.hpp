@@ -140,20 +140,30 @@ public:
 
     int init(std::string s) {
         appName = s + ":";
-        newConnClient = new mqtt::client(MQTT_SERVER_ADDRESS, appName);
+		std::string server_address{MQTT_SERVER_ADDRESS};
+		char *addr;
+		if ((addr=getenv("MQTT_SERVER_ADDRESS")) != NULL) {
+			server_address = std::string(addr);
+		}
+        newConnClient = new mqtt::client(server_address, appName);
         auto connOpts = mqtt::connect_options_builder()
             .keep_alive_interval(std::chrono::seconds(30))
             .automatic_reconnect(std::chrono::seconds(2), std::chrono::seconds(30))
             .clean_session(true)
             .finalize();
 
-		mqtt::connect_response rsp = newConnClient->connect(connOpts);
-        if(rsp.is_session_present()) {
-			MTCL_MQTT_PRINT(100, "ConnMQTT::init: session already present. Use a different ID for the MQTT client\n");
+		try {
+			mqtt::connect_response rsp = newConnClient->connect(connOpts);
+			if(rsp.is_session_present()) {
+				MTCL_MQTT_PRINT(100, "ConnMQTT::init: session already present. Use a different ID for the MQTT client\n");
+				errno = ECOMM;
+				return -1;
+			}
+		} catch(...) {
+			MTCL_MQTT_PRINT(100, "ConnMQTT::init ERROR, cannot connect to server %s\n", server_address.c_str());
 			errno = ECOMM;
-            return -1;
-        }
-		
+			return -1;
+		}		
         return 0;
     }
 
@@ -161,11 +171,16 @@ public:
         manager_name = s.substr(s.find(":")+1, s.length());
         new_connection_topic = manager_name + MQTT_CONNECTION_TOPIC;
 
-		MTCL_MQTT_PRINT(1, "listening on: %s ; connection topic: %s\n", s.c_str(), new_connection_topic.c_str());
-        
-        newConnClient->subscribe({new_connection_topic}, {0});
+		try {
+			newConnClient->subscribe({new_connection_topic}, {0});
+		} catch(...) {
+			MTCL_MQTT_PRINT(100, "ConnMQTT::listen ERROR, cannot subscribe %s\n", new_connection_topic.c_str());
+			errno = ECOMM;
+			return -1;
+		}
         
         listening = true;
+		MTCL_MQTT_PRINT(1, "listening on: %s ; connection topic: %s\n", s.c_str(), new_connection_topic.c_str());
         return 0;
     }
 

@@ -30,7 +30,8 @@ const std::string MQTT_IN_SUFFIX{"-in"};
 const std::string MQTT_MANAGER_PSWD{"manager_passwd"};
 const std::string MQTT_CONNECTION_TOPIC{"-new_connection"};
 const std::string MQTT_EXIT_TOPIC {"-exit"};
-const std::string MQTT_SERVER_ADDRESS{ "tcp://localhost:1883" };// <--- ?????
+// default broker address if not otherwise provided
+const std::string MQTT_SERVER_ADDRESS{ "tcp://localhost:1883" };
 
 
 // ------- UCX ------
