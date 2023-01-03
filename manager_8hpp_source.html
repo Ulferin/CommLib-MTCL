@@ -144,7 +144,7 @@ $(function() {
 <div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;            <span class="keywordflow">for</span>(<span class="keyword">auto</span>&amp; [prot, conn] : protocolsMap) {</div>
 <div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;                conn-&gt;update();</div>
 <div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;            }           </div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;            <span class="keywordflow">if</span> (IO_THREAD_POLL_TIMEOUT)</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;            <span class="keywordflow">if</span> constexpr (IO_THREAD_POLL_TIMEOUT)</div>
 <div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;                std::this_thread::sleep_for(std::chrono::microseconds(IO_THREAD_POLL_TIMEOUT));</div>
 <div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;        }</div>
 <div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    }</div>
@@ -277,7 +277,7 @@ $(function() {
 <div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;        <span class="comment">// if us is not multiple of the IO_THREAD_POLL_TIMEOUT we wait a bit less....</span></div>
 <div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;        <span class="comment">// if the poll timeout is 0, we just iterate us times</span></div>
 <div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;        <span class="keywordtype">size_t</span> niter = us.count(); <span class="comment">// in case IO_THREAD_POLL_TIMEOUT is set to 0</span></div>
-<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;        <span class="keywordflow">if</span> (IO_THREAD_POLL_TIMEOUT)</div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;        <span class="keywordflow">if</span> constexpr (IO_THREAD_POLL_TIMEOUT)</div>
 <div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;            niter = us/std::chrono::milliseconds(IO_THREAD_POLL_TIMEOUT);</div>
 <div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;        <span class="keywordflow">if</span> (niter==0) niter++;</div>
 <div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;        <span class="keywordtype">size_t</span> i=0;</div>
@@ -293,7 +293,7 @@ $(function() {
 <div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;            }</div>
 <div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;            <span class="keywordflow">if</span> (i &gt;= niter) <span class="keywordflow">break</span>;</div>
 <div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;            ++i;</div>
-<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;            <span class="keywordflow">if</span> (IO_THREAD_POLL_TIMEOUT)</div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;            <span class="keywordflow">if</span> constexpr (IO_THREAD_POLL_TIMEOUT)</div>
 <div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;                std::this_thread::sleep_for(std::chrono::microseconds(IO_THREAD_POLL_TIMEOUT)); </div>
 <div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;        } <span class="keywordflow">while</span>(<span class="keyword">true</span>);</div>
 <div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="classHandleUser.html">HandleUser</a>(<span class="keyword">nullptr</span>, <span class="keyword">true</span>, <span class="keyword">true</span>);</div>
