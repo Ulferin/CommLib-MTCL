@@ -138,20 +138,20 @@ void Client() {
 		buff[0]='c'; buff[1]='i'; buff[2]='a';
 		buff[3]='o'; buff[4]='!';buff[5]='\0';
 
-		ssize_t r;
+		ssize_t res;
 		// now sending the string "ciao" incrementally
 		for(int i=1;i<=5;++i) {
-			if ((r=handle.send(&i, sizeof(int)))<=0) {
+			if ((res=handle.send(&i, sizeof(int)))<=0) {
 				MTCL_ERROR("[CLIENT]:\t", "ERROR sending size\n");
 				break;
 			}
-			if ((r=handle.send(buff, i))<=0) {
+			if ((res=handle.send(buff, i))<=0) {
 				MTCL_ERROR("[CLIENT]:\t", "ERROR sending buffer\n");
 				break;
 			}
 			char rbuf[i+1];
-			if ((r=handle.receive(rbuf, i))<=0) {
-				if (r==0) {
+			if ((res=handle.receive(rbuf, i))<=0) {
+				if (res==0) {
 					MTCL_PRINT(10, "[CLIENT]:\t", "The server unexpectedly closed the connection\n");
 				} else 
 					MTCL_ERROR("[CLIENT]:\t", "ERROR receiving reply, errno=%d\n", errno);
@@ -162,11 +162,11 @@ void Client() {
 		}
 		// we can just close the handle here, but we are polite and say Bye!
 		int r = bye.length();
-		if ((r=handle.send(&r, r))<=0) {
+		if ((res=handle.send(&r, r))<=0) {
 			MTCL_ERROR("[CLIENT]:\t", "ERROR sending bye size\n");
 			break;
 		}
-		if ((r=handle.send(bye.c_str(), r))<=0) {
+		if ((res=handle.send(bye.c_str(), r))<=0) {
 			MTCL_ERROR("[CLIENT]:\t", "ERROR sending bye message\n");
 			break;
 		}

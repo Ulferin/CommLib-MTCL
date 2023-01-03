@@ -78,7 +78,7 @@ public:
 			MTCL_PRINT(0, "[internal]:\t", "HandleUser::receive EBADF\n");
             errno = EBADF; // the "communicator" is not valid or closed
             return -1;
-        };
+        }
 		if (realHandle->closed) return 0;
         return realHandle->receive(buff, size);
     }
