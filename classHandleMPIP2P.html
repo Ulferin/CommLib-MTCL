@@ -81,9 +81,9 @@ Inheritance diagram for HandleMPIP2P:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a15a5f580ef5f716495e8cb5f1e8de91c"><td class="memItemLeft" align="right" valign="top"><a id="a15a5f580ef5f716495e8cb5f1e8de91c"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>HandleMPIP2P</b> (<a class="el" href="classConnType.html">ConnType</a> *parent, MPI_Comm server_comm, bool busy=true)</td></tr>
-<tr class="separator:a15a5f580ef5f716495e8cb5f1e8de91c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a78efdc149d4fec81d750634617a60f13"><td class="memItemLeft" align="right" valign="top"><a id="a78efdc149d4fec81d750634617a60f13"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>HandleMPIP2P</b> (<a class="el" href="classConnType.html">ConnType</a> *parent, int rank, MPI_Comm server_comm, bool busy=true)</td></tr>
+<tr class="separator:a78efdc149d4fec81d750634617a60f13"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3b8e310ed39877c1632e1f22b8bb49aa"><td class="memItemLeft" align="right" valign="top">ssize_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHandleMPIP2P.html#a3b8e310ed39877c1632e1f22b8bb49aa">send</a> (const void *buff, size_t size)</td></tr>
 <tr class="memdesc:a3b8e310ed39877c1632e1f22b8bb49aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send <b>size</b> byte of <b>buff</b> to the remote end connected to this <a class="el" href="classHandle.html">Handle</a>. Wait until all data has been sent or until the peer close the connection.  <a href="classHandleMPIP2P.html#a3b8e310ed39877c1632e1f22b8bb49aa">More...</a><br /></td></tr>
 <tr class="separator:a3b8e310ed39877c1632e1f22b8bb49aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -106,6 +106,9 @@ const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>ge
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
+<tr class="memitem:a7a1492d188dbdfb7dba41947587d22cf"><td class="memItemLeft" align="right" valign="top"><a id="a7a1492d188dbdfb7dba41947587d22cf"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>rank</b> = -1</td></tr>
+<tr class="separator:a7a1492d188dbdfb7dba41947587d22cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3ecc4e6e3dfa6db01b61e58dec9b4c11"><td class="memItemLeft" align="right" valign="top"><a id="a3ecc4e6e3dfa6db01b61e58dec9b4c11"></a>
 MPI_Comm&#160;</td><td class="memItemRight" valign="bottom"><b>server_comm</b></td></tr>
 <tr class="separator:a3ecc4e6e3dfa6db01b61e58dec9b4c11"><td class="memSeparator" colspan="2">&#160;</td></tr>
