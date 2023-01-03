@@ -83,7 +83,7 @@ public:
             if(closing) {
                 return 0;
             }
-			if (MQTT_POLL_TIMEOUT) 
+			if constexpr (MQTT_POLL_TIMEOUT) 
 				std::this_thread::sleep_for(std::chrono::milliseconds(MQTT_POLL_TIMEOUT));
         }        
         return 0;

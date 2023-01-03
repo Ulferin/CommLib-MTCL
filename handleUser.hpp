@@ -74,11 +74,12 @@ public:
             errno = EINVAL; // unable to read from the "communicator"
             return -1;
         }
-        if (!realHandle || realHandle->closed) {
+        if (!realHandle) {
 			MTCL_PRINT(0, "[internal]:\t", "HandleUser::receive EBADF\n");
             errno = EBADF; // the "communicator" is not valid or closed
             return -1;
         };
+		if (realHandle->closed) return 0;
         return realHandle->receive(buff, size);
     }
 

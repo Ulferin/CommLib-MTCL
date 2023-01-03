@@ -95,7 +95,7 @@ public:
                 // MPI_Comm_free(&server_comm);
                 return 0;
             }
-			if (MPIP2P_POLL_TIMEOUT)
+			if constexpr (MPIP2P_POLL_TIMEOUT)
 				std::this_thread::sleep_for(std::chrono::microseconds(MPIP2P_POLL_TIMEOUT));
         }        
         return -1;
@@ -194,7 +194,7 @@ public:
         std::unique_lock ulock(shm);
         for (auto& [handle, to_manage] : connections) {
             if(to_manage) {
-                if (MPI_Iprobe(handle->rank, MPI_ANY_TAG, handle->server_comm, &flag, &status) != MPI_SUCCESS) {
+                if (MPI_Iprobe(handle->rank, 0, handle->server_comm, &flag, &status) != MPI_SUCCESS) {
 					MTCL_MPIP2P_ERROR("ConnMPIP2P::update: MPI_Iprobe ERROR (CONNECTION)\n");
 					errno = ECOMM;
 					throw;

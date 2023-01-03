@@ -49,7 +49,7 @@ public:
         MPI_Status status; 
         int count;
         int flag = 0;
-		if (MPI_POLL_TIMEOUT) {
+		if constexpr (MPI_POLL_TIMEOUT) {
 			while(true){
 				if (MPI_Iprobe(rank, tag, MPI_COMM_WORLD, &flag, &status) != MPI_SUCCESS) {
 					MTCL_MPI_PRINT(100, "HandleMPI::receive MPI_Iproble ERROR\n");

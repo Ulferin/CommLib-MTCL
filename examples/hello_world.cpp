@@ -80,14 +80,20 @@ void Server() {
 		// We read first the message size (an int) and then the payload.
 		int r=0;
 		int size=0;
-		if ((r=handle.receive(&size, sizeof(size)))==0) {
-			MTCL_ERROR("[SERVER]:\t", "The client unexpectedly closed the connection. Bye! (1)\n");
+		if ((r=handle.receive(&size, sizeof(size)))<=0) {
+			if (r==0) {
+				MTCL_PRINT(10, "[SERVER]:\t", "The client unexpectedly closed the connection. Bye! (size)\n");
+			} else
+				MTCL_ERROR("[SERVER]:\t", "ERROR receiving the message size. Bye!\n");
 			handle.close();
 			continue;
 		}
 		assert(size<max_msg_size); // check
-		if ((r=handle.receive(buff, size))==0) {
-			MTCL_ERROR("[SERVER]:\t", "The client unexpectedly closed the connection. Bye! (2)\n");
+		if ((r=handle.receive(buff, size))<=0) {
+			if (r==0){
+				MTCL_PRINT(10, "[SERVER]:\t", "The client unexpectedly closed the connection. Bye! (payload)\n");
+			} else
+				MTCL_ERROR("[SERVER]:\t", "ERROR receiving the message payload. Bye!\n");
 			handle.close();
 			continue;
 		}
@@ -97,8 +103,11 @@ void Server() {
 			handle.close();
 			continue;
 		}		
-		if (handle.send(buff, r)<=0) {
-			MTCL_ERROR("[SERVER]:\t", "Error sending the message back to the client, close handle\n");
+		if ((r=handle.send(buff, r))<=0) {
+			if (r==0) {
+				MTCL_PRINT(10, "[SERVER]:\t", "The client unexpectedly closed the connection. Bye! (reply)\n");
+			} else
+				MTCL_ERROR("[SERVER]:\t", "ERROR sending the message back to the client, close handle, errno=%d\n", errno);
 			handle.close();
 		}
 	}
@@ -128,20 +137,39 @@ void Client() {
 		if(handle.receive(buff, welcome.length())<=0) break;
 		buff[0]='c'; buff[1]='i'; buff[2]='a';
 		buff[3]='o'; buff[4]='!';buff[5]='\0';
-		
+
+		ssize_t r;
 		// now sending the string "ciao" incrementally
 		for(int i=1;i<=5;++i) {
-			if (handle.send(&i, sizeof(int))<=0) break;
-			if (handle.send(buff, i)<=0) break;
+			if ((r=handle.send(&i, sizeof(int)))<=0) {
+				MTCL_ERROR("[CLIENT]:\t", "ERROR sending size\n");
+				break;
+			}
+			if ((r=handle.send(buff, i))<=0) {
+				MTCL_ERROR("[CLIENT]:\t", "ERROR sending buffer\n");
+				break;
+			}
 			char rbuf[i+1];
-			if (handle.receive(rbuf, i)<=0) break;
+			if ((r=handle.receive(rbuf, i))<=0) {
+				if (r==0) {
+					MTCL_PRINT(10, "[CLIENT]:\t", "The server unexpectedly closed the connection\n");
+				} else 
+					MTCL_ERROR("[CLIENT]:\t", "ERROR receiving reply, errno=%d\n", errno);
+				break;
+			}
 			rbuf[i]='\0';
 			std::cout << "Read: \"" << rbuf << "\"\n" << std::flush;
 		}
 		// we can just close the handle here, but we are polite and say Bye!
 		int r = bye.length();
-		if (handle.send(&r, r)<=0) break;
-		if (handle.send(bye.c_str(), r)<=0) break;
+		if ((r=handle.send(&r, r))<=0) {
+			MTCL_ERROR("[CLIENT]:\t", "ERROR sending bye size\n");
+			break;
+		}
+		if ((r=handle.send(bye.c_str(), r))<=0) {
+			MTCL_ERROR("[CLIENT]:\t", "ERROR sending bye message\n");
+			break;
+		}
 	} while(false);
 	handle.close();
 }
@@ -151,7 +179,7 @@ int main(int argc, char** argv){
 		MTCL_ERROR("Usage: ", "%s <0|1> <appName>\n", argv[0]);
         return -1;
     }
-	std::signal(SIGHUP,  signal_handler);
+	std::signal(SIGHUP,  signal_handler);	
 
     Manager::init(argv[2]);   
     if (std::stol(argv[1]) == 0)

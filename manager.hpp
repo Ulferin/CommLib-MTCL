@@ -80,7 +80,7 @@ private:
             for(auto& [prot, conn] : protocolsMap) {
                 conn->update();
             }			
-			if (IO_THREAD_POLL_TIMEOUT)
+			if constexpr (IO_THREAD_POLL_TIMEOUT)
 				std::this_thread::sleep_for(std::chrono::microseconds(IO_THREAD_POLL_TIMEOUT));
         }
     }
@@ -233,7 +233,7 @@ public:
 		// if us is not multiple of the IO_THREAD_POLL_TIMEOUT we wait a bit less....
 		// if the poll timeout is 0, we just iterate us times
 		size_t niter = us.count(); // in case IO_THREAD_POLL_TIMEOUT is set to 0
-		if (IO_THREAD_POLL_TIMEOUT)
+		if constexpr (IO_THREAD_POLL_TIMEOUT)
 			niter = us/std::chrono::milliseconds(IO_THREAD_POLL_TIMEOUT);
 		if (niter==0) niter++;
 		size_t i=0;
@@ -249,7 +249,7 @@ public:
 			}
 			if (i >= niter) break;
 			++i;
-			if (IO_THREAD_POLL_TIMEOUT)
+			if constexpr (IO_THREAD_POLL_TIMEOUT)
 				std::this_thread::sleep_for(std::chrono::microseconds(IO_THREAD_POLL_TIMEOUT));	
 		} while(true);
 		return HandleUser(nullptr, true, true);
