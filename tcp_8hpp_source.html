@@ -481,19 +481,20 @@ $(function() {
 <div class="line"><a name="l00415"></a><span class="lineno">  415</span>&#160; </div>
 <div class="line"><a name="l00416"></a><span class="lineno"><a class="line" href="classConnTcp.html#a20d0571ae4673f70372ef24b9b29332f">  416</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classConnTcp.html#a20d0571ae4673f70372ef24b9b29332f">end</a>() {</div>
 <div class="line"><a name="l00417"></a><span class="lineno">  417</span>&#160;        <span class="keyword">auto</span> modified_connections = connections;</div>
-<div class="line"><a name="l00418"></a><span class="lineno">  418</span>&#160;        <span class="keywordflow">for</span>(<span class="keyword">auto</span>&amp; [fd, h] : modified_connections)</div>
-<div class="line"><a name="l00419"></a><span class="lineno">  419</span>&#160;            <span class="keywordflow">if</span>(isSet(fd))</div>
-<div class="line"><a name="l00420"></a><span class="lineno">  420</span>&#160;                setAsClosed(h); </div>
-<div class="line"><a name="l00421"></a><span class="lineno">  421</span>&#160;    }</div>
-<div class="line"><a name="l00422"></a><span class="lineno">  422</span>&#160; </div>
-<div class="line"><a name="l00423"></a><span class="lineno">  423</span>&#160;    <span class="keywordtype">bool</span> isSet(<span class="keywordtype">int</span> fd){</div>
-<div class="line"><a name="l00424"></a><span class="lineno">  424</span>&#160;        REMOVE_CODE_IF(std::shared_lock s(shm));</div>
-<div class="line"><a name="l00425"></a><span class="lineno">  425</span>&#160;        <span class="keywordflow">return</span> FD_ISSET(fd, &amp;set);</div>
-<div class="line"><a name="l00426"></a><span class="lineno">  426</span>&#160;    }</div>
-<div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160; </div>
-<div class="line"><a name="l00428"></a><span class="lineno">  428</span>&#160;};</div>
-<div class="line"><a name="l00429"></a><span class="lineno">  429</span>&#160; </div>
-<div class="line"><a name="l00430"></a><span class="lineno">  430</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00418"></a><span class="lineno">  418</span>&#160;        <span class="keywordflow">for</span>(<span class="keyword">auto</span>&amp; [fd, h] : modified_connections) {</div>
+<div class="line"><a name="l00419"></a><span class="lineno">  419</span>&#160;            <span class="comment">//if(isSet(fd))</span></div>
+<div class="line"><a name="l00420"></a><span class="lineno">  420</span>&#160;                setAsClosed(h);</div>
+<div class="line"><a name="l00421"></a><span class="lineno">  421</span>&#160;        }</div>
+<div class="line"><a name="l00422"></a><span class="lineno">  422</span>&#160;    }</div>
+<div class="line"><a name="l00423"></a><span class="lineno">  423</span>&#160; </div>
+<div class="line"><a name="l00424"></a><span class="lineno">  424</span>&#160;    <span class="keywordtype">bool</span> isSet(<span class="keywordtype">int</span> fd){</div>
+<div class="line"><a name="l00425"></a><span class="lineno">  425</span>&#160;        REMOVE_CODE_IF(std::shared_lock s(shm));</div>
+<div class="line"><a name="l00426"></a><span class="lineno">  426</span>&#160;        <span class="keywordflow">return</span> FD_ISSET(fd, &amp;set);</div>
+<div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160;    }</div>
+<div class="line"><a name="l00428"></a><span class="lineno">  428</span>&#160; </div>
+<div class="line"><a name="l00429"></a><span class="lineno">  429</span>&#160;};</div>
+<div class="line"><a name="l00430"></a><span class="lineno">  430</span>&#160; </div>
+<div class="line"><a name="l00431"></a><span class="lineno">  431</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassConnTcp_html"><div class="ttname"><a href="classConnTcp.html">ConnTcp</a></div><div class="ttdef"><b>Definition:</b> tcp.hpp:126</div></div>
 <div class="ttc" id="aclassConnTcp_html_a20d0571ae4673f70372ef24b9b29332f"><div class="ttname"><a href="classConnTcp.html#a20d0571ae4673f70372ef24b9b29332f">ConnTcp::end</a></div><div class="ttdeci">void end()</div><div class="ttdoc">Stop listening for new connections and terminate existing Handles.</div><div class="ttdef"><b>Definition:</b> tcp.hpp:416</div></div>
 <div class="ttc" id="aclassConnTcp_html_a346df6ff43f37e2d80d9eabcee0d38e5"><div class="ttname"><a href="classConnTcp.html#a346df6ff43f37e2d80d9eabcee0d38e5">ConnTcp::listen</a></div><div class="ttdeci">int listen(std::string s)</div><div class="ttdoc">Start listening for new connections at the specified address s.</div><div class="ttdef"><b>Definition:</b> tcp.hpp:216</div></div>
