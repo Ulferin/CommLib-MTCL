@@ -415,9 +415,10 @@ public:
 
     void end() {
         auto modified_connections = connections;
-        for(auto& [fd, h] : modified_connections)
-            if(isSet(fd))
-                setAsClosed(h); 
+        for(auto& [fd, h] : modified_connections) {
+            //if(isSet(fd))
+                setAsClosed(h);
+		}
     }
 
     bool isSet(int fd){
