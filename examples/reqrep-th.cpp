@@ -2,6 +2,10 @@
  * Simple test in which the server and the clients use a dedicated thread for sending 
  * messages to the other peer
  *
+ * Spawning multiple clients with mpirun: 
+ * 
+ *  mpirun -n 1 --host localhost:16 -x MTCL_VERBOSE=1 ./reqrep-th 0 0 : 
+ *         -n 15 --host localhost:16  -x MTCL_VERBOSE=all ./reqrep-th 1 1
  */
 
 #include <cassert>

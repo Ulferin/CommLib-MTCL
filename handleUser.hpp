@@ -99,7 +99,7 @@ public:
 		if ((r=realHandle->probe(size, true))<=0) {
 			if (r==0) {
 				isReadable=false;
-				realHandle->close(false, true);
+				realHandle->close(!isWritable, true);
 				return 0;
 			}
 			if (r==-1 && errno==ECONNRESET) {

@@ -88,7 +88,7 @@ public:
 
 	ssize_t sendEOS() {
 		size_t sz = 0;
-		return writen(fd, (char*)sz, sizeof(size_t)); 
+		return writen(fd, (char*)&sz, sizeof(size_t)); 
 	}
 	
     ssize_t send(const void* buff, size_t size) {
@@ -360,8 +360,10 @@ public:
 			if (handle->fd != -1) {
 				handle->sendEOS();
 				shutdown(handle->fd, SHUT_WR);
-				
-				// abbiamo gia' ricevuto l'EOS ed ora c'e' la close????'
+
+				// if the fd is not present in the connections table it means
+				// we have already received the EOS and thus executed the
+				// notify_close with close_rd=true, we can close the connection
 				if (!close_rd &&
 					connections.find(handle->fd) == connections.end()) {
 					close(handle->fd);
