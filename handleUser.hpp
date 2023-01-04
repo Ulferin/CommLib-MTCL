@@ -11,7 +11,6 @@ class HandleUser {
     bool isReadable    = false;
 	bool isWritable    = true;
     bool newConnection = true;
-	bool probedone     = false;
 public:
     HandleUser() : HandleUser(nullptr, false, false) {}
     HandleUser(Handle* h, bool r, bool n):
@@ -27,27 +26,24 @@ public:
 			isReadable    = o.isReadable;
 			isWritable    = o.isWritable;
 			newConnection = o.newConnection;
-			probedone     = o.probedone;
 			o.realHandle  = nullptr;
 			o.isReadable  = false;
 			o.isWritable  = false;
 			o.newConnection=false;
-			o.probedone   = false;
 		}
 		return *this;
 	}
 	
     HandleUser(HandleUser&& h) :
-		realHandle(h.realHandle), isReadable(h.isReadable), isWritable(h.isWritable), newConnection(h.newConnection), probedone(h.probedone) {
+		realHandle(h.realHandle), isReadable(h.isReadable), isWritable(h.isWritable), newConnection(h.newConnection) {
         h.realHandle = nullptr;
-		h.isReadable = h.isWritable = h.newConnection = h.probedone = false;
+		h.isReadable = h.isWritable = h.newConnection = false;
     }
     
     // releases the handle to the manager
     void yield() {
         isReadable = false;
         newConnection = false;
-		probedone = false;
         if (realHandle) realHandle->yield();
     }
 
@@ -83,6 +79,10 @@ public:
 
 	ssize_t probe(size_t& size, const bool blocking=true) {
         newConnection = false;
+		if (realHandle->probed.first) {
+			size=realHandle->probed.second;
+			return sizeof(size_t);
+		}
         if (!isReadable){
 			MTCL_PRINT(100, "[internal]:\t", "HandleUser::probe handle not readable\n");
 			return 0;
@@ -114,40 +114,43 @@ public:
 			isReadable=false;
 			return 0;
 		}
-		probedone=true;
+		realHandle->probed={true,size};
 		return r;		
 	}
 
     ssize_t receive(void* buff, size_t size) {
-		if (!probedone) {
+		size_t sz;
+		if (!realHandle->probed.first) {
 			// reading the header to get the size of the message
-			size_t sz;
 			ssize_t r;
 			if ((r=this->probe(sz, true))<=0) {
-				probedone=false;
 				return r;
 			}
-			probedone=false;
 			if (sz>size) {
 				MTCL_PRINT(100, "[internal]:\t", "HandleUser::receive ENOMEM\n");
 				errno=ENOMEM;
 				return -1;
 			}
-			return realHandle->receive(buff, size);
+		} else {
+			newConnection = false;
+			if (!isReadable){
+				MTCL_PRINT(100, "[internal]:\t", "HandleUser::probe handle not readable\n");
+				return 0;
+			}
+			if (!realHandle) {
+				MTCL_PRINT(100, "[internal]:\t", "HandleUser::probe EBADF\n");
+				errno = EBADF; // the "communicator" is not valid or closed
+				return -1;
+			}
+			if (realHandle->closed) return 0;
+			if ((sz=realHandle->probed.second)>size) {
+				MTCL_PRINT(100, "[internal]:\t", "HandleUser::receive ENOMEM\n");
+				errno=ENOMEM;
+				return -1;
+			}
 		}
-		probedone = false;
-        newConnection = false;
-        if (!isReadable){
-			MTCL_PRINT(100, "[internal]:\t", "HandleUser::probe handle not readable\n");
-			return 0;
-        }
-        if (!realHandle) {
-			MTCL_PRINT(100, "[internal]:\t", "HandleUser::probe EBADF\n");
-            errno = EBADF; // the "communicator" is not valid or closed
-            return -1;
-        }
-		if (realHandle->closed) return 0;
-		return realHandle->receive(buff, size);
+		realHandle->probed={false,0};
+		return realHandle->receive(buff, sz);
     }
 
     void close(){

@@ -25,9 +25,9 @@ class Handle {
             delete this;
         }
     }
-protected:
-
-	// DEVE ESSERE ATOMIC??????	
+protected:	
+	// if first=true second is the size contained in the header
+	std::pair<bool, size_t> probed{false,0};  
 	std::atomic<bool> closed  = false;
 private:
     void yield() {
