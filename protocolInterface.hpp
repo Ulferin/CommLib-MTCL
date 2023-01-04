@@ -14,7 +14,7 @@ class ConnType {
     std::string instanceName;
 protected:
 
-    std::function<void(std::pair<bool, Handle*>)> addinQ;
+    std::function<void(bool, Handle*)> addinQ;
 
     static void setAsClosed(Handle* h);
 
@@ -75,7 +75,7 @@ public:
      * 
      * @param[in] h Handle closing the connection
      */
-    virtual void notify_close(Handle* h) = 0;
+    virtual void notify_close(Handle* h, bool shut_wr=true, bool shut_rd=true) = 0;
 
     /**
      * @brief Stop listening for new connections and terminate existing Handle\a s.

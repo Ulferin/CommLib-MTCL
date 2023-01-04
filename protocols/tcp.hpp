@@ -1,6 +1,7 @@
 #ifndef TCP_HPP
 #define TCP_HPP
 
+#include <endian.h>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -19,7 +20,7 @@
 #include "../handle.hpp"
 #include "../protocolInterface.hpp"
 
-#define IOVMAXCOUNT 2
+
 
 class HandleTCP : public Handle {
 
@@ -38,6 +39,20 @@ class HandleTCP : public Handle {
         return(n - nleft); /* return >= 0 */
     }
 
+	ssize_t readvn(int fd, struct iovec *v, int count){
+		ssize_t rread;
+		for (int cur = 0;;) {
+			rread = readv(fd, v+cur, count-cur);
+			if (rread <= 0) return rread; // error or closed connection
+			while (cur < count && rread >= (ssize_t)v[cur].iov_len)
+				rread -= v[cur++].iov_len;
+			if (cur == count) return 1; // success!!
+			v[cur].iov_base = (char *)v[cur].iov_base + rread;
+			v[cur].iov_len -= rread;
+		}
+		return -1;
+	}
+
     ssize_t writen(int fd, const char *ptr, size_t n) {  
         size_t   nleft = n;
         ssize_t  nwritten;
@@ -53,17 +68,55 @@ class HandleTCP : public Handle {
         return(n - nleft); /* return >= 0 */
     }
 
+	ssize_t writevn(int fd, struct iovec *v, int count){
+		ssize_t written;
+		for (int cur = 0;;) {
+			written = writev(fd, v+cur, count-cur);
+			if (written < 0) return -1;
+			while (cur < count && written >= (ssize_t)v[cur].iov_len)
+				written -= v[cur++].iov_len;
+			if (cur == count) return 1; // success!!
+			v[cur].iov_base = (char *)v[cur].iov_base + written;
+			v[cur].iov_len -= written;
+		}
+		return -1;
+	}
+	
 public:
     int fd; // File descriptor of the connection represented by this Handle
-    HandleTCP(ConnType* parent, int fd, bool busy=true) : Handle(parent, busy), fd(fd) {}
+    HandleTCP(ConnType* parent, int fd) : Handle(parent), fd(fd) {}
 
+	ssize_t sendEOS() {
+		size_t sz = 0;
+		return writen(fd, (char*)sz, sizeof(size_t)); 
+	}
+	
     ssize_t send(const void* buff, size_t size) {
-        return writen(fd, (const char*)buff, size); 
-    }
+		size_t sz = htobe64(size);
+        struct iovec iov[2];
+        iov[0].iov_base = &sz;
+        iov[0].iov_len  = sizeof(sz);
+        iov[1].iov_base = const_cast<void*>(buff);
+        iov[1].iov_len  = size;
 
+        if (writevn(fd, iov, 2) < 0)
+            return -1;
+		return size;
+    }
+	// receives the header containing the size (sizeof(size_t) bytes)
+	ssize_t probe(size_t& size, const bool blocking=true) {
+		size_t sz;
+		ssize_t r;
+		if ((r=readn(fd, (char*)&sz, sizeof(size_t)))<=0)
+			return r;
+		size = be64toh(sz);
+		return sizeof(size_t);
+	}
+	
     ssize_t receive(void* buff, size_t size) {
         return readn(fd, (char*)buff, size); 
     }
+
 
     ~HandleTCP() {}
 
@@ -187,7 +240,6 @@ public:
         // copy the master set to the temporary
 
         REMOVE_CODE_IF(std::unique_lock ulock(shm, std::defer_lock));
-        //std::shared_lock shlock(shm, std::defer_lock);  <-----------????
 
         REMOVE_CODE_IF(ulock.lock());
         tmpset = set;
@@ -195,8 +247,16 @@ public:
 
         struct timeval wait_time = {.tv_sec=0, .tv_usec=TCP_POLL_TIMEOUT};
 		int nready=0;
+		if (fdmax==-1) return;
         switch(nready=select(fdmax+1, &tmpset, NULL, NULL, &wait_time)) {
-		case -1: MTCL_TCP_ERROR("ConnTcp::update select ERROR: errno=%d -- %s\n", errno, strerror(errno));
+		case -1: {
+			// NOTE: EBADF can happen because we may close an fd that is in the set
+			if (errno==EBADF) {
+				MTCL_TCP_PRINT(100, "ConnTcp::update select ERROR: errno=EBADF\n");
+				return;
+			}			
+			MTCL_TCP_ERROR("ConnTcp::update select ERROR: errno=%d -- %s\n", errno, strerror(errno));
+		}
 		case  0: return;
         }
 
@@ -211,27 +271,32 @@ public:
 
                     REMOVE_CODE_IF(ulock.lock());
                     FD_SET(connfd, &set);
-                    if(connfd > fdmax) fdmax = connfd;
-                    connections[connfd] = new HandleTCP(this, connfd, false);
-                    addinQ({true, connections[connfd]});
-                    REMOVE_CODE_IF(ulock.unlock());                    
+                    if(connfd > fdmax) {
+						fdmax = connfd;
+					}
+                    connections[connfd] = new HandleTCP(this, connfd);
+					addinQ(true, connections[connfd]);
+					REMOVE_CODE_IF(ulock.unlock());                    
                 } else {
                     REMOVE_CODE_IF(ulock.lock());
                     // Updates ready connections and removes from listening
                     FD_CLR(idx, &set);
 
                     // update the maximum file descriptor
-                    if (idx == fdmax)
-                        for(int ii=(fdmax-1);ii>=0;--ii) {
+                    if (idx == fdmax) {
+						int ii;
+                        for(ii=(fdmax-1);ii>=0;--ii) {
                             if (FD_ISSET(ii, &set)){
                                 fdmax = ii;
                                 break;
                             }
                         }
-                    // ready.push(connections[idx]);
-                    addinQ({false, connections[idx]});
+						if (ii==-1) fdmax = -1;
+					}
+					auto it = connections.find(idx);
+					if (it != connections.end())
+						addinQ(false, (*it).second);
                     REMOVE_CODE_IF(ulock.unlock());
-
                 }
 				--nready;
             }
@@ -289,27 +354,57 @@ public:
         return handle;
     }
 
-    void notify_close(Handle* h) {
-        int fd = reinterpret_cast<HandleTCP*>(h)->fd;
-        close(fd);
-        REMOVE_CODE_IF(std::unique_lock lock(shm));
-        connections.erase(fd);
-        FD_CLR(fd, &set);
-		
-        // update the maximum file descriptor
-        if (fd == fdmax)
-            for(int ii=(fdmax-1);ii>=0;--ii) {
-                if (FD_ISSET(ii, &set)){
-                    fdmax = ii;
-                    break;
-                }
-            }
+    void notify_close(Handle* h, bool close_wr=true, bool close_rd=true) {
+		HandleTCP *handle = reinterpret_cast<HandleTCP*>(h);
+		if (close_wr) {
+			if (handle->fd != -1) {
+				handle->sendEOS();
+				shutdown(handle->fd, SHUT_WR);
+				
+				// abbiamo gia' ricevuto l'EOS ed ora c'e' la close????'
+				if (!close_rd &&
+					connections.find(handle->fd) == connections.end()) {
+					close(handle->fd);
+					handle->fd = -1;
+				}
+			}
+		}
+		if (close_rd) { 
+			HandleTCP *handle = reinterpret_cast<HandleTCP*>(h);
+			int fd = handle->fd;
+			if (fd==-1) return;
+			shutdown(handle->fd, SHUT_RD);
+			{
+				REMOVE_CODE_IF(std::unique_lock lock(shm));
+				connections.erase(fd);
+				FD_CLR(fd, &set);
+				
+				// update the maximum file descriptor
+				if (fd == fdmax) {
+					int ii;
+					for(ii=(fdmax-1);ii>=0;--ii) {
+						if (FD_ISSET(ii, &set)){
+							fdmax = ii;
+							break;
+						}
+					}
+					// the listen socket might not be in the set, thus without the following
+					// we risk to leave fdmax set to the old value.
+					if (ii==-1) fdmax = -1; 
+				}
+			}
+			if (close_wr) {
+				close(fd);
+				handle->fd=-1;
+			}
+		}
     }
 
 
     void notify_yield(Handle* h) override {
         int fd = reinterpret_cast<HandleTCP*>(h)->fd;
 		REMOVE_CODE_IF(std::unique_lock l(shm));
+		if (h->isClosed()) return;
         FD_SET(fd, &set);
         if(fd > fdmax) {
             fdmax = fd;

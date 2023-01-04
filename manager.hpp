@@ -41,10 +41,8 @@ int  mtcl_verbose = -1;
 class Manager {
     friend class ConnType;
    
-    inline static std::map<std::string, std::shared_ptr<ConnType>> protocolsMap;
-    
-    //TODO: probabilmente una std::deque sincronizzata
-    inline static std::queue<std::pair<bool, Handle*>> handleReady;
+    inline static std::map<std::string, std::shared_ptr<ConnType>> protocolsMap;    
+	inline static std::queue<HandleUser> handleReady;
     
     inline static std::string appName;
 
@@ -64,13 +62,13 @@ private:
     Manager() {}
 
 #if defined(SINGLE_IO_THREAD)
-	static inline void addinQ(std::pair<bool, Handle*> el) {
-		handleReady.push(el);
+	static inline void addinQ(bool b, Handle* h) {
+		handleReady.push(HandleUser(h, true, b));
 	}
 #else	
-    static inline void addinQ(std::pair<bool, Handle*> el) {
+    static inline void addinQ(bool b, Handle* h) {
         std::unique_lock lk(mutex);
-        handleReady.push(el);
+        handleReady.push(HandleUser(h, true, b));
 		condv.notify_one();
     }
 #endif
@@ -225,10 +223,9 @@ public:
 #if defined(SINGLE_IO_THREAD)
     static inline HandleUser getNext(std::chrono::microseconds us=std::chrono::hours(87600)) {
 		if (!handleReady.empty()) {
-			auto el = handleReady.front();
+			auto el = std::move(handleReady.front());
 			handleReady.pop();
-			el.second->setBusy(true);
-			return HandleUser(el.second, true, el.first);
+			return el;
 		}
 		// if us is not multiple of the IO_THREAD_POLL_TIMEOUT we wait a bit less....
 		// if the poll timeout is 0, we just iterate us times
@@ -242,10 +239,9 @@ public:
 				conn->update();
 			}
 			if (!handleReady.empty()) {
-				auto el = handleReady.front();
+				auto el = std::move(handleReady.front());
 				handleReady.pop();
-				el.second->setBusy(true);
-				return HandleUser(el.second, true, el.first);
+				return el;
 			}
 			if (i >= niter) break;
 			++i;
@@ -258,12 +254,10 @@ public:
     static inline HandleUser getNext(std::chrono::microseconds us=std::chrono::hours(87600)) { 
         std::unique_lock lk(mutex);
         if (condv.wait_for(lk, us, [&]{return !handleReady.empty();})) {
-			auto el = handleReady.front();
+			auto el = std::move(handleReady.front());
 			handleReady.pop();
 			lk.unlock();
-			// el.second->incrementReferenceCounter();
-			el.second->setBusy(true);
-			return HandleUser(el.second, true, el.first);
+			return el;
 		}
         return HandleUser(nullptr, true, true);
     }
@@ -285,9 +279,7 @@ public:
 
         protocolsMap[name] = std::shared_ptr<T>(new T);
         
-        protocolsMap[name]->addinQ = [&](std::pair<bool, Handle*> item){
-            Manager::addinQ(item);
-        };
+        protocolsMap[name]->addinQ = [&](bool b, Handle* h){ Manager::addinQ(b,h); };
 
         protocolsMap[name]->instanceName = name;
     }
@@ -324,7 +316,6 @@ public:
 
         if(protocolsMap.count(protocol)) {
             Handle* handle = protocolsMap[protocol]->connect(s.substr(s.find(":") + 1, s.length()));
-            // handle->incrementReferenceCounter();
             if(handle) {
                 return HandleUser(handle, true, true);
             }

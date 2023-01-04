@@ -79,8 +79,8 @@ void Server() {
 		// it is not a new connection, sending back the message to the client.
 		// We read first the message size (an int) and then the payload.
 		int r=0;
-		int size=0;
-		if ((r=handle.receive(&size, sizeof(size)))<=0) {
+		size_t size=0;
+		if ((r=handle.probe(size, true))<=0) {
 			if (r==0) {
 				MTCL_PRINT(10, "[SERVER]:\t", "The client unexpectedly closed the connection. Bye! (size)\n");
 			} else
@@ -141,10 +141,6 @@ void Client() {
 		ssize_t res;
 		// now sending the string "ciao" incrementally
 		for(int i=1;i<=5;++i) {
-			if ((res=handle.send(&i, sizeof(int)))<=0) {
-				MTCL_ERROR("[CLIENT]:\t", "ERROR sending size\n");
-				break;
-			}
 			if ((res=handle.send(buff, i))<=0) {
 				MTCL_ERROR("[CLIENT]:\t", "ERROR sending buffer\n");
 				break;

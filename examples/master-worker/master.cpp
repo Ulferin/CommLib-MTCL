@@ -30,9 +30,18 @@
 
 #include <mtcl.hpp>
 
+#undef EXPLICIT_MSG_SIZE
+
 const int NMSGS      = 50;
+const int maxpayload = 100;
+#if defined(EXPLICIT_MSG_SIZE)
 const int headersize = 3;
-const int maxpayload = 100; 
+const char EOS[]="003EOS";
+#else
+const int headersize = 0;
+const char EOS[]="EOS";
+#endif
+
 
 std::string random_string( size_t length ){
 	assert(length<=maxpayload);
@@ -45,9 +54,11 @@ std::string random_string( size_t length ){
     };
 	
     std::string str(length+headersize,0);
+#if defined(EXPLICIT_MSG_SIZE)
 	char lenstr[headersize+1];
 	snprintf(lenstr, sizeof(lenstr), "%03ld", length);
 	str.insert(0,lenstr);
+#endif	
     std::generate_n( str.begin()+headersize, length, randchar );
     return str;
 }
@@ -90,10 +101,12 @@ int main(int argc, char** argv){
 						  int sz = (rand() % maxpayload) + 1;						  
 						  std::string str = random_string(sz);
 						  MTCL_PRINT(1, "[Server]:\t", "sending %s to worker %s\n", str.c_str()+headersize, writeHandles[i%workers].getName().c_str());
-						  
+
+#if defined(EXPLICIT_MSG_SIZE)						  
 						  if (writeHandles[i % workers].send(str.c_str(), headersize) == -1) {
 							  MTCL_ERROR("[Server]:\t", "ERROR sending the header message, errno=%d\n", errno);
 						  }
+#endif						  
 						  if (writeHandles[i % workers].send(str.c_str()+headersize, sz) == -1) {
 							  MTCL_ERROR("[Server]:\t", "ERROR sending the header message, errno=%d\n", errno);
 						  }
@@ -104,14 +117,15 @@ int main(int argc, char** argv){
 						  /// }
 					  }
 					  
-					  const char EOS[]="003EOS";
 					  for(size_t i=0;i<workers;++i) {
+#if defined(EXPLICIT_MSG_SIZE)						  
 						  if (writeHandles[i].send(EOS, headersize)==-1) {
 							  MTCL_ERROR("[Server]:\t", "ERROR sending EOS header to worker%d, errno=%d\n", i, errno);
 							  writeHandles[i].close();
 							  continue;
 						  }
-						  if (writeHandles[i].send(EOS+headersize, headersize)==-1) {
+#endif						  
+						  if (writeHandles[i].send(EOS+headersize, strlen(EOS))==-1) {
 							  MTCL_ERROR("[Server]:\t", "ERROR sending EOS to worker%d, errno=%d\n", i, errno);
 							  writeHandles[i].close();
 							  continue;

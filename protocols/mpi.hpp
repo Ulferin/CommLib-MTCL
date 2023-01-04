@@ -179,7 +179,7 @@ public:
             HandleMPI* handle = new HandleMPI(this, source, source_tag, false);
             REMOVE_CODE_IF(ulock.lock());			
             connections.insert({{source, source_tag},{handle, false}});
-            addinQ({true, handle});
+            addinQ(true, handle);
             REMOVE_CODE_IF(ulock.unlock());
         }
 
@@ -207,7 +207,7 @@ public:
 				connections[{source, source_tag}].first->closing = true;
 				if (connections[{source, source_tag}].second) {
 					connections[{source, source_tag}].second = false;
-					addinQ({false, connections[{source, source_tag}].first});
+					addinQ(false, connections[{source, source_tag}].first);
 				}
 			}
             REMOVE_CODE_IF(ulock.unlock());
@@ -224,7 +224,7 @@ public:
                 if (flag) {
                     handlePair.second = false;
 					// NOTE: called with ulock lock hold. Double lock if there is the IO-thread!
-                    addinQ({false, handlePair.first});
+                    addinQ(false, handlePair.first);
                 }
             }
         }
@@ -250,7 +250,7 @@ public:
     void notify_yield(Handle* h) {
         HandleMPI* hMPI = reinterpret_cast<HandleMPI*>(h);
         if (hMPI->closing) {
-            addinQ({false, h});
+            addinQ(false, h);
             return;
         }
 		{

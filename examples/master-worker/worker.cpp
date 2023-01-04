@@ -10,7 +10,13 @@
 
 #include <mtcl.hpp>
 
+#undef EXPLICIT_MSG_SIZE
+
+#if defined(EXPLICIT_MSG_SIZE)
 const int headersize = 3;
+#else
+const int headersize = 0;
+#endif
 const int maxpayload = 100; 
 
 int main(int argc, char** argv){
@@ -32,8 +38,9 @@ int main(int argc, char** argv){
 			MTCL_PRINT(10, "[Client]:\t", "worker%d has got a new connection\n", myid);
 			continue;
 		}
-        char len[headersize+1];
 		ssize_t r;
+#if defined(EXPLICIT_MSG_SIZE)		
+        char len[headersize+1];
         if ((r=h.receive(len, headersize)) == -1) {
 			MTCL_ERROR("[Client]:\t", "ERROR receiving the header errno=%d\n", errno);
 			h.close();
@@ -46,6 +53,14 @@ int main(int argc, char** argv){
 		}			
 		len[headersize]='\0';
 		size_t size = std::stoi(len);
+#else
+		size_t size;
+		if (h.probe(size, true)<=0) {
+			MTCL_ERROR("[Client]:\t", "ERROR receiving the header errno=%d\n", errno);
+			h.close();
+			break;
+		}
+#endif		
 		char buff[size+1];
 		if ((r=h.receive(buff, size)) == -1) {
 			MTCL_ERROR("[Client]:\t", "ERROR receiving the payload errno=%d\n", errno);

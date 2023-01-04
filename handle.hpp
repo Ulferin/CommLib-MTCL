@@ -12,7 +12,6 @@ class Handle {
     friend class ConnType;
 
     ConnType* parent;
-    std::atomic<bool> busy;
     std::atomic<int> counter = 0;
 	std::string handleName{"no-name-provided"};
 	
@@ -27,26 +26,26 @@ class Handle {
         }
     }
 protected:
-	std::atomic<bool> closed = false;
+
+	// DEVE ESSERE ATOMIC??????	
+	std::atomic<bool> closed  = false;
 private:
     void yield() {
-        setBusy(false);
         parent->notify_yield(this);
     }
 
-    void close(){
-        closed = true;
-        parent->notify_close(this);
-        if (counter == 0) 
+    void close(bool close_wr=true, bool close_rd=true){
+		if (!closed) {
+			parent->notify_close(this, close_wr, close_rd);
+			if (close_wr && close_rd) closed=true;
+		}
+        if (counter == 0 && closed) {
             delete this;
-    }
-
-    void setBusy(bool b) {
-        busy = b;
+		}
     }
 
 public:
-    Handle(ConnType* parent, bool busy=false) : parent(parent), busy(busy) {}
+    Handle(ConnType* parent) : parent(parent) {}
 
     /**
      * @brief Send \b size byte of \b buff to the remote end connected to this
@@ -61,6 +60,10 @@ public:
     virtual ssize_t send(const void* buff, size_t size) = 0; 
 
 
+	// COMMENTARE
+	virtual ssize_t probe(size_t& size, const bool blocking=true)=0;
+	
+
     /**
      * @brief Read at most \b size byte into \b buff from the remote end connected
      * to this Handle. Wait until all \b size data has been received or until the
@@ -73,13 +76,11 @@ public:
      * can be checked via \b errno.
      */
     virtual ssize_t receive(void* buff, size_t size) = 0; 
-    
-    bool isBusy() {
-        return this->busy;
-    }
+
 
 	void setName(const std::string &name) { handleName = name; }
 	const std::string& getName() { return handleName; }
+	const bool isClosed()   { return closed; }
 	
     virtual ~Handle() {};
 };

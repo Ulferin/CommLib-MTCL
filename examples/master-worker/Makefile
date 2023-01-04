@@ -12,11 +12,13 @@ ifdef SINGLE_IO_THREAD
 	CXXFLAGS +=-DSINGLE_IO_THREAD
 endif
 
+ifndef EXCLUDE_MPI
 CXXFLAGS += -DENABLE_MPI
 CXX 	  = mpicxx
 ifdef MPI_HOME
 	INCS   += `pkg-config --cflags-only-I $(MPI_HOME)/lib/pkgconfig/ompi-cxx.pc`
 	LIBS   += `pkg-config --libs $(MPI_HOME)/lib/pkgconfig/ompi-cxx.pc`
+endif
 endif
 
 CXXFLAGS         += -Wall

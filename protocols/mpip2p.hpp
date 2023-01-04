@@ -34,7 +34,6 @@ public:
     bool closing = false;
     HandleMPIP2P(ConnType* parent, int rank, MPI_Comm server_comm, bool busy=true) : Handle(parent, busy), rank(rank), server_comm(server_comm) {}
 
-
     void checkClosing() {
         MPI_Status status;
         int flag;
@@ -58,7 +57,6 @@ public:
             }
         }
     }
-
 
     ssize_t send(const void* buff, size_t size) {
         MPI_Request request;
@@ -182,9 +180,9 @@ public:
                 HandleMPIP2P* handle = new HandleMPIP2P(this, i, client, false);
                 {
                     connections.insert({handle, false});
-                    ADD_CODE_IF(addinQ({true, handle}));  
+                    ADD_CODE_IF(addinQ(true, handle));  
                 }
-                REMOVE_CODE_IF(addinQ({true, handle}));
+                REMOVE_CODE_IF(addinQ(true, handle));
             }
         }
 		MTCL_MPIP2P_PRINT(100, "Accept thread finalized.\n");        
@@ -227,7 +225,7 @@ public:
 
                         to_manage = false;
                         // NOTE: called with shm lock hold. Double lock if there is the IO-thread!
-                        addinQ({false, handle});
+                        addinQ(false, handle);
                         continue;
                     }
                 }
@@ -240,7 +238,7 @@ public:
                 if(flag) {
                     to_manage = false;
 					// NOTE: called with shm lock hold. Double lock if there is the IO-thread!
-                    addinQ({false, handle});  
+                    addinQ(false, handle);  
                 }
             }
         }		
@@ -311,7 +309,7 @@ public:
     void notify_yield(Handle* h) override {
         HandleMPIP2P* handle = reinterpret_cast<HandleMPIP2P*>(h);
         if (handle->closing) {
-            addinQ({false, h});
+            addinQ(false, h);
             return;
         }
         REMOVE_CODE_IF(std::unique_lock l(shm));

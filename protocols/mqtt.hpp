@@ -216,7 +216,7 @@ public:
 
                 REMOVE_CODE_IF(ulock.lock());
                 connections.insert({handle, false});
-                addinQ({true, handle});
+                addinQ(true, handle);
                 REMOVE_CODE_IF(ulock.unlock());
             }
         }
@@ -246,7 +246,7 @@ public:
                     }
 					to_manage = false;
 					// NOTE: called with ulock lock hold. Double lock if there is the IO-thread!
-					addinQ({false, handle});
+					addinQ(false, handle);
                 }
             }
         }
