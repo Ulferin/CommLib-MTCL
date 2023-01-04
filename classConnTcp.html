@@ -94,9 +94,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:a5f8a1eade7b8db288ff7ef77f0c86022"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classHandle.html">Handle</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConnTcp.html#a5f8a1eade7b8db288ff7ef77f0c86022">connect</a> (const std::string &amp;address)</td></tr>
 <tr class="memdesc:a5f8a1eade7b8db288ff7ef77f0c86022"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new <a class="el" href="classHandle.html">Handle</a> object establishing a connection to the remote peer specified by string <b>s</b>.  <a href="classConnTcp.html#a5f8a1eade7b8db288ff7ef77f0c86022">More...</a><br /></td></tr>
 <tr class="separator:a5f8a1eade7b8db288ff7ef77f0c86022"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac96961cf56cb4f38f1eb91396102962b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConnTcp.html#ac96961cf56cb4f38f1eb91396102962b">notify_close</a> (<a class="el" href="classHandle.html">Handle</a> *h)</td></tr>
-<tr class="memdesc:ac96961cf56cb4f38f1eb91396102962b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manage the notification of an <a class="el" href="classHandle.html">Handle</a> object <b>h</b> issuing a close operation. The <a class="el" href="classHandle.html">Handle</a> is invalidated and should not be managed anymore.  <a href="classConnTcp.html#ac96961cf56cb4f38f1eb91396102962b">More...</a><br /></td></tr>
-<tr class="separator:ac96961cf56cb4f38f1eb91396102962b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa9abf503e09e6f32d132bbdf3fcbb5b5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConnTcp.html#aa9abf503e09e6f32d132bbdf3fcbb5b5">notify_close</a> (<a class="el" href="classHandle.html">Handle</a> *h, bool close_wr=true, bool close_rd=true)</td></tr>
+<tr class="memdesc:aa9abf503e09e6f32d132bbdf3fcbb5b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manage the notification of an <a class="el" href="classHandle.html">Handle</a> object <b>h</b> issuing a close operation. The <a class="el" href="classHandle.html">Handle</a> is invalidated and should not be managed anymore.  <a href="classConnTcp.html#aa9abf503e09e6f32d132bbdf3fcbb5b5">More...</a><br /></td></tr>
+<tr class="separator:aa9abf503e09e6f32d132bbdf3fcbb5b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4105a0a028d2b64c1a78759fec042164"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConnTcp.html#a4105a0a028d2b64c1a78759fec042164">notify_yield</a> (<a class="el" href="classHandle.html">Handle</a> *h) override</td></tr>
 <tr class="memdesc:a4105a0a028d2b64c1a78759fec042164"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manage the notification of an <a class="el" href="classHandle.html">Handle</a> object <b>h</b> issuing a yield operation. After this method is complete, the ownership of <b>h</b> is transferred back to the parent <a class="el" href="classConnType.html">ConnType</a>.  <a href="classConnTcp.html#a4105a0a028d2b64c1a78759fec042164">More...</a><br /></td></tr>
 <tr class="separator:a4105a0a028d2b64c1a78759fec042164"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -135,9 +135,9 @@ std::atomic&lt; int &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>f
 std::shared_mutex&#160;</td><td class="memItemRight" valign="bottom"><b>shm</b></td></tr>
 <tr class="separator:ab9eebbf0a87af13b67c00d2bec0cc9ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_attribs_classConnType"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_classConnType')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="classConnType.html">ConnType</a></td></tr>
-<tr class="memitem:a2ac7d82693aad45e51ac2732665d6388 inherit pro_attribs_classConnType"><td class="memItemLeft" align="right" valign="top"><a id="a2ac7d82693aad45e51ac2732665d6388"></a>
-std::function&lt; void(std::pair&lt; bool, <a class="el" href="classHandle.html">Handle</a> * &gt;)&gt;&#160;</td><td class="memItemRight" valign="bottom"><b>addinQ</b></td></tr>
-<tr class="separator:a2ac7d82693aad45e51ac2732665d6388 inherit pro_attribs_classConnType"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a25f8603b3a025603b6be383943d66678 inherit pro_attribs_classConnType"><td class="memItemLeft" align="right" valign="top"><a id="a25f8603b3a025603b6be383943d66678"></a>
+std::function&lt; void(bool, <a class="el" href="classHandle.html">Handle</a> *)&gt;&#160;</td><td class="memItemRight" valign="bottom"><b>addinQ</b></td></tr>
+<tr class="separator:a25f8603b3a025603b6be383943d66678 inherit pro_attribs_classConnType"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
@@ -252,8 +252,8 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>setAsClosed</b
 
 </div>
 </div>
-<a id="ac96961cf56cb4f38f1eb91396102962b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac96961cf56cb4f38f1eb91396102962b">&#9670;&nbsp;</a></span>notify_close()</h2>
+<a id="aa9abf503e09e6f32d132bbdf3fcbb5b5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa9abf503e09e6f32d132bbdf3fcbb5b5">&#9670;&nbsp;</a></span>notify_close()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -265,8 +265,24 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>setAsClosed</b
           <td class="memname">void ConnTcp::notify_close </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="classHandle.html">Handle</a> *&#160;</td>
-          <td class="paramname"><em>h</em></td><td>)</td>
+          <td class="paramname"><em>h</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>shut_wr</em> = <code>true</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>shut_rd</em> = <code>true</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -284,7 +300,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>setAsClosed</b
   </dd>
 </dl>
 
-<p>Implements <a class="el" href="classConnType.html#acc40e536c6fcb25fa4833320f4097a41">ConnType</a>.</p>
+<p>Implements <a class="el" href="classConnType.html#a33ffcb5c5ead496305f167496896d677">ConnType</a>.</p>
 
 </div>
 </div>

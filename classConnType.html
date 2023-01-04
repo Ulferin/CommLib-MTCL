@@ -102,9 +102,9 @@ virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hr
 <tr class="memitem:a87399427d64cc8f2355d4f1eb325ec71"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConnType.html#a87399427d64cc8f2355d4f1eb325ec71">notify_yield</a> (<a class="el" href="classHandle.html">Handle</a> *h)=0</td></tr>
 <tr class="memdesc:a87399427d64cc8f2355d4f1eb325ec71"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manage the notification of an <a class="el" href="classHandle.html">Handle</a> object <b>h</b> issuing a yield operation. After this method is complete, the ownership of <b>h</b> is transferred back to the parent <a class="el" href="classConnType.html">ConnType</a>.  <a href="classConnType.html#a87399427d64cc8f2355d4f1eb325ec71">More...</a><br /></td></tr>
 <tr class="separator:a87399427d64cc8f2355d4f1eb325ec71"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acc40e536c6fcb25fa4833320f4097a41"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConnType.html#acc40e536c6fcb25fa4833320f4097a41">notify_close</a> (<a class="el" href="classHandle.html">Handle</a> *h)=0</td></tr>
-<tr class="memdesc:acc40e536c6fcb25fa4833320f4097a41"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manage the notification of an <a class="el" href="classHandle.html">Handle</a> object <b>h</b> issuing a close operation. The <a class="el" href="classHandle.html">Handle</a> is invalidated and should not be managed anymore.  <a href="classConnType.html#acc40e536c6fcb25fa4833320f4097a41">More...</a><br /></td></tr>
-<tr class="separator:acc40e536c6fcb25fa4833320f4097a41"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a33ffcb5c5ead496305f167496896d677"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConnType.html#a33ffcb5c5ead496305f167496896d677">notify_close</a> (<a class="el" href="classHandle.html">Handle</a> *h, bool shut_wr=true, bool shut_rd=true)=0</td></tr>
+<tr class="memdesc:a33ffcb5c5ead496305f167496896d677"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manage the notification of an <a class="el" href="classHandle.html">Handle</a> object <b>h</b> issuing a close operation. The <a class="el" href="classHandle.html">Handle</a> is invalidated and should not be managed anymore.  <a href="classConnType.html#a33ffcb5c5ead496305f167496896d677">More...</a><br /></td></tr>
+<tr class="separator:a33ffcb5c5ead496305f167496896d677"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4781ceaf1366e6d080092b60affb0a0e"><td class="memItemLeft" align="right" valign="top"><a id="a4781ceaf1366e6d080092b60affb0a0e"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConnType.html#a4781ceaf1366e6d080092b60affb0a0e">end</a> ()=0</td></tr>
 <tr class="memdesc:a4781ceaf1366e6d080092b60affb0a0e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stop listening for new connections and terminate existing <a class="el" href="classHandle.html">Handle</a><em>s</em>. <br /></td></tr>
@@ -118,9 +118,9 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>setAsClosed</b
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
-<tr class="memitem:a2ac7d82693aad45e51ac2732665d6388"><td class="memItemLeft" align="right" valign="top"><a id="a2ac7d82693aad45e51ac2732665d6388"></a>
-std::function&lt; void(std::pair&lt; bool, <a class="el" href="classHandle.html">Handle</a> * &gt;)&gt;&#160;</td><td class="memItemRight" valign="bottom"><b>addinQ</b></td></tr>
-<tr class="separator:a2ac7d82693aad45e51ac2732665d6388"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a25f8603b3a025603b6be383943d66678"><td class="memItemLeft" align="right" valign="top"><a id="a25f8603b3a025603b6be383943d66678"></a>
+std::function&lt; void(bool, <a class="el" href="classHandle.html">Handle</a> *)&gt;&#160;</td><td class="memItemRight" valign="bottom"><b>addinQ</b></td></tr>
+<tr class="separator:a25f8603b3a025603b6be383943d66678"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
@@ -237,8 +237,8 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>Handle</b></td></tr>
 
 </div>
 </div>
-<a id="acc40e536c6fcb25fa4833320f4097a41"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acc40e536c6fcb25fa4833320f4097a41">&#9670;&nbsp;</a></span>notify_close()</h2>
+<a id="a33ffcb5c5ead496305f167496896d677"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a33ffcb5c5ead496305f167496896d677">&#9670;&nbsp;</a></span>notify_close()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -250,8 +250,24 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>Handle</b></td></tr>
           <td class="memname">virtual void ConnType::notify_close </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="classHandle.html">Handle</a> *&#160;</td>
-          <td class="paramname"><em>h</em></td><td>)</td>
+          <td class="paramname"><em>h</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>shut_wr</em> = <code>true</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>shut_rd</em> = <code>true</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -269,7 +285,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>Handle</b></td></tr>
   </dd>
 </dl>
 
-<p>Implemented in <a class="el" href="classConnTcp.html#ac96961cf56cb4f38f1eb91396102962b">ConnTcp</a>, <a class="el" href="classConnMQTT.html#a873042219596c08aa4cddbbfa18f5187">ConnMQTT</a>, <a class="el" href="classConnMPIP2P.html#aad1148b600b32dc69e05da6661471aba">ConnMPIP2P</a>, and <a class="el" href="classConnMPI.html#a3faa6efb1c8415d3220efae62ffcb594">ConnMPI</a>.</p>
+<p>Implemented in <a class="el" href="classConnTcp.html#aa9abf503e09e6f32d132bbdf3fcbb5b5">ConnTcp</a>.</p>
 
 </div>
 </div>

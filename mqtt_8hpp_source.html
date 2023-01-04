@@ -287,7 +287,7 @@ $(function() {
 <div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160; </div>
 <div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;                REMOVE_CODE_IF(ulock.lock());</div>
 <div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;                connections.insert({handle, <span class="keyword">false</span>});</div>
-<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;                addinQ({<span class="keyword">true</span>, handle});</div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;                addinQ(<span class="keyword">true</span>, handle);</div>
 <div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;                REMOVE_CODE_IF(ulock.unlock());</div>
 <div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;            }</div>
 <div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;        }</div>
@@ -317,7 +317,7 @@ $(function() {
 <div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;                    }</div>
 <div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;                    to_manage = <span class="keyword">false</span>;</div>
 <div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;                    <span class="comment">// NOTE: called with ulock lock hold. Double lock if there is the IO-thread!</span></div>
-<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;                    addinQ({<span class="keyword">false</span>, handle});</div>
+<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;                    addinQ(<span class="keyword">false</span>, handle);</div>
 <div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;                }</div>
 <div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;            }</div>
 <div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;        }</div>
@@ -358,7 +358,7 @@ $(function() {
 <div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;    }</div>
 <div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160; </div>
 <div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160; </div>
-<div class="line"><a name="l00290"></a><span class="lineno"><a class="line" href="classConnMQTT.html#a873042219596c08aa4cddbbfa18f5187">  290</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classConnMQTT.html#a873042219596c08aa4cddbbfa18f5187">notify_close</a>(<a class="code" href="classHandle.html">Handle</a>* h) {</div>
+<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;    <span class="keywordtype">void</span> notify_close(<a class="code" href="classHandle.html">Handle</a>* h) {</div>
 <div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;        REMOVE_CODE_IF(std::unique_lock l(shm));</div>
 <div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;        <a class="code" href="classHandleMQTT.html">HandleMQTT</a>* handle = <span class="keyword">reinterpret_cast&lt;</span><a class="code" href="classHandleMQTT.html">HandleMQTT</a>*<span class="keyword">&gt;</span>(h);</div>
 <div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;        <span class="keywordflow">if</span> (!handle-&gt;closing){</div>
@@ -392,7 +392,6 @@ $(function() {
 <div class="ttc" id="aclassConnMQTT_html_a263dd19033bbd220f10f83241740877a"><div class="ttname"><a href="classConnMQTT.html#a263dd19033bbd220f10f83241740877a">ConnMQTT::end</a></div><div class="ttdeci">void end()</div><div class="ttdoc">Stop listening for new connections and terminate existing Handles.</div><div class="ttdef"><b>Definition:</b> mqtt.hpp:307</div></div>
 <div class="ttc" id="aclassConnMQTT_html_a30249d1596ee1b98b61f251c82a118f8"><div class="ttname"><a href="classConnMQTT.html#a30249d1596ee1b98b61f251c82a118f8">ConnMQTT::connect</a></div><div class="ttdeci">Handle * connect(const std::string &amp;address)</div><div class="ttdoc">Create a new Handle object establishing a connection to the remote peer specified by string s.</div><div class="ttdef"><b>Definition:</b> mqtt.hpp:258</div></div>
 <div class="ttc" id="aclassConnMQTT_html_a3e92b658ece6631d9b9bc67407759167"><div class="ttname"><a href="classConnMQTT.html#a3e92b658ece6631d9b9bc67407759167">ConnMQTT::init</a></div><div class="ttdeci">int init(std::string s)</div><div class="ttdoc">Initialize the ConnType object.</div><div class="ttdef"><b>Definition:</b> mqtt.hpp:141</div></div>
-<div class="ttc" id="aclassConnMQTT_html_a873042219596c08aa4cddbbfa18f5187"><div class="ttname"><a href="classConnMQTT.html#a873042219596c08aa4cddbbfa18f5187">ConnMQTT::notify_close</a></div><div class="ttdeci">void notify_close(Handle *h)</div><div class="ttdoc">Manage the notification of an Handle object h issuing a close operation. The Handle is invalidated an...</div><div class="ttdef"><b>Definition:</b> mqtt.hpp:290</div></div>
 <div class="ttc" id="aclassConnMQTT_html_aafbdf658210f8c93cd51410739e5a284"><div class="ttname"><a href="classConnMQTT.html#aafbdf658210f8c93cd51410739e5a284">ConnMQTT::update</a></div><div class="ttdeci">void update()</div><div class="ttdoc">Non-blocking polling over the managed set of Handle objects. It should be used to check whether Handl...</div><div class="ttdef"><b>Definition:</b> mqtt.hpp:187</div></div>
 <div class="ttc" id="aclassConnMQTT_html_ac64146814c38adfdb540c62bec61b8b3"><div class="ttname"><a href="classConnMQTT.html#ac64146814c38adfdb540c62bec61b8b3">ConnMQTT::listen</a></div><div class="ttdeci">int listen(std::string s)</div><div class="ttdoc">Start listening for new connections at the specified address s.</div><div class="ttdef"><b>Definition:</b> mqtt.hpp:170</div></div>
 <div class="ttc" id="aclassConnType_html"><div class="ttname"><a href="classConnType.html">ConnType</a></div><div class="ttdef"><b>Definition:</b> protocolInterface.hpp:10</div></div>
