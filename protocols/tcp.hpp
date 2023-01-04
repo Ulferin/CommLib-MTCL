@@ -107,8 +107,13 @@ public:
 	ssize_t probe(size_t& size, const bool blocking=true) {
 		size_t sz;
 		ssize_t r;
-		if ((r=readn(fd, (char*)&sz, sizeof(size_t)))<=0)
-			return r;
+		if (blocking) {
+			if ((r=readn(fd, (char*)&sz, sizeof(size_t)))<=0)
+				return r;
+		} else {
+			if ((r=recv(fd, (char*)&sz, sizeof(size_t), MSG_DONTWAIT))<=0)
+				return r;
+		}
 		size = be64toh(sz);
 		return sizeof(size_t);
 	}

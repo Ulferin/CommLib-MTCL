@@ -96,17 +96,24 @@ public:
 
 		// reading the header to get the size of the message
 		ssize_t r;
-		if ((r=realHandle->probe(size, true))<=0) {
-			if (r==0) {
+		if ((r=realHandle->probe(size, blocking))<=0) {
+			switch(r) {
+			case 0: {
 				isReadable=false;
 				realHandle->close(!isWritable, true);
 				return 0;
 			}
-			if (r==-1 && errno==ECONNRESET) {
-				isReadable=isWritable=false;
-				realHandle->close(true, true);
-				return 0;
-			}
+			case -1: {				
+				if (errno==ECONNRESET) {
+					isReadable=isWritable=false;
+					realHandle->close(true, true);
+					return 0;
+				}
+				if (errno==EWOULDBLOCK || errno==EAGAIN) {
+					errno = EWOULDBLOCK;
+					return -1;
+				}
+			}}
 			return r;
 		}
 		if (size==0) { // EOS received
