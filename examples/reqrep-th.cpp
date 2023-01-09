@@ -17,6 +17,9 @@
 
 using namespace std::chrono_literals;
 
+const int nmsg=100;
+const int maxwaittime=10; // milliseconds
+
 void Server() {
 	Manager::listen("TCP:0.0.0.0:42000");
 
@@ -29,6 +32,7 @@ void Server() {
 								MTCL_ERROR("[SERVER]:\t", "sender ERROR, errno=%d\n", errno);
 								continue;
 							}
+							std::this_thread::sleep_for(std::chrono::milliseconds(rand() % maxwaittime +1));			
 						}
 						handle.close();
 						{
@@ -64,10 +68,12 @@ void Client() {
 		return;
 	}
 	auto t = std::thread([&handle]() {
-							 for(int i=0;i<100;++i)
+							 for(int i=0;i<100;++i) {
 								 if (handle.send(&i,sizeof(i))<=0) {
 									 MTCL_ERROR("[CLIENT]:\t", "sender ERROR, errno=%d\n", errno);
 								 }
+								 std::this_thread::sleep_for(std::chrono::milliseconds(rand()%maxwaittime +1));
+							 }
 							 MTCL_PRINT(10, "[CLIENT]:\t", "sender terminating\n");
 						 });
 	handle.yield();

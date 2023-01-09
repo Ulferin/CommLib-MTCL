@@ -410,6 +410,7 @@ public:
 
     void notify_yield(Handle* h) override {
         int fd = reinterpret_cast<HandleTCP*>(h)->fd;
+		if (fd==-1) return;
 		REMOVE_CODE_IF(std::unique_lock l(shm));
 		if (h->isClosed()) return;
         FD_SET(fd, &set);
@@ -421,8 +422,7 @@ public:
     void end() {
         auto modified_connections = connections;
         for(auto& [fd, h] : modified_connections) {
-            //if(isSet(fd))
-                setAsClosed(h);
+			setAsClosed(h);
 		}
     }
 

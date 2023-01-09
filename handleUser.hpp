@@ -79,9 +79,9 @@ public:
 
 	ssize_t probe(size_t& size, const bool blocking=true) {
         newConnection = false;
-		if (realHandle->probed.first) {
+		if (realHandle->probed.first) { // previously probed, return 0 if EOS received
 			size=realHandle->probed.second;
-			return sizeof(size_t);
+			return (size?sizeof(size_t):0);
 		}
         if (!isReadable){
 			MTCL_PRINT(100, "[internal]:\t", "HandleUser::probe handle not readable\n");
@@ -116,12 +116,12 @@ public:
 			}}
 			return r;
 		}
+		realHandle->probed={true,size};
 		if (size==0) { // EOS received
 			realHandle->close(!isWritable, true);
 			isReadable=false;
 			return 0;
 		}
-		realHandle->probed={true,size};
 		return r;		
 	}
 
@@ -134,7 +134,7 @@ public:
 				return r;
 			}
 			if (sz>size) {
-				MTCL_PRINT(100, "[internal]:\t", "HandleUser::receive ENOMEM\n");
+				MTCL_PRINT(100, "[internal]:\t", "HandleUser::receive ENOMEM, sz=%ld, size=%ld\n", sz, size);
 				errno=ENOMEM;
 				return -1;
 			}
@@ -150,14 +150,14 @@ public:
 				return -1;
 			}
 			if (realHandle->closed) return 0;
-			if ((sz=realHandle->probed.second)>size) {
-				MTCL_PRINT(100, "[internal]:\t", "HandleUser::receive ENOMEM\n");
-				errno=ENOMEM;
-				return -1;
-			}
 		}
+		if ((sz=realHandle->probed.second)>size) {
+			MTCL_ERROR("[internal]:\t", "HandleUser::receive ENOMEM, receiving less data\n");
+			//errno=ENOMEM;
+			//return -1;
+		}	   
 		realHandle->probed={false,0};
-		return realHandle->receive(buff, sz);
+		return realHandle->receive(buff, std::min(sz,size));
     }
 
     void close(){

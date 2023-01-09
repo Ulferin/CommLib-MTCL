@@ -259,7 +259,6 @@ public:
 		}
     }
 
-
     void end() {
         auto modified_connections = connections;
         for(auto& [_, handlePair] : modified_connections)
