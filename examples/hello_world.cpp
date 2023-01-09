@@ -60,6 +60,7 @@ void Server() {
 	Manager::listen("MPI:0:10");
 	Manager::listen("MPIP2P:test");
     Manager::listen("MQTT:label");
+    Manager::listen("UCX:0.0.0.0:21000");
 
 	char buff[max_msg_size+1];
 	while(!stop) {
@@ -124,11 +125,14 @@ void Client() {
 						  auto h = Manager::connect("MPI:0:10");
 						  if (!h.isValid()) {
 							  auto h = Manager::connect("MQTT:label");
-							  if (!h.isValid()) {
-								  auto h = Manager::connect("TCP:0.0.0.0:42000");
-								  assert(h.isValid());
-								  return h;
-							  } else return h;
+                              if(!h.isValid()) {
+                                auto h = Manager::connect("UCX:0.0.0.0:21000");
+                                if (!h.isValid()) {
+                                    auto h = Manager::connect("TCP:0.0.0.0:42000");
+                                    assert(h.isValid());
+                                    return h;
+                                } else return h;
+                              } else return h;
 						  } else return h;
 					  } else return h;
 				  }();

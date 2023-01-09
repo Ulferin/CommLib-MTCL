@@ -34,6 +34,10 @@
 #include "protocols/mqtt.hpp"
 #endif
 
+#ifdef ENABLE_UCX
+#include "protocols/ucx.hpp"
+#endif
+
 int  mtcl_verbose = -1;
 
 /**
@@ -179,6 +183,10 @@ public:
 
 #ifdef ENABLE_MQTT
         registerType<ConnMQTT>("MQTT");
+#endif
+
+#ifdef ENABLE_UCX
+        registerType<ConnUCX>("UCX");
 #endif
 
 #ifdef ENABLE_CONFIGFILE

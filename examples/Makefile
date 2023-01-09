@@ -35,6 +35,14 @@ endif
 	LIBS     += -Wl,-rpath,${PAHO_HOME}/lib -lpaho-mqttpp3 -lpaho-mqtt3as -lpaho-mqtt3a
 endif
 
+ifeq ($(TPROTOCOL), UCX)
+ifdef UCX_HOME
+	INCS += -I$(UCX_HOME)/include
+	LIBS += -L$(UCX_HOME)/lib
+endif
+	LIBS += -lucp -luct -lucs -lucm
+endif
+
 CXXFLAGS         += -Wall
 LIBS             += -pthread -lrt
 INCLUDES          = $(INCS)

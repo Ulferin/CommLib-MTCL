@@ -40,7 +40,8 @@ const std::string MQTT_SERVER_ADDRESS{ "tcp://localhost:1883" };
 
 
 // ------- UCX ------
-
+const unsigned UCX_BACKLOG             = 128;
+const unsigned UCX_POLL_TIMEOUT        = 10; 
 
 
 #endif 
