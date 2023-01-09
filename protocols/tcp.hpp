@@ -1,7 +1,6 @@
 #ifndef TCP_HPP
 #define TCP_HPP
 
-#include <endian.h>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/un.h>
