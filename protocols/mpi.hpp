@@ -113,7 +113,7 @@ public:
 			errno = ECOMM;
             return -1;
         }
-        return 0;
+        return sizeof(size_t);
     }
 
     ssize_t sendEOS() {
@@ -126,12 +126,10 @@ public:
 
 class ConnMPI : public ConnType {
 protected:
-    // std::map<std::pair<int,int>, std::pair<bool, Handle<ConnMPI>*>> handles;
-
     int rank;
-    //std::map<HandleMPI*, bool> connections;
-    std::map<std::pair<int, int>, std::pair<HandleMPI*, bool>> connections;
 
+    // <rank, tag> => <HandleMPI, busy>
+    std::map<std::pair<int, int>, std::pair<HandleMPI*, bool>> connections;
     std::shared_mutex shm;
 
 public:
@@ -277,7 +275,7 @@ public:
     void notify_close(Handle* h, bool close_wr=true, bool close_rd=true) {
         HandleMPI* hMPI = reinterpret_cast<HandleMPI*>(h);
 
-        if (close_wr){
+        if (close_wr && connections.count({hMPI->rank, hMPI->tag})){
             hMPI->sendEOS();
         }
 
@@ -328,7 +326,6 @@ public:
         for(auto& [_, handlePair] : modified_connections)
             if(handlePair.second)
                 setAsClosed(handlePair.first);
-
         MPI_Finalize();
     }
 };
