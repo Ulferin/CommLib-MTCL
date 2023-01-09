@@ -146,9 +146,9 @@ $(function() {
 <div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160; </div>
 <div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    ssize_t probe(<span class="keywordtype">size_t</span>&amp; size, <span class="keyword">const</span> <span class="keywordtype">bool</span> blocking=<span class="keyword">true</span>) {</div>
 <div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;        newConnection = <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;        <span class="keywordflow">if</span> (realHandle-&gt;probed.first) {</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;        <span class="keywordflow">if</span> (realHandle-&gt;probed.first) { <span class="comment">// previously probed, return 0 if EOS received</span></div>
 <div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;            size=realHandle-&gt;probed.second;</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">sizeof</span>(size_t);</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;            <span class="keywordflow">return</span> (size?<span class="keyword">sizeof</span>(<span class="keywordtype">size_t</span>):0);</div>
 <div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;        }</div>
 <div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;        <span class="keywordflow">if</span> (!isReadable){</div>
 <div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;            MTCL_PRINT(100, <span class="stringliteral">&quot;[internal]:\t&quot;</span>, <span class="stringliteral">&quot;HandleUser::probe handle not readable\n&quot;</span>);</div>
@@ -183,12 +183,12 @@ $(function() {
 <div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;            }}</div>
 <div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;            <span class="keywordflow">return</span> r;</div>
 <div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;        }</div>
-<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;        <span class="keywordflow">if</span> (size==0) { <span class="comment">// EOS received</span></div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;            realHandle-&gt;close(!isWritable, <span class="keyword">true</span>);</div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;            isReadable=<span class="keyword">false</span>;</div>
-<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;            <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;        }</div>
-<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;        realHandle-&gt;probed={<span class="keyword">true</span>,size};</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;        realHandle-&gt;probed={<span class="keyword">true</span>,size};</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;        <span class="keywordflow">if</span> (size==0) { <span class="comment">// EOS received</span></div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;            realHandle-&gt;close(!isWritable, <span class="keyword">true</span>);</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;            isReadable=<span class="keyword">false</span>;</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;            <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;        }</div>
 <div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;        <span class="keywordflow">return</span> r;       </div>
 <div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;    }</div>
 <div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160; </div>
@@ -201,7 +201,7 @@ $(function() {
 <div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;                <span class="keywordflow">return</span> r;</div>
 <div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;            }</div>
 <div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;            <span class="keywordflow">if</span> (sz&gt;size) {</div>
-<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;                MTCL_PRINT(100, <span class="stringliteral">&quot;[internal]:\t&quot;</span>, <span class="stringliteral">&quot;HandleUser::receive ENOMEM\n&quot;</span>);</div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;                MTCL_PRINT(100, <span class="stringliteral">&quot;[internal]:\t&quot;</span>, <span class="stringliteral">&quot;HandleUser::receive ENOMEM, sz=%ld, size=%ld\n&quot;</span>, sz, size);</div>
 <div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;                errno=ENOMEM;</div>
 <div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;                <span class="keywordflow">return</span> -1;</div>
 <div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;            }</div>
@@ -217,14 +217,14 @@ $(function() {
 <div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;                <span class="keywordflow">return</span> -1;</div>
 <div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;            }</div>
 <div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;            <span class="keywordflow">if</span> (realHandle-&gt;closed) <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;            <span class="keywordflow">if</span> ((sz=realHandle-&gt;probed.second)&gt;size) {</div>
-<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;                MTCL_PRINT(100, <span class="stringliteral">&quot;[internal]:\t&quot;</span>, <span class="stringliteral">&quot;HandleUser::receive ENOMEM\n&quot;</span>);</div>
-<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;                errno=ENOMEM;</div>
-<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;                <span class="keywordflow">return</span> -1;</div>
-<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;            }</div>
-<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;        }</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;        }</div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;        <span class="keywordflow">if</span> ((sz=realHandle-&gt;probed.second)&gt;size) {</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;            MTCL_ERROR(<span class="stringliteral">&quot;[internal]:\t&quot;</span>, <span class="stringliteral">&quot;HandleUser::receive ENOMEM, receiving less data\n&quot;</span>);</div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;            <span class="comment">//errno=ENOMEM;</span></div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;            <span class="comment">//return -1;</span></div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;        }      </div>
 <div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;        realHandle-&gt;probed={<span class="keyword">false</span>,0};</div>
-<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;        <span class="keywordflow">return</span> realHandle-&gt;<a class="code" href="classHandle.html#a9050a62bad7183e263f1eb55bb251780">receive</a>(buff, sz);</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;        <span class="keywordflow">return</span> realHandle-&gt;<a class="code" href="classHandle.html#a9050a62bad7183e263f1eb55bb251780">receive</a>(buff, std::min(sz,size));</div>
 <div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;    }</div>
 <div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160; </div>
 <div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;    <span class="keywordtype">void</span> close(){</div>
@@ -251,7 +251,7 @@ $(function() {
 <div class="ttc" id="aclassHandle_html"><div class="ttname"><a href="classHandle.html">Handle</a></div><div class="ttdef"><b>Definition:</b> handle.hpp:9</div></div>
 <div class="ttc" id="aclassHandle_html_a9050a62bad7183e263f1eb55bb251780"><div class="ttname"><a href="classHandle.html#a9050a62bad7183e263f1eb55bb251780">Handle::receive</a></div><div class="ttdeci">virtual ssize_t receive(void *buff, size_t size)=0</div><div class="ttdoc">Read at most size byte into buff from the remote end connected to this Handle. Wait until all size da...</div></div>
 <div class="ttc" id="aclassHandle_html_aae538673ad7023a3f7c298a7cfd5f513"><div class="ttname"><a href="classHandle.html#aae538673ad7023a3f7c298a7cfd5f513">Handle::send</a></div><div class="ttdeci">virtual ssize_t send(const void *buff, size_t size)=0</div><div class="ttdoc">Send size byte of buff to the remote end connected to this Handle. Wait until all data has been sent ...</div></div>
-<div class="ttc" id="aclassManager_html"><div class="ttname"><a href="classManager.html">Manager</a></div><div class="ttdef"><b>Definition:</b> manager.hpp:41</div></div>
+<div class="ttc" id="aclassManager_html"><div class="ttname"><a href="classManager.html">Manager</a></div><div class="ttdef"><b>Definition:</b> manager.hpp:42</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

@@ -476,19 +476,19 @@ $(function() {
 <div class="line"><a name="l00410"></a><span class="lineno">  410</span>&#160; </div>
 <div class="line"><a name="l00411"></a><span class="lineno"><a class="line" href="classConnTcp.html#a4105a0a028d2b64c1a78759fec042164">  411</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classConnTcp.html#a4105a0a028d2b64c1a78759fec042164">notify_yield</a>(<a class="code" href="classHandle.html">Handle</a>* h)<span class="keyword"> override </span>{</div>
 <div class="line"><a name="l00412"></a><span class="lineno">  412</span>&#160;        <span class="keywordtype">int</span> fd = <span class="keyword">reinterpret_cast&lt;</span><a class="code" href="classHandleTCP.html">HandleTCP</a>*<span class="keyword">&gt;</span>(h)-&gt;fd;</div>
-<div class="line"><a name="l00413"></a><span class="lineno">  413</span>&#160;        REMOVE_CODE_IF(std::unique_lock l(shm));</div>
-<div class="line"><a name="l00414"></a><span class="lineno">  414</span>&#160;        <span class="keywordflow">if</span> (h-&gt;isClosed()) <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00415"></a><span class="lineno">  415</span>&#160;        FD_SET(fd, &amp;set);</div>
-<div class="line"><a name="l00416"></a><span class="lineno">  416</span>&#160;        <span class="keywordflow">if</span>(fd &gt; fdmax) {</div>
-<div class="line"><a name="l00417"></a><span class="lineno">  417</span>&#160;            fdmax = fd;</div>
-<div class="line"><a name="l00418"></a><span class="lineno">  418</span>&#160;        }</div>
-<div class="line"><a name="l00419"></a><span class="lineno">  419</span>&#160;    }</div>
-<div class="line"><a name="l00420"></a><span class="lineno">  420</span>&#160; </div>
-<div class="line"><a name="l00421"></a><span class="lineno"><a class="line" href="classConnTcp.html#a20d0571ae4673f70372ef24b9b29332f">  421</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classConnTcp.html#a20d0571ae4673f70372ef24b9b29332f">end</a>() {</div>
-<div class="line"><a name="l00422"></a><span class="lineno">  422</span>&#160;        <span class="keyword">auto</span> modified_connections = connections;</div>
-<div class="line"><a name="l00423"></a><span class="lineno">  423</span>&#160;        <span class="keywordflow">for</span>(<span class="keyword">auto</span>&amp; [fd, h] : modified_connections) {</div>
-<div class="line"><a name="l00424"></a><span class="lineno">  424</span>&#160;            <span class="comment">//if(isSet(fd))</span></div>
-<div class="line"><a name="l00425"></a><span class="lineno">  425</span>&#160;                setAsClosed(h);</div>
+<div class="line"><a name="l00413"></a><span class="lineno">  413</span>&#160;        <span class="keywordflow">if</span> (fd==-1) <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l00414"></a><span class="lineno">  414</span>&#160;        REMOVE_CODE_IF(std::unique_lock l(shm));</div>
+<div class="line"><a name="l00415"></a><span class="lineno">  415</span>&#160;        <span class="keywordflow">if</span> (h-&gt;isClosed()) <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l00416"></a><span class="lineno">  416</span>&#160;        FD_SET(fd, &amp;set);</div>
+<div class="line"><a name="l00417"></a><span class="lineno">  417</span>&#160;        <span class="keywordflow">if</span>(fd &gt; fdmax) {</div>
+<div class="line"><a name="l00418"></a><span class="lineno">  418</span>&#160;            fdmax = fd;</div>
+<div class="line"><a name="l00419"></a><span class="lineno">  419</span>&#160;        }</div>
+<div class="line"><a name="l00420"></a><span class="lineno">  420</span>&#160;    }</div>
+<div class="line"><a name="l00421"></a><span class="lineno">  421</span>&#160; </div>
+<div class="line"><a name="l00422"></a><span class="lineno"><a class="line" href="classConnTcp.html#a20d0571ae4673f70372ef24b9b29332f">  422</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classConnTcp.html#a20d0571ae4673f70372ef24b9b29332f">end</a>() {</div>
+<div class="line"><a name="l00423"></a><span class="lineno">  423</span>&#160;        <span class="keyword">auto</span> modified_connections = connections;</div>
+<div class="line"><a name="l00424"></a><span class="lineno">  424</span>&#160;        <span class="keywordflow">for</span>(<span class="keyword">auto</span>&amp; [fd, h] : modified_connections) {</div>
+<div class="line"><a name="l00425"></a><span class="lineno">  425</span>&#160;            setAsClosed(h);</div>
 <div class="line"><a name="l00426"></a><span class="lineno">  426</span>&#160;        }</div>
 <div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160;    }</div>
 <div class="line"><a name="l00428"></a><span class="lineno">  428</span>&#160; </div>
@@ -501,7 +501,7 @@ $(function() {
 <div class="line"><a name="l00435"></a><span class="lineno">  435</span>&#160; </div>
 <div class="line"><a name="l00436"></a><span class="lineno">  436</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassConnTcp_html"><div class="ttname"><a href="classConnTcp.html">ConnTcp</a></div><div class="ttdef"><b>Definition:</b> tcp.hpp:131</div></div>
-<div class="ttc" id="aclassConnTcp_html_a20d0571ae4673f70372ef24b9b29332f"><div class="ttname"><a href="classConnTcp.html#a20d0571ae4673f70372ef24b9b29332f">ConnTcp::end</a></div><div class="ttdeci">void end()</div><div class="ttdoc">Stop listening for new connections and terminate existing Handles.</div><div class="ttdef"><b>Definition:</b> tcp.hpp:421</div></div>
+<div class="ttc" id="aclassConnTcp_html_a20d0571ae4673f70372ef24b9b29332f"><div class="ttname"><a href="classConnTcp.html#a20d0571ae4673f70372ef24b9b29332f">ConnTcp::end</a></div><div class="ttdeci">void end()</div><div class="ttdoc">Stop listening for new connections and terminate existing Handles.</div><div class="ttdef"><b>Definition:</b> tcp.hpp:422</div></div>
 <div class="ttc" id="aclassConnTcp_html_a346df6ff43f37e2d80d9eabcee0d38e5"><div class="ttname"><a href="classConnTcp.html#a346df6ff43f37e2d80d9eabcee0d38e5">ConnTcp::listen</a></div><div class="ttdeci">int listen(std::string s)</div><div class="ttdoc">Start listening for new connections at the specified address s.</div><div class="ttdef"><b>Definition:</b> tcp.hpp:221</div></div>
 <div class="ttc" id="aclassConnTcp_html_a4105a0a028d2b64c1a78759fec042164"><div class="ttname"><a href="classConnTcp.html#a4105a0a028d2b64c1a78759fec042164">ConnTcp::notify_yield</a></div><div class="ttdeci">void notify_yield(Handle *h) override</div><div class="ttdoc">Manage the notification of an Handle object h issuing a yield operation. After this method is complet...</div><div class="ttdef"><b>Definition:</b> tcp.hpp:411</div></div>
 <div class="ttc" id="aclassConnTcp_html_a5f8a1eade7b8db288ff7ef77f0c86022"><div class="ttname"><a href="classConnTcp.html#a5f8a1eade7b8db288ff7ef77f0c86022">ConnTcp::connect</a></div><div class="ttdeci">Handle * connect(const std::string &amp;address)</div><div class="ttdoc">Create a new Handle object establishing a connection to the remote peer specified by string s.</div><div class="ttdef"><b>Definition:</b> tcp.hpp:312</div></div>
