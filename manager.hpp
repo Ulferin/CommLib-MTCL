@@ -14,6 +14,7 @@
 #include "handleUser.hpp"
 #include "protocolInterface.hpp"
 #include "protocols/tcp.hpp"
+#include "protocols/shm.hpp"
 
 #ifdef ENABLE_CONFIGFILE
 #include "rapidjson/rapidjson.h"
@@ -164,8 +165,9 @@ public:
 		
         Manager::appName = appName;
 
-		// default transport protocol
+		// default transports protocol
         registerType<ConnTcp>("TCP");
+		registerType<ConnSHM>("SHM");
 
 #ifdef ENABLE_MPI
         registerType<ConnMPI>("MPI");
