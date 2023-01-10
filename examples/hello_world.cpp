@@ -35,6 +35,14 @@
  *   $> ./hello_world 0 server
  *   $> for i in {1..4}; do ./hello_world 1 "client$i" & done
  *
+ * Testing UCX:
+ * ^^^^^^^^^^^^
+ *   For a list of all network configurations, refer to:
+ *   https://openucx.readthedocs.io/en/master/faq.html#network-capabilities
+ *   
+ *   $> TPROTOCOL=UCX make cleanall hello_world
+ *   $> [UCX_TLS=tcp,sm] ./hello_world 0 server &
+ *   $> for i in {1..4}; do ./hello_world 1 client$i & done
  *
  */
 
@@ -161,12 +169,7 @@ void Client() {
 			std::cout << "Read: \"" << rbuf << "\"\n" << std::flush;
 		}
 		// we can just close the handle here, but we are polite and say Bye!
-		int r = bye.length();
-		if ((res=handle.send(&r, r))<=0) {
-			MTCL_ERROR("[CLIENT]:\t", "ERROR sending bye size\n");
-			break;
-		}
-		if ((res=handle.send(bye.c_str(), r))<=0) {
+		if ((res=handle.send(bye.c_str(), bye.length()))<=0) {
 			MTCL_ERROR("[CLIENT]:\t", "ERROR sending bye message\n");
 			break;
 		}

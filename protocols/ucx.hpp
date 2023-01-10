@@ -373,6 +373,12 @@ public:
             errno = EINVAL;
             return -1;
         }
+#ifdef UCX_DEBUG
+        MTCL_UCX_PRINT(1, "\n\n=== Environment configuration ===\n");
+        ucp_config_print(config, stdout, NULL, UCS_CONFIG_PRINT_CONFIG);
+        MTCL_UCX_PRINT(1, "\n\n=== Context info ===\n");
+        ucp_context_print_info(ucp_context, stderr);
+#endif
         ucp_config_release(config);
 
 
@@ -488,6 +494,11 @@ public:
             errno = EINVAL;
             return nullptr;
         }
+#ifdef UCX_DEBUG
+        MTCL_UCX_PRINT(1, "\n\n=== Endpoint info ===\n");
+        ucp_ep_print_info(server_ep, stderr);
+#endif
+
 
         HandleUCX *handle = new HandleUCX(this, server_ep, ucp_worker);
         {
@@ -565,7 +576,6 @@ public:
             }
         }
 
-        REMOVE_CODE_IF(ulock.lock());
         // Poll on managed endpoints to detect something is ready to be read
         // This will cause, at the same time, progress on the user handles
         size_t size = -1;
@@ -583,6 +593,7 @@ public:
             return;
         }
 
+        REMOVE_CODE_IF(ulock.lock());
         // Some of the endpoints are ready, we need to check if we are managing that ep
         for(size_t i=0; i<size; i++) {
             ucp_stream_poll_ep_t ep = ready_eps[i];
