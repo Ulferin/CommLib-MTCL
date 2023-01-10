@@ -15,7 +15,7 @@
 #include "../utils.hpp"
 #include "../config.hpp"
 
-#define ECOMM 3
+
 
 class HandleMPI : public Handle {
 	
@@ -108,10 +108,25 @@ public:
     }
 
     ssize_t probe(size_t& size, const bool blocking=true){
-        if (MPI_Recv(&size, 1, MPI_UNSIGNED_LONG, this->rank, this->tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE) != MPI_SUCCESS){
-            MTCL_MPI_PRINT(100, "HandleMPI::probe MPI_Recv ERROR\n");
-			errno = ECOMM;
-            return -1;
+        int f;
+        if (!blocking){
+            if (MPI_Iprobe(this->rank, this->tag, MPI_COMM_WORLD,&f, MPI_STATUS_IGNORE) != MPI_SUCCESS){
+                MTCL_MPI_PRINT(100, "HandleMPI::probe MPI_Iprobe ERROR\n");
+                errno = ECOMM;
+                return -1;
+            } 
+            if (!f){
+                errno = EWOULDBLOCK;
+                return -1;
+            } 
+        }
+        
+        if (f || blocking){
+            if (MPI_Recv(&size, 1, MPI_UNSIGNED_LONG, this->rank, this->tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE) != MPI_SUCCESS){
+                MTCL_MPI_PRINT(100, "HandleMPI::probe MPI_Recv ERROR\n");
+                errno = ECOMM;
+                return -1;
+            }
         }
         return sizeof(size_t);
     }
@@ -274,15 +289,15 @@ public:
 
     void notify_close(Handle* h, bool close_wr=true, bool close_rd=true) {
         HandleMPI* hMPI = reinterpret_cast<HandleMPI*>(h);
+                    
+        REMOVE_CODE_IF(std::unique_lock l(shm));
 
-        if (close_wr && connections.count({hMPI->rank, hMPI->tag})){
+        if (close_wr && connections.count({hMPI->rank, hMPI->tag}))
             hMPI->sendEOS();
-        }
 
-        if (close_rd){
-            REMOVE_CODE_IF(std::unique_lock l(shm));
+        if (close_rd)
             connections.erase({hMPI->rank, hMPI->tag});
-        }
+        
 
 
         /*
@@ -324,8 +339,7 @@ public:
     void end() {
         auto modified_connections = connections;
         for(auto& [_, handlePair] : modified_connections)
-            if(handlePair.second)
-                setAsClosed(handlePair.first);
+            setAsClosed(handlePair.first);
         MPI_Finalize();
     }
 };

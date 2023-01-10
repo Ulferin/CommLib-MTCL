@@ -24,6 +24,8 @@
 
 #include "../handle.hpp"
 #include "../protocolInterface.hpp"
+#include "../utils.hpp"
+#include "../config.hpp"
 
 
 class HandleMPIP2P : public Handle {
@@ -32,9 +34,9 @@ public:
     int rank = -1;
     MPI_Comm server_comm; // MPI communicator for the specific p2p connection
     bool closing = false;
-    HandleMPIP2P(ConnType* parent, int rank, MPI_Comm server_comm, bool busy=true) : Handle(parent, busy), rank(rank), server_comm(server_comm) {}
+    HandleMPIP2P(ConnType* parent, int rank, MPI_Comm server_comm, bool busy=true) : Handle(parent), rank(rank), server_comm(server_comm) {}
 
-    void checkClosing() {
+    /*void checkClosing() {
         MPI_Status status;
         int flag;
         if (MPI_Iprobe(rank, MPIP2P_DISCONNECT_TAG, server_comm, &flag, &status) != MPI_SUCCESS) {
@@ -56,10 +58,10 @@ public:
                 closing = true;
             }
         }
-    }
+    }*/
 
     ssize_t send(const void* buff, size_t size) {
-        MPI_Request request;
+        /*MPI_Request request;
         if (MPI_Isend(buff, size, MPI_BYTE, rank, 0, server_comm, &request) != MPI_SUCCESS) {
 			MTCL_MPIP2P_PRINT(100, "HandleMPIP2P::send MPI_Isend ERROR\n");
             errno = ECOMM;	
@@ -77,13 +79,25 @@ public:
 			MTCL_MPIP2P_PRINT(100, "HandleMPIP2P::send MPI_Test ERROR\n");
             errno = ECONNRESET;
             return -1;
+        }*/
+
+        if (MPI_Send(&size, 1, MPI_UNSIGNED_LONG, this->rank, 0, this->server_comm) != MPI_SUCCESS){
+            MTCL_MPI_PRINT(100, "HandleMPIP2P::send MPI_Send Header ERROR\n");
+            errno = ECOMM;
+            return -1;
+        }
+    
+        if (MPI_Send(buff, size, MPI_BYTE, this->rank, 0, this->server_comm) != MPI_SUCCESS){
+            MTCL_MPI_PRINT(100, "HandleMPIP2P::send MPI_Send Payload ERROR\n");
+            errno = ECOMM;
+            return -1;
         }
 
         return size;
     }
 
     ssize_t receive(void* buff, size_t size){
-        MPI_Status status; 
+        /*MPI_Status status; 
         int count, flag;
         while(true) {
             if(MPI_Iprobe(rank, 0, server_comm, &flag, &status)!=MPI_SUCCESS) {
@@ -109,8 +123,47 @@ public:
             if constexpr (MPIP2P_POLL_TIMEOUT)
 				std::this_thread::sleep_for(std::chrono::microseconds(MPIP2P_POLL_TIMEOUT));
         }        
-        return -1;
+        return -1;*/
+
+        int r;
+        MPI_Status s;
+        if (MPI_Recv(buff, size, MPI_BYTE, this->rank, 0, this->server_comm, &s) != MPI_SUCCESS){
+            MTCL_MPI_PRINT(100, "HandleMPIP2P::receive MPI_Recv ERROR\n");
+			errno = ECOMM;
+			return -1;
+        }
+        MPI_Get_count(&s, MPI_BYTE, &r);
+        return r;
     }
+
+    ssize_t probe(size_t& size, const bool blocking=true){
+        int f;
+        if (!blocking){
+            if (MPI_Iprobe(this->rank, 0, this->server_comm, &f, MPI_STATUS_IGNORE) != MPI_SUCCESS){
+                MTCL_MPI_PRINT(100, "HandleMPIP2P::probe MPI_Iprobe ERROR\n");
+                errno = ECOMM;
+                return -1;
+            } 
+            if (!f){
+                errno = EWOULDBLOCK;
+                return -1;
+            } 
+        }
+        
+        if (f || blocking){
+            if (MPI_Recv(&size, 1, MPI_UNSIGNED_LONG, this->rank, 0, this->server_comm, MPI_STATUS_IGNORE) != MPI_SUCCESS){
+                MTCL_MPI_PRINT(100, "HandleMPIP2P::probe MPI_Recv ERROR\n");
+                errno = ECOMM;
+                return -1;
+            }
+        }
+        return sizeof(size_t);
+    }
+
+    ssize_t sendEOS() {
+		size_t sz = 0;
+		return MPI_Send(&sz, 1, MPI_UNSIGNED_LONG, this->rank, 0, this->server_comm); 
+	}
 
     ~HandleMPIP2P() {}
 };
@@ -174,7 +227,7 @@ public:
 
             /* Retrieve the remote size and create one handle for each of the
              * connecting rank */
-            std::unique_lock ulock(shm);
+            REMOVE_CODE_IF(std::unique_lock ulock(shm));
             for(int i=0; i<remote_size; i++) {
 
                 HandleMPIP2P* handle = new HandleMPIP2P(this, i, client, false);
@@ -202,10 +255,11 @@ public:
         int flag;
         MPI_Status status;
 
-        std::unique_lock ulock(shm);
+        REMOVE_CODE_IF(std::unique_lock ulock(shm));
         for (auto& [handle, to_manage] : connections) {
             if(to_manage) {
-                if (MPI_Iprobe(handle->rank, MPIP2P_DISCONNECT_TAG, handle->server_comm, &flag, &status) != MPI_SUCCESS) {
+                
+                /*if (MPI_Iprobe(handle->rank, MPIP2P_DISCONNECT_TAG, handle->server_comm, &flag, &status) != MPI_SUCCESS) {
                     MTCL_MPIP2P_ERROR("ConnMPIP2P::update: MPI_Iprobe ERROR (DISCONNECT)\n");
                     errno = ECOMM;
                     throw;
@@ -228,7 +282,7 @@ public:
                         addinQ(false, handle);
                         continue;
                     }
-                }
+                }*/
 
                 if (MPI_Iprobe(handle->rank, 0, handle->server_comm, &flag, &status) != MPI_SUCCESS) {
 					MTCL_MPIP2P_ERROR("ConnMPIP2P::update: MPI_Iprobe ERROR (CONNECTION)\n");
@@ -263,7 +317,7 @@ public:
         return handle;
     }
 
-    void notify_close(Handle* h) {
+    void notify_close(Handle* h, bool close_wr=true, bool close_rd=true) {
         /*NOTE: new protocol to handle the close of a "logical connection"
                 If(not closed by remote peer) {
                     send_close
@@ -273,11 +327,12 @@ public:
                     send_close_ack
                 }
         */
-        std::unique_lock l(shm);
+        
         HandleMPIP2P* handle = reinterpret_cast<HandleMPIP2P*>(h);
+        REMOVE_CODE_IF(std::unique_lock l(shm));
         /* If we never detected a close message and we are just about to close,
          * we send to the remote peer a closing message and wait for its response */
-        if (!handle->closing){
+        /*if (!handle->closing){
             int aux = 0;
             if (MPI_Send(&aux, 1, MPI_INT, handle->rank, MPIP2P_DISCONNECT_TAG, handle->server_comm) != MPI_SUCCESS) {
 				MTCL_MPIP2P_ERROR("ConnMPIP2P::notify_close: MPI_Send ERROR\n");
@@ -294,7 +349,7 @@ public:
             // MPI_Comm_disconnect(&handle->server_comm);
         }
         /* Otherwise, we only have to send our closing message to the remote peer */
-        else {
+        /*else {
             int aux = 0;
             if (MPI_Send(&aux, 1, MPI_INT, handle->rank, MPIP2P_DISCONNECT_TAG, handle->server_comm) != MPI_SUCCESS) {
 				MTCL_MPIP2P_ERROR("ConnMPIP2P::notify_close: MPI_Send ERROR\n");
@@ -302,7 +357,20 @@ public:
 				throw;
 			}
         }
-        connections.erase(reinterpret_cast<HandleMPIP2P*>(h));
+        connections.erase(reinterpret_cast<HandleMPIP2P*>(h));*/
+        if (close_wr){
+            if (handle->server_comm)
+                handle->sendEOS();
+
+            if (close_rd)
+                connections.erase(handle);
+                return;
+        }
+
+        if (close_rd){
+
+        }
+
     }
 
 
