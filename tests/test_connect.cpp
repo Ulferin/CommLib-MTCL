@@ -6,35 +6,44 @@
 
 const std::string str{"hello world!"}; //...........................................................................................abcdef.............................................................................ghijk..........................................................................................................................................................................................................012345..........................................................................................................................................................................................................6789.............................................................xywz................................................bye!"};
 
+std::string address{"TCP:localhost:13000"};
 
 int main(int argc, char** argv){
-
+	if (argc>1) {
+		address=argv[1];
+	}
+	
 	pid_t pid = fork();
 	if (pid == 0) {
-		Manager::init("server");
-		Manager::listen("SHM:/mtclshm");
-		//Manager::listen("TCP:localhost:13000");
-		
+		Manager::init("test_connect-server");
+		if (Manager::listen(address.c_str())==-1) {
+			MTCL_ERROR("[Server]:\t", "ERROR, cannot listen to %s, errno=%d\n", address.c_str(), errno);
+			Manager::finalize();
+			return -1;
+		}
+			
 		auto h = Manager::getNext();
 		if (!h.isNewConnection()) {
 			MTCL_ERROR("[Server]:\t", "ERROR, expected a new connection\n");
+			Manager::finalize();
+			return -1;
 		}
 		
 		if (h.send(str.c_str(), str.length()+1)<0) {
 			MTCL_ERROR("[Server]:\t", "ERROR sending string errno=%d\n", errno);
+			Manager::finalize();
+			return -1;
 		} 
 		MTCL_PRINT(0, "[Server]:\t", "closing\n");
 		h.close();
-		
 		Manager::finalize();
 		return 0;
 	}
 
-	Manager::init("client");
+	Manager::init("test_connect-client");
 	HandleUser handle;
 	for(int i=0;i<10;++i) {
-		auto h = Manager::connect("SHM:/mtclshm");
-		//auto h = Manager::connect("TCP:localhost:13000");
+		auto h = Manager::connect(address.c_str());
 		if (!h.isValid()) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(500));
 			continue;

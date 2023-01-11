@@ -133,11 +133,6 @@ public:
 			if ((r=this->probe(sz, true))<=0) {
 				return r;
 			}
-			if (sz>size) {
-				MTCL_PRINT(100, "[internal]:\t", "HandleUser::receive ENOMEM, sz=%ld, size=%ld\n", sz, size);
-				errno=ENOMEM;
-				return -1;
-			}
 		} else {
 			newConnection = false;
 			if (!isReadable){
@@ -153,8 +148,8 @@ public:
 		}
 		if ((sz=realHandle->probed.second)>size) {
 			MTCL_ERROR("[internal]:\t", "HandleUser::receive ENOMEM, receiving less data\n");
-			//errno=ENOMEM;
-			//return -1;
+			errno=ENOMEM;
+			return -1;
 		}	   
 		realHandle->probed={false,0};
 		return realHandle->receive(buff, std::min(sz,size));
