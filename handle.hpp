@@ -21,27 +21,43 @@ class Handle {
 
     void decrementReferenceCounter(){
         counter--;
-        if (counter == 0 && closed){
+        if (counter == 0 && closed_wr && closed_rd){
             delete this;
         }
     }
 protected:	
 	// if first=true second is the size contained in the header
 	std::pair<bool, size_t> probed{false,0};  
-	std::atomic<bool> closed  = false;
+	std::atomic<bool> closed_rd, closed_wr = false;
+    virtual ssize_t sendEOS() = 0;
 private:
     void yield() {
-        parent->notify_yield(this);
+        if (!closed_rd)
+            parent->notify_yield(this);
     }
 
     void close(bool close_wr=true, bool close_rd=true){
-		if (!closed) {
+		if (close_wr && !closed_wr){
+            this->sendEOS();
+            closed_wr = true;
+        }
+
+        if (close_rd && !closed_rd){
+            closed_rd = true;
+        }
+        
+        parent->notify_close(this, closed_wr, closed_rd);
+
+        if (counter == 0 && closed_rd && closed_wr)
+            delete this;
+        
+        /*if (!closed) {
 			parent->notify_close(this, close_wr, close_rd);
 			if (close_wr && close_rd) closed=true;
 		}
         if (counter == 0 && closed) {
             delete this;
-		}
+		}*/
     }
 
 public:
@@ -80,7 +96,7 @@ public:
 
 	void setName(const std::string &name) { handleName = name; }
 	const std::string& getName() { return handleName; }
-	const bool isClosed()   { return closed; }
+	const bool isClosed()   { return closed_rd && closed_wr; }
 	
     virtual ~Handle() {};
 };

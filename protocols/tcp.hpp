@@ -362,7 +362,6 @@ public:
 		HandleTCP *handle = reinterpret_cast<HandleTCP*>(h);
 		if (close_wr) {
 			if (handle->fd != -1) {
-				handle->sendEOS();
 				shutdown(handle->fd, SHUT_WR);
 
 				// if the fd is not present in the connections table it means

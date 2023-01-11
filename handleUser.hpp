@@ -9,7 +9,6 @@ class HandleUser {
     friend class Manager;
     Handle * realHandle;
     bool isReadable    = false;
-	bool isWritable    = true;
     bool newConnection = true;
 public:
     HandleUser() : HandleUser(nullptr, false, false) {}
@@ -24,20 +23,18 @@ public:
 		if (this != &o) {
 			realHandle    = o.realHandle;
 			isReadable    = o.isReadable;
-			isWritable    = o.isWritable;
 			newConnection = o.newConnection;
 			o.realHandle  = nullptr;
 			o.isReadable  = false;
-			o.isWritable  = false;
 			o.newConnection=false;
 		}
 		return *this;
 	}
 	
     HandleUser(HandleUser&& h) :
-		realHandle(h.realHandle), isReadable(h.isReadable), isWritable(h.isWritable), newConnection(h.newConnection) {
+		realHandle(h.realHandle), isReadable(h.isReadable), newConnection(h.newConnection) {
         h.realHandle = nullptr;
-		h.isReadable = h.isWritable = h.newConnection = false;
+		h.isReadable = h.newConnection = false;
     }
     
     // releases the handle to the manager
@@ -63,13 +60,13 @@ public:
 	void setName(const std::string& name) { realHandle->setName(name);}
 	
     ssize_t send(const void* buff, size_t size){
-		if (!isWritable) {
+		/*if (!isWritable) {
 			MTCL_PRINT(100, "[internal]:\t", "HandleUser::send EBADF (1)\n");
             errno = EBADF; // the "communicator" is not valid or closed
 			return -1;
-		}
+		}*/
         newConnection = false;
-        if (!realHandle || realHandle->closed) {
+        if (!realHandle || realHandle->closed_wr) {
 			MTCL_PRINT(100, "[internal]:\t", "HandleUser::send EBADF (2)\n");
             errno = EBADF; // the "communicator" is not valid or closed
             return -1;
@@ -92,7 +89,7 @@ public:
             errno = EBADF; // the "communicator" is not valid or closed
             return -1;
         }
-		if (realHandle->closed) return 0;
+		if (realHandle->closed_rd) return 0;
 
 		// reading the header to get the size of the message
 		ssize_t r;
@@ -100,12 +97,11 @@ public:
 			switch(r) {
 			case 0: {
 				isReadable=false;
-				realHandle->close(!isWritable, true);
+				realHandle->close(true, true);
 				return 0;
 			}
 			case -1: {				
 				if (errno==ECONNRESET) {
-					isReadable=isWritable=false;
 					realHandle->close(true, true);
 					return 0;
 				}
@@ -118,7 +114,7 @@ public:
 		}
 		realHandle->probed={true,size};
 		if (size==0) { // EOS received
-			realHandle->close(!isWritable, true);
+			realHandle->close(false, true);
 			isReadable=false;
 			return 0;
 		}
@@ -133,11 +129,6 @@ public:
 			if ((r=this->probe(sz, true))<=0) {
 				return r;
 			}
-			if (sz>size) {
-				MTCL_PRINT(100, "[internal]:\t", "HandleUser::receive ENOMEM, sz=%ld, size=%ld\n", sz, size);
-				errno=ENOMEM;
-				return -1;
-			}
 		} else {
 			newConnection = false;
 			if (!isReadable){
@@ -149,25 +140,24 @@ public:
 				errno = EBADF; // the "communicator" is not valid or closed
 				return -1;
 			}
-			if (realHandle->closed) return 0;
+			if (realHandle->closed_rd) return 0;
 		}
 		if ((sz=realHandle->probed.second)>size) {
 			MTCL_ERROR("[internal]:\t", "HandleUser::receive ENOMEM, receiving less data\n");
-			//errno=ENOMEM;
-			//return -1;
+			errno=ENOMEM;
+			return -1;
 		}	   
 		realHandle->probed={false,0};
 		return realHandle->receive(buff, std::min(sz,size));
     }
 
     void close(){
-        if (realHandle) realHandle->close(true, !isReadable);
-		isWritable=false;
+        if (realHandle) realHandle->close(true, false);
     }
 
     ~HandleUser(){
         // if this handle is readable and it is not closed, when i destruct this handle implicitly i'm giving the control to the runtime.
-        if (isReadable && realHandle && !realHandle->closed) this->yield();
+        if (isReadable && realHandle) this->yield();
 
         // decrement the reference counter of the wrapped handle to manage its destruction.
         if (realHandle) {
@@ -179,3 +169,12 @@ public:
 };
 
 #endif
+
+
+/*
+
+P1 close() => sendEOS()    -----> receiveEOS e setta non readable tutti
+
+1) P2 send() ------>
+2) P2 close() => sendEOS() -------> receiveEOS e setta a non readable writeable ===>> chiusura effettiva!
+*/

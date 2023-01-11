@@ -292,9 +292,6 @@ public:
                     
         REMOVE_CODE_IF(std::unique_lock l(shm));
 
-        if (close_wr && connections.count({hMPI->rank, hMPI->tag}))
-            hMPI->sendEOS();
-
         if (close_rd)
             connections.erase({hMPI->rank, hMPI->tag});
         

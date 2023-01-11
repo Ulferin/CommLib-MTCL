@@ -76,5 +76,8 @@ static inline void print_prefix(FILE *stream, const char * str, const char *pref
     #ifndef UIO_MAXIOV
     #define UIO_MAXIOV 1023
     #endif
-#endif
+
+    #define ECOMM 1147
+#endif // __APPLE__
+
 #endif
