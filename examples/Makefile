@@ -40,10 +40,7 @@ ifdef UCX_HOME
 	INCS += -I$(UCX_HOME)/include
 	LIBS += -L$(UCX_HOME)/lib
 endif
-ifdef UCX_DEBUG
-	OPTIMIZE_FLAGS += -DUCX_DEBUG
-endif
-	LIBS += -lucp -luct -lucs -lucm
+	LIBS += -Wl,-rpath,${UCX_HOME}/lib -lucp -luct -lucs -lucm
 endif
 
 CXXFLAGS         += -Wall

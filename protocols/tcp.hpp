@@ -225,7 +225,7 @@ public:
 			return -1;
 		}
 		
-        MTCL_TCP_PRINT(1, "listening on: %s:%d\n", address.c_str(),port);
+        MTCL_TCP_PRINT(1, "listen to %s:%d\n", address.c_str(),port);
 
         // intialize both sets (master, temp)
         FD_ZERO(&set);

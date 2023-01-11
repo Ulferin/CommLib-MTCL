@@ -18,10 +18,17 @@
 #include <vector>
 #include "mtcl.hpp"
 
-const int     NROUND = 9;
-const int          N = 19;
+const int     NROUND = 30;
+const int          N = 23;
 const size_t minsize = 16;              // bytes
-const size_t maxsize = (1<<N)*minsize;
+const size_t maxsize = (1<<N);
+
+//#define DATACHECK
+#if defined(DATACHECK)
+#define CHECK(X) {X;}
+#else
+#define CHECK(X) 
+#endif
 
 void Server(const char serveraddr[]) {
 	if (Manager::listen(serveraddr) == -1) {
@@ -42,6 +49,7 @@ void Server(const char serveraddr[]) {
 						   errno, strerror(errno));
 				break;
 			}
+			CHECK(buff[i]='b');
 			assert(r==size);
 			if (handle.send(buff, size)<=0) {
 				MTCL_ERROR("[Server]:\t", "send error, errno=%d (%s)\n",
@@ -74,13 +82,15 @@ void Client(const char serveraddr[]) {
 
 	char *buff = new char[maxsize];
 	assert(buff);
+	char *buff2 = new char[maxsize];
+	assert(buff2);
 	memset(buff, 'a', maxsize);
 
 	std::vector<std::pair<double, double>> times;
 	
 	for(size_t size=minsize; size<=maxsize; size *= 2) {
 		std::chrono::microseconds V[NROUND];
-		for(int i=0;i<NROUND;++i) {
+		for(size_t i=0;i<NROUND;++i) {
 			size_t r;
 			auto start = std::chrono::system_clock::now();
 			if ((r=handle.send(buff, size))<=0) {
@@ -88,14 +98,14 @@ void Client(const char serveraddr[]) {
 						   errno, strerror(errno), i);
 				break;
 			}
-			if ((r=handle.receive(buff, size))<=0) {
+			if ((r=handle.receive(buff2, size))<=0) {
 				MTCL_ERROR("[Client]:\t", "receive error, errno=%d (%s)\n",
 						   errno, strerror(errno));
 				break;
 			}			
 			auto end = std::chrono::system_clock::now();
-			//assert(r==size);
-			//for(size_t j=0;j<size;++j) assert(buff[j]=='a');
+			assert(r==size);
+			CHECK(for(size_t j=0;j<size;++j) { if (i==j) assert(buff[j]=='b'); else assert(buff[j]=='a');})
 			V[i] = std::chrono::duration_cast<std::chrono::microseconds>(end-start);
 		}
 		double sum{0.0};
@@ -113,7 +123,7 @@ void Client(const char serveraddr[]) {
 	std::cout << "   size   lat avg (ms)   lat std (ms)       Bw (MB/s)\n";
 	std::cout << "-----------------------------------------------------\n";
 	for(auto& p:times) {		
-		std::cout << std::fixed << std::setprecision(3)
+		std::cout << std::fixed << std::setprecision(4)
 				  << std::setw(7) << size << "        "
 				  << std::setw(6) << p.first/1000.0 << "         "
 				  << std::setw(6) << p.second/1000.0 << "        "
@@ -121,6 +131,7 @@ void Client(const char serveraddr[]) {
 		size *= 2;
 	}
 	delete [] buff;
+	delete [] buff2;
 }
 
 int main(int argc, char** argv){

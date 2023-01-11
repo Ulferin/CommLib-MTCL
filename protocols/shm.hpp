@@ -87,7 +87,7 @@ public:
 		ssize_t sz=-1;
 		if (connbuff.isOpen()) { // we are listening for incoming connections
 			// check first for new connections
-			if (((sz=connbuff.trygetsize())==-1) && errno!=EWOULDBLOCK) {
+			if (((sz=connbuff.trygetsize())==-1) && errno!=EAGAIN) {
 				MTCL_SHM_ERROR("ConnSHM::update ERROR errno=%d (%s)\n", errno,strerror(errno));
 				goto skip;
 			}
@@ -128,9 +128,9 @@ public:
 		REMOVE_CODE_IF(ulock.lock());		
         for (auto &[handle, to_manage] : connections) {
             if(to_manage) {
-				if (((sz=handle->in.trygetsize())<0)) {
+				if (((sz=handle->in.peek())<0)) {
 					if (errno!=EWOULDBLOCK)
-						MTCL_SHM_ERROR("ConnSHM::update, in.trygetsize errno=%d (%s)\n", errno, strerror(errno));
+						MTCL_SHM_ERROR("ConnSHM::update, peek errno=%d (%s)\n", errno, strerror(errno));
 					continue;
 				}
 				// NOTE: called with ulock lock hold. Double lock if there is the IO-thread!
@@ -157,7 +157,7 @@ public:
 			return nullptr;
 		}
 		shmBuffer out;
-		// create an anonymous memory-mapped segment buffer for output messages
+		// create a buffer for output messages
 		if (out.create(outname, false)<0) {
 			MTCL_SHM_PRINT(100, "ConnSHM::connect, cannot create output buffer, errno=%d\n", errno);
 			return nullptr;

@@ -64,6 +64,7 @@ void signal_handler(int) { stop=1; }
 // then echoes the input message to the client up to the bye message.
 void Server() {
 	// Some of the following calls might fail, but at least one will succeed
+	Manager::listen("SHM:/MTCA-server");
 	Manager::listen("TCP:0.0.0.0:42000");
 	Manager::listen("MPI:0:10");
 	Manager::listen("MPIP2P:test");
@@ -137,6 +138,7 @@ void Client() {
                                 auto h = Manager::connect("UCX:0.0.0.0:21000");
                                 if (!h.isValid()) {
                                     auto h = Manager::connect("TCP:0.0.0.0:42000");
+									//auto h = Manager::connect("SHM:/MTCA-server");
                                     assert(h.isValid());
                                     return h;
                                 } else return h;

@@ -22,7 +22,7 @@ endif
 endif
 
 CXXFLAGS         += -Wall
-LIBS             += -pthread
+LIBS             += -pthread -lrt
 INCLUDES          = $(INCS)
 
 SOURCES           = $(wildcard *.cpp)
