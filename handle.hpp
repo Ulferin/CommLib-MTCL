@@ -28,7 +28,7 @@ class Handle {
 protected:	
 	// if first=true second is the size contained in the header
 	std::pair<bool, size_t> probed{false,0};  
-	std::atomic<bool> closed_rd, closed_wr = false;
+	std::atomic<bool> closed_rd = false, closed_wr = false;
     virtual ssize_t sendEOS() = 0;
 private:
     void yield() {
