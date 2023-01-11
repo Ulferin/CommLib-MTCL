@@ -63,6 +63,7 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="#friends">Friends</a> &#124;
 <a href="classHandle-members.html">List of all members</a>  </div>
@@ -109,14 +110,23 @@ const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>ge
 const bool&#160;</td><td class="memItemRight" valign="bottom"><b>isClosed</b> ()</td></tr>
 <tr class="separator:a845f15d0613e0b6eb9a51bf4d08528c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
+Protected Member Functions</h2></td></tr>
+<tr class="memitem:ac1637b702012422e9c51625c64ef2fea"><td class="memItemLeft" align="right" valign="top"><a id="ac1637b702012422e9c51625c64ef2fea"></a>
+virtual ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>sendEOS</b> ()=0</td></tr>
+<tr class="separator:ac1637b702012422e9c51625c64ef2fea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
 <tr class="memitem:aae030548946f88ca32e767e908439515"><td class="memItemLeft" align="right" valign="top"><a id="aae030548946f88ca32e767e908439515"></a>
 std::pair&lt; bool, size_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>probed</b> {false,0}</td></tr>
 <tr class="separator:aae030548946f88ca32e767e908439515"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae2485c31dd1394df0c2775393f671d97"><td class="memItemLeft" align="right" valign="top"><a id="ae2485c31dd1394df0c2775393f671d97"></a>
-std::atomic&lt; bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>closed</b> = false</td></tr>
-<tr class="separator:ae2485c31dd1394df0c2775393f671d97"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1f83a6a56feca1695fe73e505d7369f4"><td class="memItemLeft" align="right" valign="top"><a id="a1f83a6a56feca1695fe73e505d7369f4"></a>
+std::atomic&lt; bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>closed_rd</b></td></tr>
+<tr class="separator:a1f83a6a56feca1695fe73e505d7369f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa1ec3c70e694e15d3a1f1944c439cd89"><td class="memItemLeft" align="right" valign="top"><a id="aa1ec3c70e694e15d3a1f1944c439cd89"></a>
+std::atomic&lt; bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>closed_wr</b> = false</td></tr>
+<tr class="separator:aa1ec3c70e694e15d3a1f1944c439cd89"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>

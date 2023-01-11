@@ -127,13 +127,20 @@ std::queue&lt; std::pair&lt; std::string, ssize_t &gt; &gt;&#160;</td><td class=
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
+<tr class="inherit_header pro_methods_classHandle"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_classHandle')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="classHandle.html">Handle</a></td></tr>
+<tr class="memitem:ac1637b702012422e9c51625c64ef2fea inherit pro_methods_classHandle"><td class="memItemLeft" align="right" valign="top"><a id="ac1637b702012422e9c51625c64ef2fea"></a>
+virtual ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>sendEOS</b> ()=0</td></tr>
+<tr class="separator:ac1637b702012422e9c51625c64ef2fea inherit pro_methods_classHandle"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_attribs_classHandle"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_classHandle')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="classHandle.html">Handle</a></td></tr>
 <tr class="memitem:aae030548946f88ca32e767e908439515 inherit pro_attribs_classHandle"><td class="memItemLeft" align="right" valign="top"><a id="aae030548946f88ca32e767e908439515"></a>
 std::pair&lt; bool, size_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>probed</b> {false,0}</td></tr>
 <tr class="separator:aae030548946f88ca32e767e908439515 inherit pro_attribs_classHandle"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae2485c31dd1394df0c2775393f671d97 inherit pro_attribs_classHandle"><td class="memItemLeft" align="right" valign="top"><a id="ae2485c31dd1394df0c2775393f671d97"></a>
-std::atomic&lt; bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>closed</b> = false</td></tr>
-<tr class="separator:ae2485c31dd1394df0c2775393f671d97 inherit pro_attribs_classHandle"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1f83a6a56feca1695fe73e505d7369f4 inherit pro_attribs_classHandle"><td class="memItemLeft" align="right" valign="top"><a id="a1f83a6a56feca1695fe73e505d7369f4"></a>
+std::atomic&lt; bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>closed_rd</b></td></tr>
+<tr class="separator:a1f83a6a56feca1695fe73e505d7369f4 inherit pro_attribs_classHandle"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa1ec3c70e694e15d3a1f1944c439cd89 inherit pro_attribs_classHandle"><td class="memItemLeft" align="right" valign="top"><a id="aa1ec3c70e694e15d3a1f1944c439cd89"></a>
+std::atomic&lt; bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>closed_wr</b> = false</td></tr>
+<tr class="separator:aa1ec3c70e694e15d3a1f1944c439cd89 inherit pro_attribs_classHandle"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a id="a7cf56407f80b658c41196ed2eaef524b"></a>

@@ -428,81 +428,80 @@ $(function() {
 <div class="line"><a name="l00362"></a><span class="lineno">  362</span>&#160;        <a class="code" href="classHandleTCP.html">HandleTCP</a> *handle = <span class="keyword">reinterpret_cast&lt;</span><a class="code" href="classHandleTCP.html">HandleTCP</a>*<span class="keyword">&gt;</span>(h);</div>
 <div class="line"><a name="l00363"></a><span class="lineno">  363</span>&#160;        <span class="keywordflow">if</span> (close_wr) {</div>
 <div class="line"><a name="l00364"></a><span class="lineno">  364</span>&#160;            <span class="keywordflow">if</span> (handle-&gt;fd != -1) {</div>
-<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;                handle-&gt;sendEOS();</div>
-<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160;                shutdown(handle-&gt;fd, SHUT_WR);</div>
-<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160; </div>
-<div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160;                <span class="comment">// if the fd is not present in the connections table it means</span></div>
-<div class="line"><a name="l00369"></a><span class="lineno">  369</span>&#160;                <span class="comment">// we have already received the EOS and thus executed the</span></div>
-<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160;                <span class="comment">// notify_close with close_rd=true, we can close the connection</span></div>
-<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160;                <span class="keywordflow">if</span> (!close_rd &amp;&amp;</div>
-<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160;                    connections.find(handle-&gt;fd) == connections.end()) {</div>
-<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160;                    close(handle-&gt;fd);</div>
-<div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;                    handle-&gt;fd = -1;</div>
-<div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160;                }</div>
-<div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;            }</div>
-<div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160;        }</div>
-<div class="line"><a name="l00378"></a><span class="lineno">  378</span>&#160;        <span class="keywordflow">if</span> (close_rd) { </div>
-<div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160;            <a class="code" href="classHandleTCP.html">HandleTCP</a> *handle = <span class="keyword">reinterpret_cast&lt;</span><a class="code" href="classHandleTCP.html">HandleTCP</a>*<span class="keyword">&gt;</span>(h);</div>
-<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160;            <span class="keywordtype">int</span> fd = handle-&gt;fd;</div>
-<div class="line"><a name="l00381"></a><span class="lineno">  381</span>&#160;            <span class="keywordflow">if</span> (fd==-1) <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00382"></a><span class="lineno">  382</span>&#160;            shutdown(handle-&gt;fd, SHUT_RD);</div>
-<div class="line"><a name="l00383"></a><span class="lineno">  383</span>&#160;            {</div>
-<div class="line"><a name="l00384"></a><span class="lineno">  384</span>&#160;                REMOVE_CODE_IF(std::unique_lock lock(shm));</div>
-<div class="line"><a name="l00385"></a><span class="lineno">  385</span>&#160;                connections.erase(fd);</div>
-<div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;                FD_CLR(fd, &amp;set);</div>
-<div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160;                </div>
-<div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;                <span class="comment">// update the maximum file descriptor</span></div>
-<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;                <span class="keywordflow">if</span> (fd == fdmax) {</div>
-<div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160;                    <span class="keywordtype">int</span> ii;</div>
-<div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160;                    <span class="keywordflow">for</span>(ii=(fdmax-1);ii&gt;=0;--ii) {</div>
-<div class="line"><a name="l00392"></a><span class="lineno">  392</span>&#160;                        <span class="keywordflow">if</span> (FD_ISSET(ii, &amp;set)){</div>
-<div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160;                            fdmax = ii;</div>
-<div class="line"><a name="l00394"></a><span class="lineno">  394</span>&#160;                            <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160;                        }</div>
-<div class="line"><a name="l00396"></a><span class="lineno">  396</span>&#160;                    }</div>
-<div class="line"><a name="l00397"></a><span class="lineno">  397</span>&#160;                    <span class="comment">// the listen socket might not be in the set, thus without the following</span></div>
-<div class="line"><a name="l00398"></a><span class="lineno">  398</span>&#160;                    <span class="comment">// we risk to leave fdmax set to the old value.</span></div>
-<div class="line"><a name="l00399"></a><span class="lineno">  399</span>&#160;                    <span class="keywordflow">if</span> (ii==-1) fdmax = -1; </div>
-<div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160;                }</div>
-<div class="line"><a name="l00401"></a><span class="lineno">  401</span>&#160;            }</div>
-<div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160;            <span class="keywordflow">if</span> (close_wr) {</div>
-<div class="line"><a name="l00403"></a><span class="lineno">  403</span>&#160;                close(fd);</div>
-<div class="line"><a name="l00404"></a><span class="lineno">  404</span>&#160;                handle-&gt;fd=-1;</div>
-<div class="line"><a name="l00405"></a><span class="lineno">  405</span>&#160;            }</div>
-<div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160;        }</div>
-<div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160;    }</div>
+<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;                shutdown(handle-&gt;fd, SHUT_WR);</div>
+<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160; </div>
+<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160;                <span class="comment">// if the fd is not present in the connections table it means</span></div>
+<div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160;                <span class="comment">// we have already received the EOS and thus executed the</span></div>
+<div class="line"><a name="l00369"></a><span class="lineno">  369</span>&#160;                <span class="comment">// notify_close with close_rd=true, we can close the connection</span></div>
+<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160;                <span class="keywordflow">if</span> (!close_rd &amp;&amp;</div>
+<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160;                    connections.find(handle-&gt;fd) == connections.end()) {</div>
+<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160;                    close(handle-&gt;fd);</div>
+<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160;                    handle-&gt;fd = -1;</div>
+<div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;                }</div>
+<div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160;            }</div>
+<div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;        }</div>
+<div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160;        <span class="keywordflow">if</span> (close_rd) { </div>
+<div class="line"><a name="l00378"></a><span class="lineno">  378</span>&#160;            <a class="code" href="classHandleTCP.html">HandleTCP</a> *handle = <span class="keyword">reinterpret_cast&lt;</span><a class="code" href="classHandleTCP.html">HandleTCP</a>*<span class="keyword">&gt;</span>(h);</div>
+<div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160;            <span class="keywordtype">int</span> fd = handle-&gt;fd;</div>
+<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160;            <span class="keywordflow">if</span> (fd==-1) <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l00381"></a><span class="lineno">  381</span>&#160;            shutdown(handle-&gt;fd, SHUT_RD);</div>
+<div class="line"><a name="l00382"></a><span class="lineno">  382</span>&#160;            {</div>
+<div class="line"><a name="l00383"></a><span class="lineno">  383</span>&#160;                REMOVE_CODE_IF(std::unique_lock lock(shm));</div>
+<div class="line"><a name="l00384"></a><span class="lineno">  384</span>&#160;                connections.erase(fd);</div>
+<div class="line"><a name="l00385"></a><span class="lineno">  385</span>&#160;                FD_CLR(fd, &amp;set);</div>
+<div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;                </div>
+<div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160;                <span class="comment">// update the maximum file descriptor</span></div>
+<div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;                <span class="keywordflow">if</span> (fd == fdmax) {</div>
+<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;                    <span class="keywordtype">int</span> ii;</div>
+<div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160;                    <span class="keywordflow">for</span>(ii=(fdmax-1);ii&gt;=0;--ii) {</div>
+<div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160;                        <span class="keywordflow">if</span> (FD_ISSET(ii, &amp;set)){</div>
+<div class="line"><a name="l00392"></a><span class="lineno">  392</span>&#160;                            fdmax = ii;</div>
+<div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160;                            <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00394"></a><span class="lineno">  394</span>&#160;                        }</div>
+<div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160;                    }</div>
+<div class="line"><a name="l00396"></a><span class="lineno">  396</span>&#160;                    <span class="comment">// the listen socket might not be in the set, thus without the following</span></div>
+<div class="line"><a name="l00397"></a><span class="lineno">  397</span>&#160;                    <span class="comment">// we risk to leave fdmax set to the old value.</span></div>
+<div class="line"><a name="l00398"></a><span class="lineno">  398</span>&#160;                    <span class="keywordflow">if</span> (ii==-1) fdmax = -1; </div>
+<div class="line"><a name="l00399"></a><span class="lineno">  399</span>&#160;                }</div>
+<div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160;            }</div>
+<div class="line"><a name="l00401"></a><span class="lineno">  401</span>&#160;            <span class="keywordflow">if</span> (close_wr) {</div>
+<div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160;                close(fd);</div>
+<div class="line"><a name="l00403"></a><span class="lineno">  403</span>&#160;                handle-&gt;fd=-1;</div>
+<div class="line"><a name="l00404"></a><span class="lineno">  404</span>&#160;            }</div>
+<div class="line"><a name="l00405"></a><span class="lineno">  405</span>&#160;        }</div>
+<div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160;    }</div>
+<div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160; </div>
 <div class="line"><a name="l00408"></a><span class="lineno">  408</span>&#160; </div>
-<div class="line"><a name="l00409"></a><span class="lineno">  409</span>&#160; </div>
-<div class="line"><a name="l00410"></a><span class="lineno"><a class="line" href="classConnTcp.html#a4105a0a028d2b64c1a78759fec042164">  410</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classConnTcp.html#a4105a0a028d2b64c1a78759fec042164">notify_yield</a>(<a class="code" href="classHandle.html">Handle</a>* h)<span class="keyword"> override </span>{</div>
-<div class="line"><a name="l00411"></a><span class="lineno">  411</span>&#160;        <span class="keywordtype">int</span> fd = <span class="keyword">reinterpret_cast&lt;</span><a class="code" href="classHandleTCP.html">HandleTCP</a>*<span class="keyword">&gt;</span>(h)-&gt;fd;</div>
-<div class="line"><a name="l00412"></a><span class="lineno">  412</span>&#160;        <span class="keywordflow">if</span> (fd==-1) <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00413"></a><span class="lineno">  413</span>&#160;        REMOVE_CODE_IF(std::unique_lock l(shm));</div>
-<div class="line"><a name="l00414"></a><span class="lineno">  414</span>&#160;        <span class="keywordflow">if</span> (h-&gt;isClosed()) <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00415"></a><span class="lineno">  415</span>&#160;        FD_SET(fd, &amp;set);</div>
-<div class="line"><a name="l00416"></a><span class="lineno">  416</span>&#160;        <span class="keywordflow">if</span>(fd &gt; fdmax) {</div>
-<div class="line"><a name="l00417"></a><span class="lineno">  417</span>&#160;            fdmax = fd;</div>
-<div class="line"><a name="l00418"></a><span class="lineno">  418</span>&#160;        }</div>
-<div class="line"><a name="l00419"></a><span class="lineno">  419</span>&#160;    }</div>
-<div class="line"><a name="l00420"></a><span class="lineno">  420</span>&#160; </div>
-<div class="line"><a name="l00421"></a><span class="lineno"><a class="line" href="classConnTcp.html#a20d0571ae4673f70372ef24b9b29332f">  421</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classConnTcp.html#a20d0571ae4673f70372ef24b9b29332f">end</a>() {</div>
-<div class="line"><a name="l00422"></a><span class="lineno">  422</span>&#160;        <span class="keyword">auto</span> modified_connections = connections;</div>
-<div class="line"><a name="l00423"></a><span class="lineno">  423</span>&#160;        <span class="keywordflow">for</span>(<span class="keyword">auto</span>&amp; [fd, h] : modified_connections) {</div>
-<div class="line"><a name="l00424"></a><span class="lineno">  424</span>&#160;            setAsClosed(h);</div>
-<div class="line"><a name="l00425"></a><span class="lineno">  425</span>&#160;        }</div>
-<div class="line"><a name="l00426"></a><span class="lineno">  426</span>&#160;    }</div>
-<div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160; </div>
-<div class="line"><a name="l00428"></a><span class="lineno">  428</span>&#160;    <span class="keywordtype">bool</span> isSet(<span class="keywordtype">int</span> fd){</div>
-<div class="line"><a name="l00429"></a><span class="lineno">  429</span>&#160;        REMOVE_CODE_IF(std::shared_lock s(shm));</div>
-<div class="line"><a name="l00430"></a><span class="lineno">  430</span>&#160;        <span class="keywordflow">return</span> FD_ISSET(fd, &amp;set);</div>
-<div class="line"><a name="l00431"></a><span class="lineno">  431</span>&#160;    }</div>
-<div class="line"><a name="l00432"></a><span class="lineno">  432</span>&#160; </div>
-<div class="line"><a name="l00433"></a><span class="lineno">  433</span>&#160;};</div>
-<div class="line"><a name="l00434"></a><span class="lineno">  434</span>&#160; </div>
-<div class="line"><a name="l00435"></a><span class="lineno">  435</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00409"></a><span class="lineno"><a class="line" href="classConnTcp.html#a4105a0a028d2b64c1a78759fec042164">  409</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classConnTcp.html#a4105a0a028d2b64c1a78759fec042164">notify_yield</a>(<a class="code" href="classHandle.html">Handle</a>* h)<span class="keyword"> override </span>{</div>
+<div class="line"><a name="l00410"></a><span class="lineno">  410</span>&#160;        <span class="keywordtype">int</span> fd = <span class="keyword">reinterpret_cast&lt;</span><a class="code" href="classHandleTCP.html">HandleTCP</a>*<span class="keyword">&gt;</span>(h)-&gt;fd;</div>
+<div class="line"><a name="l00411"></a><span class="lineno">  411</span>&#160;        <span class="keywordflow">if</span> (fd==-1) <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l00412"></a><span class="lineno">  412</span>&#160;        REMOVE_CODE_IF(std::unique_lock l(shm));</div>
+<div class="line"><a name="l00413"></a><span class="lineno">  413</span>&#160;        <span class="keywordflow">if</span> (h-&gt;isClosed()) <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l00414"></a><span class="lineno">  414</span>&#160;        FD_SET(fd, &amp;set);</div>
+<div class="line"><a name="l00415"></a><span class="lineno">  415</span>&#160;        <span class="keywordflow">if</span>(fd &gt; fdmax) {</div>
+<div class="line"><a name="l00416"></a><span class="lineno">  416</span>&#160;            fdmax = fd;</div>
+<div class="line"><a name="l00417"></a><span class="lineno">  417</span>&#160;        }</div>
+<div class="line"><a name="l00418"></a><span class="lineno">  418</span>&#160;    }</div>
+<div class="line"><a name="l00419"></a><span class="lineno">  419</span>&#160; </div>
+<div class="line"><a name="l00420"></a><span class="lineno"><a class="line" href="classConnTcp.html#a20d0571ae4673f70372ef24b9b29332f">  420</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classConnTcp.html#a20d0571ae4673f70372ef24b9b29332f">end</a>() {</div>
+<div class="line"><a name="l00421"></a><span class="lineno">  421</span>&#160;        <span class="keyword">auto</span> modified_connections = connections;</div>
+<div class="line"><a name="l00422"></a><span class="lineno">  422</span>&#160;        <span class="keywordflow">for</span>(<span class="keyword">auto</span>&amp; [fd, h] : modified_connections) {</div>
+<div class="line"><a name="l00423"></a><span class="lineno">  423</span>&#160;            setAsClosed(h);</div>
+<div class="line"><a name="l00424"></a><span class="lineno">  424</span>&#160;        }</div>
+<div class="line"><a name="l00425"></a><span class="lineno">  425</span>&#160;    }</div>
+<div class="line"><a name="l00426"></a><span class="lineno">  426</span>&#160; </div>
+<div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160;    <span class="keywordtype">bool</span> isSet(<span class="keywordtype">int</span> fd){</div>
+<div class="line"><a name="l00428"></a><span class="lineno">  428</span>&#160;        REMOVE_CODE_IF(std::shared_lock s(shm));</div>
+<div class="line"><a name="l00429"></a><span class="lineno">  429</span>&#160;        <span class="keywordflow">return</span> FD_ISSET(fd, &amp;set);</div>
+<div class="line"><a name="l00430"></a><span class="lineno">  430</span>&#160;    }</div>
+<div class="line"><a name="l00431"></a><span class="lineno">  431</span>&#160; </div>
+<div class="line"><a name="l00432"></a><span class="lineno">  432</span>&#160;};</div>
+<div class="line"><a name="l00433"></a><span class="lineno">  433</span>&#160; </div>
+<div class="line"><a name="l00434"></a><span class="lineno">  434</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassConnTcp_html"><div class="ttname"><a href="classConnTcp.html">ConnTcp</a></div><div class="ttdef"><b>Definition:</b> tcp.hpp:130</div></div>
-<div class="ttc" id="aclassConnTcp_html_a20d0571ae4673f70372ef24b9b29332f"><div class="ttname"><a href="classConnTcp.html#a20d0571ae4673f70372ef24b9b29332f">ConnTcp::end</a></div><div class="ttdeci">void end()</div><div class="ttdoc">Stop listening for new connections and terminate existing Handles.</div><div class="ttdef"><b>Definition:</b> tcp.hpp:421</div></div>
+<div class="ttc" id="aclassConnTcp_html_a20d0571ae4673f70372ef24b9b29332f"><div class="ttname"><a href="classConnTcp.html#a20d0571ae4673f70372ef24b9b29332f">ConnTcp::end</a></div><div class="ttdeci">void end()</div><div class="ttdoc">Stop listening for new connections and terminate existing Handles.</div><div class="ttdef"><b>Definition:</b> tcp.hpp:420</div></div>
 <div class="ttc" id="aclassConnTcp_html_a346df6ff43f37e2d80d9eabcee0d38e5"><div class="ttname"><a href="classConnTcp.html#a346df6ff43f37e2d80d9eabcee0d38e5">ConnTcp::listen</a></div><div class="ttdeci">int listen(std::string s)</div><div class="ttdoc">Start listening for new connections at the specified address s.</div><div class="ttdef"><b>Definition:</b> tcp.hpp:220</div></div>
-<div class="ttc" id="aclassConnTcp_html_a4105a0a028d2b64c1a78759fec042164"><div class="ttname"><a href="classConnTcp.html#a4105a0a028d2b64c1a78759fec042164">ConnTcp::notify_yield</a></div><div class="ttdeci">void notify_yield(Handle *h) override</div><div class="ttdoc">Manage the notification of an Handle object h issuing a yield operation. After this method is complet...</div><div class="ttdef"><b>Definition:</b> tcp.hpp:410</div></div>
+<div class="ttc" id="aclassConnTcp_html_a4105a0a028d2b64c1a78759fec042164"><div class="ttname"><a href="classConnTcp.html#a4105a0a028d2b64c1a78759fec042164">ConnTcp::notify_yield</a></div><div class="ttdeci">void notify_yield(Handle *h) override</div><div class="ttdoc">Manage the notification of an Handle object h issuing a yield operation. After this method is complet...</div><div class="ttdef"><b>Definition:</b> tcp.hpp:409</div></div>
 <div class="ttc" id="aclassConnTcp_html_a5f8a1eade7b8db288ff7ef77f0c86022"><div class="ttname"><a href="classConnTcp.html#a5f8a1eade7b8db288ff7ef77f0c86022">ConnTcp::connect</a></div><div class="ttdeci">Handle * connect(const std::string &amp;address)</div><div class="ttdoc">Create a new Handle object establishing a connection to the remote peer specified by string s.</div><div class="ttdef"><b>Definition:</b> tcp.hpp:311</div></div>
 <div class="ttc" id="aclassConnTcp_html_a7ba3a6df1197edf7ab85791b0cdd4c4c"><div class="ttname"><a href="classConnTcp.html#a7ba3a6df1197edf7ab85791b0cdd4c4c">ConnTcp::init</a></div><div class="ttdeci">int init(std::string)</div><div class="ttdoc">Initialize the ConnType object.</div><div class="ttdef"><b>Definition:</b> tcp.hpp:209</div></div>
 <div class="ttc" id="aclassConnTcp_html_aa9abf503e09e6f32d132bbdf3fcbb5b5"><div class="ttname"><a href="classConnTcp.html#aa9abf503e09e6f32d132bbdf3fcbb5b5">ConnTcp::notify_close</a></div><div class="ttdeci">void notify_close(Handle *h, bool close_wr=true, bool close_rd=true)</div><div class="ttdoc">Manage the notification of an Handle object h issuing a close operation. The Handle is invalidated an...</div><div class="ttdef"><b>Definition:</b> tcp.hpp:361</div></div>
