@@ -99,9 +99,9 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>open</b> (const std::s
 <tr class="memitem:ad096acbc5bd701f19282c6e6161f8970"><td class="memItemLeft" align="right" valign="top"><a id="ad096acbc5bd701f19282c6e6161f8970"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>close</b> (bool unlink=false)</td></tr>
 <tr class="separator:ad096acbc5bd701f19282c6e6161f8970"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a77cd84c37046c5deadf2443dc6c4a4bb"><td class="memItemLeft" align="right" valign="top"><a id="a77cd84c37046c5deadf2443dc6c4a4bb"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>put</b> (const void *data, const size_t sz)</td></tr>
-<tr class="separator:a77cd84c37046c5deadf2443dc6c4a4bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:affaee6db0f8bd7b605022f1bed1ff418"><td class="memItemLeft" align="right" valign="top"><a id="affaee6db0f8bd7b605022f1bed1ff418"></a>
+ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>put</b> (const void *data, const size_t sz)</td></tr>
+<tr class="separator:affaee6db0f8bd7b605022f1bed1ff418"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2d441953ffbdb3b652dedbd5f21fcafe"><td class="memItemLeft" align="right" valign="top"><a id="a2d441953ffbdb3b652dedbd5f21fcafe"></a>
 ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>get</b> (void *data, const size_t sz)</td></tr>
 <tr class="separator:a2d441953ffbdb3b652dedbd5f21fcafe"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -129,9 +129,6 @@ void *&#160;</td><td class="memItemRight" valign="bottom"><b>openSegment</b> (co
 <tr class="memitem:a9b7831a27bf21fdcd974eb31b9a0b370"><td class="memItemLeft" align="right" valign="top"><a id="a9b7831a27bf21fdcd974eb31b9a0b370"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>createBuffer</b> (const std::string &amp;name, bool force=false)</td></tr>
 <tr class="separator:a9b7831a27bf21fdcd974eb31b9a0b370"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3f706f38e4607f26bb0878846ee5ca40"><td class="memItemLeft" align="right" valign="top"><a id="a3f706f38e4607f26bb0878846ee5ca40"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>extract</b> (void *data, const size_t sz, size_t &amp;size)</td></tr>
-<tr class="separator:a3f706f38e4607f26bb0878846ee5ca40"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
@@ -141,12 +138,12 @@ struct <a class="el" href="structshmBuffer_1_1shmSegment.html">shmBuffer::shmSeg
 <tr class="memitem:a36a17f1367d6aacb89fd2a61921ec5fc"><td class="memItemLeft" align="right" valign="top"><a id="a36a17f1367d6aacb89fd2a61921ec5fc"></a>
 std::string&#160;</td><td class="memItemRight" valign="bottom"><b>segmentname</b> {}</td></tr>
 <tr class="separator:a36a17f1367d6aacb89fd2a61921ec5fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3e6b24064f1da229d81cb19a83ad301b"><td class="memItemLeft" align="right" valign="top"><a id="a3e6b24064f1da229d81cb19a83ad301b"></a>
-std::atomic&lt; int &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>cnt</b> {0}</td></tr>
-<tr class="separator:a3e6b24064f1da229d81cb19a83ad301b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a22a58f990fe95f017f53a956b7f881b1"><td class="memItemLeft" align="right" valign="top"><a id="a22a58f990fe95f017f53a956b7f881b1"></a>
 std::atomic&lt; bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>opened</b> {false}</td></tr>
 <tr class="separator:a22a58f990fe95f017f53a956b7f881b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a11f4ab71b8da1443ee81e8b25f65e1bc"><td class="memItemLeft" align="right" valign="top"><a id="a11f4ab71b8da1443ee81e8b25f65e1bc"></a>
+std::mutex&#160;</td><td class="memItemRight" valign="bottom"><b>mutex</b></td></tr>
+<tr class="separator:a11f4ab71b8da1443ee81e8b25f65e1bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>protocols/<a class="el" href="shm__buffer_8hpp_source.html">shm_buffer.hpp</a></li>

@@ -158,7 +158,7 @@ $(function() {
 <div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;        ssize_t sz=-1;</div>
 <div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        <span class="keywordflow">if</span> (connbuff.isOpen()) { <span class="comment">// we are listening for incoming connections</span></div>
 <div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;            <span class="comment">// check first for new connections</span></div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;            <span class="keywordflow">if</span> (((sz=connbuff.trygetsize())==-1) &amp;&amp; errno!=EWOULDBLOCK) {</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;            <span class="keywordflow">if</span> (((sz=connbuff.trygetsize())==-1) &amp;&amp; errno!=EAGAIN) {</div>
 <div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;                MTCL_SHM_ERROR(<span class="stringliteral">&quot;ConnSHM::update ERROR errno=%d (%s)\n&quot;</span>, errno,strerror(errno));</div>
 <div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;                <span class="keywordflow">goto</span> skip;</div>
 <div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;            }</div>
@@ -199,9 +199,9 @@ $(function() {
 <div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;        REMOVE_CODE_IF(ulock.lock());       </div>
 <div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;        <span class="keywordflow">for</span> (<span class="keyword">auto</span> &amp;[handle, to_manage] : connections) {</div>
 <div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;            <span class="keywordflow">if</span>(to_manage) {</div>
-<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;                <span class="keywordflow">if</span> (((sz=handle-&gt;in.trygetsize())&lt;0)) {</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;                <span class="keywordflow">if</span> (((sz=handle-&gt;in.peek())&lt;0)) {</div>
 <div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;                    <span class="keywordflow">if</span> (errno!=EWOULDBLOCK)</div>
-<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;                        MTCL_SHM_ERROR(<span class="stringliteral">&quot;ConnSHM::update, in.trygetsize errno=%d (%s)\n&quot;</span>, errno, strerror(errno));</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;                        MTCL_SHM_ERROR(<span class="stringliteral">&quot;ConnSHM::update, peek errno=%d (%s)\n&quot;</span>, errno, strerror(errno));</div>
 <div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;                    <span class="keywordflow">continue</span>;</div>
 <div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;                }</div>
 <div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;                <span class="comment">// NOTE: called with ulock lock hold. Double lock if there is the IO-thread!</span></div>
@@ -228,7 +228,7 @@ $(function() {
 <div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
 <div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;        }</div>
 <div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;        <a class="code" href="classshmBuffer.html">shmBuffer</a> out;</div>
-<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;        <span class="comment">// create an anonymous memory-mapped segment buffer for output messages</span></div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;        <span class="comment">// create a buffer for output messages</span></div>
 <div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;        <span class="keywordflow">if</span> (out.create(outname, <span class="keyword">false</span>)&lt;0) {</div>
 <div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;            MTCL_SHM_PRINT(100, <span class="stringliteral">&quot;ConnSHM::connect, cannot create output buffer, errno=%d\n&quot;</span>, errno);</div>
 <div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
@@ -298,7 +298,7 @@ $(function() {
 <div class="ttc" id="aclassHandleSHM_html_a18111880d86ba94d9fcafed56dfa0ffb"><div class="ttname"><a href="classHandleSHM.html#a18111880d86ba94d9fcafed56dfa0ffb">HandleSHM::receive</a></div><div class="ttdeci">ssize_t receive(void *buff, size_t size)</div><div class="ttdoc">Read at most size byte into buff from the remote end connected to this Handle. Wait until all size da...</div><div class="ttdef"><b>Definition:</b> shm.hpp:40</div></div>
 <div class="ttc" id="aclassHandleSHM_html_ab0bfb5710a4f9a15f3d8f2c8781f13bd"><div class="ttname"><a href="classHandleSHM.html#ab0bfb5710a4f9a15f3d8f2c8781f13bd">HandleSHM::send</a></div><div class="ttdeci">ssize_t send(const void *buff, size_t size)</div><div class="ttdoc">Send size byte of buff to the remote end connected to this Handle. Wait until all data has been sent ...</div><div class="ttdef"><b>Definition:</b> shm.hpp:23</div></div>
 <div class="ttc" id="aclassHandle_html"><div class="ttname"><a href="classHandle.html">Handle</a></div><div class="ttdef"><b>Definition:</b> handle.hpp:9</div></div>
-<div class="ttc" id="aclassshmBuffer_html"><div class="ttname"><a href="classshmBuffer.html">shmBuffer</a></div><div class="ttdef"><b>Definition:</b> shm_buffer.hpp:17</div></div>
+<div class="ttc" id="aclassshmBuffer_html"><div class="ttname"><a href="classshmBuffer.html">shmBuffer</a></div><div class="ttdef"><b>Definition:</b> shm_buffer.hpp:21</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

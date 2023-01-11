@@ -75,24 +75,15 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a61d1cbd68dc102224dba4d4a4c7d23dd"><td class="memItemLeft" align="right" valign="top"><a id="a61d1cbd68dc102224dba4d4a4c7d23dd"></a>
-sem_t&#160;</td><td class="memItemRight" valign="bottom"><b>mutex</b></td></tr>
-<tr class="separator:a61d1cbd68dc102224dba4d4a4c7d23dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7f2241a7ebb5937bd1d4bed18ab12448"><td class="memItemLeft" align="right" valign="top"><a id="a7f2241a7ebb5937bd1d4bed18ab12448"></a>
-sem_t&#160;</td><td class="memItemRight" valign="bottom"><b>full</b></td></tr>
-<tr class="separator:a7f2241a7ebb5937bd1d4bed18ab12448"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5621eb69c3ac1ff69d7494c63896b89c"><td class="memItemLeft" align="right" valign="top"><a id="a5621eb69c3ac1ff69d7494c63896b89c"></a>
-sem_t&#160;</td><td class="memItemRight" valign="bottom"><b>empty</b></td></tr>
-<tr class="separator:a5621eb69c3ac1ff69d7494c63896b89c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a06bb781d273135990aa8512203e989d2"><td class="memItemLeft" align="right" valign="top"><a id="a06bb781d273135990aa8512203e989d2"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>first</b></td></tr>
-<tr class="separator:a06bb781d273135990aa8512203e989d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae5ef21ad73ab5e0ad74c218ad6faed57"><td class="memItemLeft" align="right" valign="top"><a id="ae5ef21ad73ab5e0ad74c218ad6faed57"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>last</b></td></tr>
-<tr class="separator:ae5ef21ad73ab5e0ad74c218ad6faed57"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af50187e2567b6ef63b1e5d35c8d804c6"><td class="memItemLeft" align="right" valign="top"><a id="af50187e2567b6ef63b1e5d35c8d804c6"></a>
-<a class="el" href="structshmBuffer_1_1buffer__element__t.html">buffer_element_t</a>&#160;</td><td class="memItemRight" valign="bottom"><b>data</b> [SHM_BUFFER_SLOTS]</td></tr>
-<tr class="separator:af50187e2567b6ef63b1e5d35c8d804c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1f69d87614fe30d75bd66c5b800435bb"><td class="memItemLeft" align="right" valign="top"><a id="a1f69d87614fe30d75bd66c5b800435bb"></a>
+pthread_spinlock_t&#160;</td><td class="memItemRight" valign="bottom"><b>spinlock</b></td></tr>
+<tr class="separator:a1f69d87614fe30d75bd66c5b800435bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2bca20f67cd3e99ff927efd23fc4d03a"><td class="memItemLeft" align="right" valign="top"><a id="a2bca20f67cd3e99ff927efd23fc4d03a"></a>
+void *&#160;</td><td class="memItemRight" valign="bottom"><b>guard</b></td></tr>
+<tr class="separator:a2bca20f67cd3e99ff927efd23fc4d03a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a624527eb6d48508c3c17fcb308fc74f3"><td class="memItemLeft" align="right" valign="top"><a id="a624527eb6d48508c3c17fcb308fc74f3"></a>
+<a class="el" href="structshmBuffer_1_1buffer__element__t.html">buffer_element_t</a>&#160;</td><td class="memItemRight" valign="bottom"><b>data</b></td></tr>
+<tr class="separator:a624527eb6d48508c3c17fcb308fc74f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>protocols/<a class="el" href="shm__buffer_8hpp_source.html">shm_buffer.hpp</a></li>
