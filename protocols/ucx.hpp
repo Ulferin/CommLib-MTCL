@@ -2,9 +2,9 @@
 #define UCX_HPP
 
 #include <iostream>
-#include <shared_mutex>
 #include <map>
 #include <string.h>
+#include <shared_mutex>
 
 #include <unistd.h>
 #include <sys/uio.h>
@@ -23,14 +23,14 @@
 class HandleUCX : public Handle {
 
     typedef struct test_req {
-        int complete;
+        std::atomic<int> complete;
     } test_req_t;
 
 
     static void common_cb(void *user_data, const char *type_str) {
         test_req_t *ctx;
         if (user_data == NULL) {
-            fprintf(stderr, "user_data passed to %s mustn't be NULL\n", type_str);
+            MTCL_UCX_ERROR("HandleUCX::common_cb user_data passed to %s mustn't be NULL\n", type_str);
             return;
         }
 
@@ -86,6 +86,7 @@ protected:
             ucp_worker_progress(ucp_worker);
         }
         status = ucp_request_check_status(request);
+    
         ucp_request_free(request);
         if(status != UCS_OK) {
             MTCL_UCX_PRINT(100, "HandleUCX::request_wait UCX_%s status error (%s)\n",
@@ -99,6 +100,7 @@ protected:
 
 
 public:
+    bool already_closed = false;
     ucp_ep_h endpoint;
     ucp_worker_h ucp_worker;
 
@@ -122,7 +124,7 @@ public:
         param.cb.send = send_cb;
         request       = (test_req_t*)ucp_stream_send_nbx(endpoint, iov, 1, &param);
 
-        if(request_wait(request, &ctx, (char*)"EOS send") != 0)
+        if(request_wait(request, &ctx, (char*)"sendEOS") != 0)
             return -1;
 
         return sz;
@@ -309,9 +311,16 @@ private:
         ucs_status_t status;
         void *close_req;
 
-        param.op_attr_mask = UCP_OP_ATTR_FIELD_FLAGS;
-        param.flags        = UCP_EP_CLOSE_MODE_FLUSH;
-        close_req          = ucp_ep_close_nbx(ep, &param);
+        // param.op_attr_mask = UCP_OP_ATTR_FIELD_FLAGS;
+        // param.flags        = UCP_EP_CLOSE_MODE_FLUSH;
+        close_req          = ucp_ep_close_nb(ep, UCP_EP_CLOSE_MODE_FLUSH);
+
+        if (close_req == NULL) {
+            return;
+        } else if (UCS_PTR_IS_ERR(close_req)) {
+            MTCL_UCX_ERROR("ConnUCX::ep_close failed with status [%s]\n", ucs_status_string(UCS_PTR_STATUS(close_req)));
+            return;
+        }
 
         if (UCS_PTR_IS_PTR(close_req)) {
             do {
@@ -324,7 +333,7 @@ private:
         }
 
         if (status != UCS_OK) {
-            MTCL_UCX_PRINT(100, "ConnUCX::ep_close failed to close ep %p\n", (void*)ep);
+            MTCL_UCX_PRINT(100, "ConnUCX::ep_close failed to close ep %p. [%s]\n", (void*)ep, ucs_status_string(status));
         }
     }
 
@@ -624,43 +633,27 @@ public:
     }
 
     void notify_close(Handle* h, bool close_wr=true, bool close_rd=true) {
-        // [ ] chiudere endpoint contenuto in h al termine delle procedure di close
-        
         HandleUCX* handle = reinterpret_cast<HandleUCX*>(h);
 
-        if(close_wr) {
-            if(handle->closed_wr) return;
-            if(handle->closed_rd) ep_close(handle->endpoint);
-            else {
-				handle->sendEOS();
-            }
-            handle->closed_wr = true;
-        }
-        if(close_rd) {
-            if(handle->closed_rd) return;
-            
-            {
-                REMOVE_CODE_IF(std::unique_lock lock(shm));
-                connections.erase(handle->endpoint);
-            }
+        if(handle->already_closed) return;
 
-            if(close_wr) {
-                handle->closed_wr = true;
-                ep_close(handle->endpoint);
-            }
+        if(close_rd)
+            connections.erase(handle->endpoint);
 
-            handle->closed_rd = true;
+        if(close_wr && close_rd) {
+            handle->already_closed = true;
+            ep_close(handle->endpoint);
         }
 
         return;
     }
 
     void end() {
+        // [ ] release address alla chiusura
         auto modified_connections = connections;
         for(auto& [_, handlePair] : modified_connections)
                 setAsClosed(handlePair.first);
         
-        ucp_worker_release_address(ucp_worker, local_addr);
     }
 
 };
