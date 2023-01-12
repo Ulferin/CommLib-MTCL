@@ -9,17 +9,13 @@ else
 	OPTIMIZE_FLAGS  += -O3 -finline-functions -DNDEBUG
 endif
 
-ifdef TPROTOCOL
-	TPROTO +=-DENABLE_${TPROTOCOL}
-	CXXFLAGS += $(TPROTO)
-endif
-
 ifdef SINGLE_IO_THREAD
 	CXXFLAGS +=-DSINGLE_IO_THREAD
 endif
 
 ifeq ($(findstring MPI,$(TPROTOCOL)),MPI)
 	CXX 	  = mpicxx
+	CXXFLAGS += -DENABLE_MPI
 	TARGET    = ../protocols/stop_accept
 ifdef MPI_HOME
 	INCS   += `pkg-config --cflags-only-I $(MPI_HOME)/lib/pkgconfig/ompi-cxx.pc`
@@ -27,7 +23,8 @@ ifdef MPI_HOME
 endif
 endif
 
-ifeq ($(TPROTOCOL), MQTT)
+ifeq ($(findstring MQTT, $(TPROTOCOL)),MQTT)
+	CXXFLAGS += -DENABLE_MQTT
 ifdef PAHO_HOME
 	INCS += -I${PAHO_HOME}/include
 	LIBS += -L${PAHO_HOME}/lib
@@ -35,7 +32,8 @@ endif
 	LIBS     += -Wl,-rpath,${PAHO_HOME}/lib -lpaho-mqttpp3 -lpaho-mqtt3as -lpaho-mqtt3a
 endif
 
-ifeq ($(TPROTOCOL), UCX)
+ifeq ($(findstring UCX, $(TPROTOCOL)),UCX)
+	CXXFLAGS += -DENABLE_UCX
 ifdef UCX_HOME
 	INCS += -I$(UCX_HOME)/include
 	LIBS += -L$(UCX_HOME)/lib

@@ -182,7 +182,6 @@ public:
     void notify_close(Handle* h, bool close_wr=true, bool close_rd=true) {
 		HandleSHM *handle = reinterpret_cast<HandleSHM*>(h);
 		if (close_wr) {
-			handle->sendEOS();
 			handle->out.close(true);
 		}
 		if (close_rd) {

@@ -2,12 +2,17 @@
  *  For maximum performance, set to 0 the *_POLL_TIMEOUT constants in the
  *  config.hpp file and compile the program with SINGLE_IO_THREAD=1.
  *
+ *  $> TPROTOCOL="MPI UCX" make SINGLE_IO_THREAD=1 cleanall p2p-perf
+ *
  *  When using the MPI transport with the IO_THREAD present, then it is 
  *  important to control thread affinity for example by using something like:
  * 
- *  mpirun --mca hwloc_base_binding_policy socket       \
- *         -n 1 --host host1 ./p2p-perf 0 "MPI:0:10" :	\
- *         -n 1 --host host2 ./p2p-perf 1 "MPI:0:10" 
+ *  $> mpirun --mca hwloc_base_binding_policy socket    \
+ *          -n 1 --host host1 ./p2p-perf 0 "MPI:0:10" :	\
+ *          -n 1 --host host2 ./p2p-perf 1 "MPI:0:10" 
+ *
+ *  or 
+ *  $>  mpirun --report-bindings --bind-to-core .....
  *
  */
 
@@ -18,12 +23,12 @@
 #include <vector>
 #include "mtcl.hpp"
 
-const int     NROUND = 30;
+const int     NROUND = 2; //30;
 const int          N = 23;
 const size_t minsize = 16;              // bytes
 const size_t maxsize = (1<<N);
 
-//#define DATACHECK
+#define DATACHECK
 #if defined(DATACHECK)
 #define CHECK(X) {X;}
 #else
@@ -41,6 +46,8 @@ void Server(const char serveraddr[]) {
 
 	auto handle=Manager::getNext(); 
 
+	//fprintf(stderr, "STARTING\n");
+	
 	for(size_t size=minsize; size<=maxsize; size *= 2) {
 		for(int i=0;i<NROUND;++i) {
 			size_t r;
@@ -58,6 +65,7 @@ void Server(const char serveraddr[]) {
 			}
 		}
 	}
+	MTCL_PRINT(0, "[Server]:\t", "closing\n");
 	delete [] buff;
 	handle.close();
 }
@@ -105,7 +113,7 @@ void Client(const char serveraddr[]) {
 			}			
 			auto end = std::chrono::system_clock::now();
 			assert(r==size);
-			CHECK(for(size_t j=0;j<size;++j) { if (i==j) assert(buff[j]=='b'); else assert(buff[j]=='a');})
+			CHECK(for(size_t j=0;j<size;++j) { if (i==j) assert(buff2[j]=='b'); else assert(buff2[j]=='a');})
 			V[i] = std::chrono::duration_cast<std::chrono::microseconds>(end-start);
 		}
 		double sum{0.0};
@@ -117,6 +125,7 @@ void Client(const char serveraddr[]) {
 			sum += std::pow(V[i].count() - mean, 2);
 		times.push_back(std::make_pair(mean, std::sqrt(sum/(NROUND-1))));
 	}
+	MTCL_PRINT(0, "[Client]:\t", "closing\n");
 	handle.close();	
 	
 	size_t size = minsize;
