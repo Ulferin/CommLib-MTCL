@@ -13,10 +13,7 @@
 #include <pthread.h>
 
 /*
- * Multi-producer multi-consumer circular buffer.
- * Each buffer entry contains a buffer_element_t messages.
- * Small messages (i.e., less than SHM_SMALL_MSG_SIZE) are stored directly into the buffer, 
- * large messages, instead, use a dedicated memory segment whose name is passed in the buffer.
+ * shared-memory buffer, one single slot of SHM_SMAL_MSG_SIZE size
  */
 class shmBuffer {
 protected:

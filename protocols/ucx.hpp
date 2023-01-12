@@ -83,9 +83,7 @@ protected:
         }
 
         while(ctx->complete == 0) {
-#if defined(SINGLE_IO_THREAD)
             ucp_worker_progress(ucp_worker);
-#endif
         }
         status = ucp_request_check_status(request);
         ucp_request_free(request);
@@ -580,13 +578,13 @@ public:
         // This will cause, at the same time, progress on the user handles
         size_t size = -1;
         size_t max_eps = connections.size();
-        ucp_stream_poll_ep_t* ready_eps = new ucp_stream_poll_ep_t[max_eps];
         
         // One-shot progress
         int prog = -1;
         prog = ucp_worker_progress(ucp_worker);
         (void)prog;
 
+		ucp_stream_poll_ep_t* ready_eps = new ucp_stream_poll_ep_t[max_eps];
         size = ucp_stream_worker_poll(ucp_worker, ready_eps, max_eps, 0);
         if(size < 0) {
             MTCL_UCX_PRINT(100, "ConnUCX::update error in ucp_stream_worker_poll\n");
@@ -610,7 +608,6 @@ public:
         REMOVE_CODE_IF(ulock.unlock());
 
         delete[] ready_eps;
-
         return;
     }
     

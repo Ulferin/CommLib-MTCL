@@ -23,7 +23,7 @@
 #include <vector>
 #include "mtcl.hpp"
 
-const int     NROUND = 2; //30;
+const int     NROUND = 100;
 const int          N = 23;
 const size_t minsize = 16;              // bytes
 const size_t maxsize = (1<<N);
