@@ -99,6 +99,32 @@ protected:
         return 0;
     }
 
+    ssize_t receive_internal(void* buff, size_t size, bool blocking) {
+        ucp_request_param_t param;
+        test_req_t* request;
+        test_req_t ctx;
+        size_t res;
+
+        fill_request_param(&ctx, &param, false);
+        param.op_attr_mask |= UCP_OP_ATTR_FIELD_FLAGS;
+        param.flags = blocking ? UCP_STREAM_RECV_FLAG_WAITALL : 0;
+        param.cb.recv_stream = stream_recv_cb;
+        request              = (test_req_t*)ucp_stream_recv_nbx(endpoint, buff, size,
+                                                   &res, &param);
+
+        if(!blocking) {
+            if(request == NULL && res == 0) {
+                errno = EWOULDBLOCK;
+                return -1;
+            }
+        }
+
+        if(request_wait(request, &ctx, (char*)"receive_internal") != 0)
+            return -1;
+
+        return size;
+    }
+
 
 public:
     std::atomic<bool> already_closed {false};
@@ -153,35 +179,17 @@ public:
             return -1;
 
         return size;
-
     }
 
     ssize_t receive(void* buff, size_t size) {
-        ucp_request_param_t param;
-        test_req_t* request;
-        test_req_t ctx;
-        size_t res;
-
-        fill_request_param(&ctx, &param, false);
-        param.op_attr_mask |= UCP_OP_ATTR_FIELD_FLAGS;
-        param.flags = UCP_STREAM_RECV_FLAG_WAITALL;
-        param.cb.recv_stream = stream_recv_cb;
-        request              = (test_req_t*)ucp_stream_recv_nbx(endpoint, buff, size,
-                                                   &res, &param);
-
-        if(request_wait(request, &ctx, (char*)"receive") != 0)
-            return -1;
-
-        return size;
+        return receive_internal(buff, size, true);
     }
 
     ssize_t probe(size_t& size, const bool blocking=true) {
         size_t sz;
-        ssize_t r;
 
-        if((r =this->receive(&sz, sizeof(size_t))) <= 0) {
-            return r;
-        }
+        if(receive_internal(&sz, sizeof(size_t), blocking) <= 0)
+            return -1;
 
         size = be64toh(sz);
         if(size == 0) {
