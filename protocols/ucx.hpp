@@ -79,6 +79,7 @@ protected:
             MTCL_UCX_PRINT(100, "HandleUCX::request_wait UCX_%s request error (%s)\n",
                 operation, ucs_status_string(status));
             errno = ECOMM;
+            ucp_request_free(request);
             return -1;
         }
 
@@ -86,8 +87,8 @@ protected:
             ucp_worker_progress(ucp_worker);
         }
         status = ucp_request_check_status(request);
-    
         ucp_request_free(request);
+    
         if(status != UCS_OK) {
             MTCL_UCX_PRINT(100, "HandleUCX::request_wait UCX_%s status error (%s)\n",
                 operation, ucs_status_string(status));
@@ -100,7 +101,8 @@ protected:
 
 
 public:
-    bool already_closed = false;
+    std::atomic<bool> already_closed {false};
+    std::atomic<bool> eos_received {false};
     ucp_ep_h endpoint;
     ucp_worker_h ucp_worker;
 
@@ -114,7 +116,7 @@ public:
 
         ucp_dt_iov_t iov[1];
         iov[0].buffer = &sz;
-        iov[0].length = sizeof(sz);
+        iov[0].length = sizeof(size_t);
 
         ucp_request_param_t param;
         test_req_t* request;
@@ -182,6 +184,11 @@ public:
         }
 
         size = be64toh(sz);
+        if(size == 0) {
+            MTCL_UCX_PRINT(100, "EOS received by internal probe\n");
+            eos_received = true;
+        }
+
         return sizeof(size_t);
     }
 
@@ -307,7 +314,7 @@ private:
 
 
     void ep_close(ucp_ep_h ep) {
-        ucp_request_param_t param;
+        // ucp_request_param_t param;
         ucs_status_t status;
         void *close_req;
 
@@ -501,6 +508,8 @@ public:
             errno = EINVAL;
             return nullptr;
         }
+        free(peer_addr);
+
 #ifdef UCX_DEBUG
         MTCL_UCX_PRINT(1, "\n\n=== Endpoint info ===\n");
         ucp_ep_print_info(server_ep, stderr);
@@ -573,6 +582,7 @@ public:
                     MTCL_UCX_PRINT(100, "ConnUCX::update error creating the endpoint\n");
                     return;
                 }
+                free(peer_addr);
 
                 HandleUCX* handle = new HandleUCX(this, client_ep, ucp_worker);
 
@@ -637,11 +647,20 @@ public:
 
         if(handle->already_closed) return;
 
-        if(close_rd)
-            connections.erase(handle->endpoint);
-
         if(close_wr && close_rd) {
+            connections.erase(handle->endpoint);
             handle->already_closed = true;
+
+            if(!handle->eos_received) {
+                size_t sz = 1;
+                while(true) {
+                    handle->probe(sz, sizeof(size_t));
+                    if(sz == 0) break;
+                    char* buff = new char[sz];
+                    handle->receive(buff, sz);
+                    delete[] buff;
+                }
+            }
             ep_close(handle->endpoint);
         }
 
@@ -649,11 +668,13 @@ public:
     }
 
     void end() {
-        // [ ] release address alla chiusura
         auto modified_connections = connections;
         for(auto& [_, handlePair] : modified_connections)
                 setAsClosed(handlePair.first);
         
+        ucp_worker_release_address(ucp_worker, local_addr);
+        ucp_worker_destroy(ucp_worker);
+        ucp_cleanup(ucp_context);
     }
 
 };
