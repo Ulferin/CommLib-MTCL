@@ -114,9 +114,12 @@ const bool&#160;</td><td class="memItemRight" valign="bottom"><b>isClosed</b> ()
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:ab7f57e7267e34fee1fa3d713d630394a"><td class="memItemLeft" align="right" valign="top"><a id="ab7f57e7267e34fee1fa3d713d630394a"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>already_closed</b> = false</td></tr>
-<tr class="separator:ab7f57e7267e34fee1fa3d713d630394a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a855553d33fc008c1ff53029ea8ca47cb"><td class="memItemLeft" align="right" valign="top"><a id="a855553d33fc008c1ff53029ea8ca47cb"></a>
+std::atomic&lt; bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>already_closed</b> {false}</td></tr>
+<tr class="separator:a855553d33fc008c1ff53029ea8ca47cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a246e3a64238115994569464ad6db654a"><td class="memItemLeft" align="right" valign="top"><a id="a246e3a64238115994569464ad6db654a"></a>
+std::atomic&lt; bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>eos_received</b> {false}</td></tr>
+<tr class="separator:a246e3a64238115994569464ad6db654a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae345959418ee9b59330b7d82ec222c36"><td class="memItemLeft" align="right" valign="top"><a id="ae345959418ee9b59330b7d82ec222c36"></a>
 ucp_ep_h&#160;</td><td class="memItemRight" valign="bottom"><b>endpoint</b></td></tr>
 <tr class="separator:ae345959418ee9b59330b7d82ec222c36"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -138,6 +141,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>fill_request_param</b
 <tr class="memitem:a047b8a5b3fb6eb7b631b848a5c5e0e97"><td class="memItemLeft" align="right" valign="top"><a id="a047b8a5b3fb6eb7b631b848a5c5e0e97"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>request_wait</b> (void *request, test_req_t *ctx, char *operation)</td></tr>
 <tr class="separator:a047b8a5b3fb6eb7b631b848a5c5e0e97"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0fedbe95ccc8bcf54a5e0958e5008c42"><td class="memItemLeft" align="right" valign="top"><a id="a0fedbe95ccc8bcf54a5e0958e5008c42"></a>
+ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>receive_internal</b> (void *buff, size_t size, bool blocking)</td></tr>
+<tr class="separator:a0fedbe95ccc8bcf54a5e0958e5008c42"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
