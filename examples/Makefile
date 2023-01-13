@@ -15,7 +15,7 @@ endif
 
 ifeq ($(findstring MPI,$(TPROTOCOL)),MPI)
 	CXX 	  = mpicxx
-	CXXFLAGS += -DENABLE_MPI
+	CXXFLAGS += -DENABLE_$(TPROTOCOL)
 	TARGET    = ../protocols/stop_accept
 ifdef MPI_HOME
 	INCS   += `pkg-config --cflags-only-I $(MPI_HOME)/lib/pkgconfig/ompi-cxx.pc`

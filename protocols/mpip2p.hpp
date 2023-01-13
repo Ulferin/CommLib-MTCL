@@ -179,6 +179,7 @@ protected:
     bool listening = false;
     
     std::map<HandleMPIP2P*, bool> connections;  // Active connections for this Connector
+    std::map<MPI_Comm, int> comm_sizes;
     std::shared_mutex shm;
 
     inline static std::thread t1;
@@ -228,6 +229,7 @@ public:
             /* Retrieve the remote size and create one handle for each of the
              * connecting rank */
             REMOVE_CODE_IF(std::unique_lock ulock(shm));
+            comm_sizes.insert({client, remote_size});
             for(int i=0; i<remote_size; i++) {
 
                 HandleMPIP2P* handle = new HandleMPIP2P(this, i, client, false);
@@ -317,19 +319,24 @@ public:
         return handle;
     }
 
-    void notify_close(Handle* h, bool close_wr=true, bool close_rd=true) {
-        /*NOTE: new protocol to handle the close of a "logical connection"
-                If(not closed by remote peer) {
-                    send_close
-                    wait_close_ack
-                }
-                else {
-                    send_close_ack
-                }
-        */
-        
+    void notify_close(Handle* h, bool close_wr=true, bool close_rd=true) {        
         HandleMPIP2P* handle = reinterpret_cast<HandleMPIP2P*>(h);
+
+        if(connections.count(handle) == 0) return;
+
         REMOVE_CODE_IF(std::unique_lock l(shm));
+        if (close_rd) {
+            connections.erase(handle);
+            int size = -42;
+            auto it = comm_sizes.find(handle->server_comm);
+            if(it != comm_sizes.end())
+                size = --it->second;
+            if(size == 0) {
+                comm_sizes.erase(handle->server_comm);
+                MPI_Comm_disconnect(&handle->server_comm);
+            }
+        }
+
         /* If we never detected a close message and we are just about to close,
          * we send to the remote peer a closing message and wait for its response */
         /*if (!handle->closing){
@@ -347,7 +354,7 @@ public:
 				throw;
             }
             // MPI_Comm_disconnect(&handle->server_comm);
-        }
+        }*/
         /* Otherwise, we only have to send our closing message to the remote peer */
         /*else {
             int aux = 0;
@@ -358,30 +365,36 @@ public:
 			}
         }
         connections.erase(reinterpret_cast<HandleMPIP2P*>(h));*/
-        if (close_wr){
-            if (handle->server_comm)
-                handle->sendEOS();
+        // if (close_wr){
+        //     if (handle->server_comm)
+        //         handle->sendEOS();
 
-            if (close_rd)
-                connections.erase(handle);
-                return;
-        }
-
-        if (close_rd){
-
-        }
+        //     if (close_rd)
+        //         connections.erase(handle);
+        //         return;
+        // }
+        
 
     }
 
 
     void notify_yield(Handle* h) override {
         HandleMPIP2P* handle = reinterpret_cast<HandleMPIP2P*>(h);
+        {
+            REMOVE_CODE_IF(std::unique_lock l(shm));
+            auto it = connections.find(handle);
+            if (it != connections.end())
+                it->second = true;
+        }
+
+        /*
         if (handle->closing) {
             addinQ(false, h);
             return;
         }
         REMOVE_CODE_IF(std::unique_lock l(shm));
         connections[handle] = true;
+        */
     }
 
     void end() {
