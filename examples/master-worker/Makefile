@@ -21,6 +21,16 @@ ifdef MPI_HOME
 endif
 endif
 
+ifndef EXCLUDE_UCX
+	CXXFLAGS += -DENABLE_UCX
+ifndef UCX_HOME
+$(error UCX_HOME env variable not defined!);
+endif
+	INCS += -I$(UCX_HOME)/include
+	LIBS += -L$(UCX_HOME)/lib -Wl,-rpath,${UCX_HOME}/lib -lucp -luct -lucs -lucm
+endif
+
+
 CXXFLAGS         += -Wall
 LIBS             += -pthread -lrt
 INCLUDES          = $(INCS)

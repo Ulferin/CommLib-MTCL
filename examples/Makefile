@@ -25,20 +25,20 @@ endif
 
 ifeq ($(findstring MQTT, $(TPROTOCOL)),MQTT)
 	CXXFLAGS += -DENABLE_MQTT
-ifdef PAHO_HOME
-	INCS += -I${PAHO_HOME}/include
-	LIBS += -L${PAHO_HOME}/lib
+ifndef PAHO_HOME
+$(error PAHO_HOME env variable not defined!);
 endif
-	LIBS     += -Wl,-rpath,${PAHO_HOME}/lib -lpaho-mqttpp3 -lpaho-mqtt3as -lpaho-mqtt3a
+	INCS += -I${PAHO_HOME}/include
+	LIBS += -L${PAHO_HOME}/lib -Wl,-rpath,${PAHO_HOME}/lib -lpaho-mqttpp3 -lpaho-mqtt3as -lpaho-mqtt3a
 endif
 
 ifeq ($(findstring UCX, $(TPROTOCOL)),UCX)
 	CXXFLAGS += -DENABLE_UCX
-ifdef UCX_HOME
-	INCS += -I$(UCX_HOME)/include
-	LIBS += -L$(UCX_HOME)/lib
+ifndef UCX_HOME
+$(error UCX_HOME env variable not defined!);
 endif
-	LIBS += -Wl,-rpath,${UCX_HOME}/lib -lucp -luct -lucs -lucm
+	INCS += -I$(UCX_HOME)/include
+	LIBS += -L$(UCX_HOME)/lib -Wl,-rpath,${UCX_HOME}/lib -lucp -luct -lucs -lucm
 endif
 
 CXXFLAGS         += -Wall
