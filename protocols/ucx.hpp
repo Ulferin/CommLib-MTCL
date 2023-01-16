@@ -112,6 +112,7 @@ protected:
         request              = (test_req_t*)ucp_stream_recv_nbx(endpoint, buff, size,
                                                    &res, &param);
 
+        /*NOTE: we do not check how many bytes we actually wrote in the buffer*/
         if(!blocking) {
             if(request == NULL && res == 0) {
                 errno = EWOULDBLOCK;
@@ -134,6 +135,8 @@ public:
 
     std::atomic<bool> closed_wr{false};
     std::atomic<bool> closed_rd{false};
+
+    ssize_t last_probe = -1;
 
     HandleUCX(ConnType* parent, ucp_ep_h endpoint, ucp_worker_h worker) : Handle(parent), endpoint(endpoint), ucp_worker(worker) {}
 
@@ -182,10 +185,18 @@ public:
     }
 
     ssize_t receive(void* buff, size_t size) {
-        return receive_internal(buff, size, true);
+        ssize_t res = receive_internal(buff, size, true);
+        // Last recorded probe was consumed, reset probe size
+        last_probe = -1;
+        return res;
     }
 
     ssize_t probe(size_t& size, const bool blocking=true) {
+        if(last_probe != -1) {
+            size = last_probe;
+            return sizeof(size_t);
+        }
+
         size_t sz;
 
         if(receive_internal(&sz, sizeof(size_t), blocking) <= 0)
@@ -197,6 +208,7 @@ public:
             eos_received = true;
         }
 
+        last_probe = size;
         return sizeof(size_t);
     }
 
@@ -611,7 +623,7 @@ public:
         prog = ucp_worker_progress(ucp_worker);
         (void)prog;
 
-		ucp_stream_poll_ep_t* ready_eps = new ucp_stream_poll_ep_t[max_eps];
+        ucp_stream_poll_ep_t* ready_eps = new ucp_stream_poll_ep_t[max_eps];
         size = ucp_stream_worker_poll(ucp_worker, ready_eps, max_eps, 0);
         if(size < 0) {
             MTCL_UCX_PRINT(100, "ConnUCX::update error in ucp_stream_worker_poll\n");
@@ -644,7 +656,19 @@ public:
         HandleUCX* handle = reinterpret_cast<HandleUCX*>(h);
         if(handle->isClosed()) return;
 
+        // Check if handle still has some data to receive, addinQ in case we
+        // have data
+        size_t size;
+        if(handle->probe(size, false) > 0) {
+            REMOVE_CODE_IF(std::unique_lock l(shm));
+            addinQ(false, handle);
+            return;
+        }
+
         REMOVE_CODE_IF(std::unique_lock l(shm));
+        auto it = connections.find(handle->endpoint);
+        if(it == connections.end())
+            MTCL_UCX_ERROR("Couldn't yield handle\n");
         connections[handle->endpoint].second = true;
 
         return;
