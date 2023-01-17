@@ -22,12 +22,15 @@
 
 #include "../handle.hpp"
 #include "../protocolInterface.hpp"
+#include "../config.hpp"
+#include "../utils.hpp"
 
 
 class HandleMQTT : public Handle {
 
 public:
-    bool closing = false;
+    // bool closing = false;
+    bool is_probed = false;
     mqtt::client* client;
     mqtt::string out_topic, in_topic;
     std::queue<std::pair<std::string, ssize_t>> messages;
@@ -35,25 +38,33 @@ public:
 
     HandleMQTT(ConnType* parent, mqtt::client* client,
         mqtt::string out_topic, mqtt::string in_topic, bool busy=true) :
-            Handle(parent, busy), client(client),
+            Handle(parent), client(client),
             out_topic(out_topic), in_topic(in_topic) {}
 
+    ssize_t sendEOS() {
+        size_t sz = 0;
+        client->publish(out_topic, &sz, sizeof(size_t));
+        return sizeof(size_t);
+    }
+
     ssize_t send(const void* buff, size_t size) {
-        if(closing) {
-			MTCL_MQTT_PRINT(100, "HandleMQTT::send connection ERROR\n");
-            errno = ECONNRESET;
-            return -1;
-        }
+        // if(closing) {
+        //     MTCL_MQTT_PRINT(100, "HandleMQTT::send connection ERROR\n");
+        //     errno = ECONNRESET;
+        //     return -1;
+        // }
+        size_t sz = htobe64(size);
+        client->publish(out_topic, &sz, sizeof(size_t));
         client->publish(out_topic, buff, size);
         return size;
     }
 
     ssize_t receive(void* buff, size_t size){
-
+        is_probed = false;
         while(true) {
             if(!messages.empty()) {
                 auto msg = messages.front();
-                strncpy((char*)buff, msg.first.c_str(), msg.second+1);
+                memcpy(buff, msg.first.c_str(), msg.second);
                 messages.pop();
                 return msg.second;
             }
@@ -61,32 +72,57 @@ public:
             mqtt::const_message_ptr msg;
             bool res = client->try_consume_message(&msg);
 
-            // A message has been received (either on "in_topic" or "in_topic+exit")
+            // A message has been received
             if(res) {
-                if(msg->get_topic() == in_topic+MQTT_EXIT_TOPIC) {
-					MTCL_MQTT_PRINT(100, "HandleMQTT::receive connection ERROR\n");
-                    errno = ECONNRESET;
-                    closing = true;
-                    return 0;
-                }
-                
                 // This topic should have been subscribed upon creation of the
                 // handle object
                 if(msg->get_topic() == in_topic) {
-                    /*TODO: overflow??? Se i messaggi nel broker sono FIFO non
-                            dovrebbero esserci problemi */
-                    strncpy((char*)buff, msg->get_payload().c_str(), size);
+                    memcpy(buff, msg->get_payload().c_str(), size);
                     return size;
                 }
             }
 
-            if(closing) {
-                return 0;
-            }
+            // if(closing) {
+            //     return 0;
+            // }
 			if constexpr (MQTT_POLL_TIMEOUT) 
 				std::this_thread::sleep_for(std::chrono::milliseconds(MQTT_POLL_TIMEOUT));
         }        
         return 0;
+    }
+
+    ssize_t probe(size_t& size, const bool blocking=true) {
+        size_t sz;
+
+        // It means the Manager put the message header in the queue for us
+        /*NOTE: here we assume the handleUser interface does not allow the probe
+                to be called twice if data are not read.
+                Without this assumption, this implementation IS NOT correct*/
+        if(is_probed) {
+            auto msg = messages.front();
+            memcpy(&sz, msg.first.c_str(), sizeof(size_t));
+            messages.pop();
+            size = be64toh(sz);
+            return sizeof(size_t);
+        }
+
+        mqtt::const_message_ptr msg;
+        if(blocking) {
+            receive(&sz, sizeof(size_t));
+        }
+        else {
+            bool res = client->try_consume_message(&msg);
+            if(!res) {
+                errno = EWOULDBLOCK;
+                return -1;
+            }
+
+            memcpy(&sz, msg->to_string().c_str(), sizeof(size_t));
+        }
+    
+        size = be64toh(sz);
+        is_probed = true;
+        return sizeof(size_t);
     }
 
     ~HandleMQTT() {
@@ -101,7 +137,6 @@ private:
     std::string manager_name, new_connection_topic;
     std::string appName;
     size_t count = 0;
-    // enum class ConnEvent {close, yield};
 
     void createClient(mqtt::string topic, mqtt::client *aux_cli) {
         auto aux_connOpts = mqtt::connect_options_builder()
@@ -116,7 +151,7 @@ private:
 
         // "listening" on topic-in
         if (!rsp.is_session_present()) {
-            aux_cli->subscribe({topic, topic+MQTT_EXIT_TOPIC}, {0, 0});
+            aux_cli->subscribe({topic/*, topic+MQTT_EXIT_TOPIC*/}, {0/*, 0*/});
         }
         else {
 			MTCL_MQTT_PRINT(100, "ConnMQTT::createClient: session already present. Skipping subscribe.\n");
@@ -185,8 +220,6 @@ public:
     }
 
     void update() {
-        if(!listening) return;
-
         REMOVE_CODE_IF(std::unique_lock ulock(shm, std::defer_lock));
 
         // Consume messages
@@ -238,12 +271,13 @@ public:
                 mqtt::const_message_ptr msg;
                 bool res = handle->client->try_consume_message(&msg);
                 if(res) {
-                    if(msg->get_topic() == handle->out_topic+MQTT_EXIT_TOPIC) {
-                        handle->closing = true;
-                    }
-                    else {
+                    handle->is_probed = true;
+                    // if(msg->get_topic() == handle->out_topic+MQTT_EXIT_TOPIC) {
+                        // handle->closing = true;
+                    // }
+                    // else {
                         handle->messages.push({msg->get_payload(), msg->get_payload().length()});
-                    }
+                    // }
 					to_manage = false;
 					// NOTE: called with ulock lock hold. Double lock if there is the IO-thread!
 					addinQ(false, handle);
@@ -267,7 +301,7 @@ public:
         connOpts.set_clean_session(true);
 
         client->connect(connOpts);
-        client->subscribe({topic_out, topic_out+MQTT_EXIT_TOPIC}, {0,0});
+        client->subscribe({topic_out/*, topic_out+MQTT_EXIT_TOPIC*/}, {0/*,0*/});
 		
 		auto pubmsg = mqtt::make_message(manager_id + MQTT_CONNECTION_TOPIC, topic);
 		pubmsg->set_qos(1);
@@ -287,21 +321,36 @@ public:
     }
 
 
-    void notify_close(Handle* h) {
+    void notify_close(Handle* h, bool close_wr=true, bool close_rd=true) {
         REMOVE_CODE_IF(std::unique_lock l(shm));
         HandleMQTT* handle = reinterpret_cast<HandleMQTT*>(h);
-        if (!handle->closing){
-            std::string aux("");
-            handle->client->publish(mqtt::make_message(handle->out_topic+MQTT_EXIT_TOPIC, aux));
-            handle->client->disconnect();
-        }
-        connections.erase(reinterpret_cast<HandleMQTT*>(h));
+
+        if(close_rd)
+            connections.erase(handle);
+
+        // if (!handle->closing){
+        //     std::string aux("");
+        //     handle->client->publish(mqtt::make_message(handle->out_topic+MQTT_EXIT_TOPIC, aux));
+        //     handle->client->disconnect();
+        // }
+        // connections.erase(reinterpret_cast<HandleMQTT*>(h));
     }
 
 
     void notify_yield(Handle* h) override {
+        HandleMQTT* handle = reinterpret_cast<HandleMQTT*>(h);
         REMOVE_CODE_IF(std::unique_lock l(shm));
-        connections[reinterpret_cast<HandleMQTT*>(h)] = true;
+        // connections[reinterpret_cast<HandleMQTT*>(h)] = true;
+
+        if(handle->is_probed) {
+            addinQ(false, handle);
+            return;
+        }
+
+        auto it = connections.find(handle);
+        if(it == connections.end())
+            MTCL_MQTT_ERROR("Couldn't yield handle\n");
+        it->second = true;
     }
 
     void end() {
