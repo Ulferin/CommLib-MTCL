@@ -14,7 +14,7 @@
 #include "handleUser.hpp"
 #include "protocolInterface.hpp"
 #include "protocols/tcp.hpp"
-//#include "protocols/shm.hpp"
+#include "protocols/shm.hpp"
 
 #ifdef ENABLE_CONFIGFILE
 #include "rapidjson/rapidjson.h"
@@ -89,7 +89,8 @@ private:
     }
 
 #ifdef ENABLE_CONFIGFILE
-    static std::vector<std::string> JSONArray2VectorString(rapidjson::GenericArray& arr){
+    template <bool B, typename T>
+    static std::vector<std::string> JSONArray2VectorString(const rapidjson::GenericArray<B, T>& arr){
         std::vector<std::string> output;
         for(auto& e : arr)  
             output.push_back(e.GetString());
@@ -171,7 +172,7 @@ public:
 
 		// default transports protocol
         registerType<ConnTcp>("TCP");
-		//registerType<ConnSHM>("SHM");
+		registerType<ConnSHM>("SHM");
 
 #ifdef ENABLE_MPI
         registerType<ConnMPI>("MPI");
@@ -192,6 +193,12 @@ public:
 #ifdef ENABLE_CONFIGFILE
         if (!configFile1.empty()) parseConfig(configFile1);
         if (!configFile2.empty()) parseConfig(configFile2);
+
+        // if the current appname is not found in configuration file, abort the execution.
+        if (components.find(appName) == components.end()){
+            MTCL_ERROR("[Manager]", "Component %s not found in configuration file\n", appName.c_str());
+            abort();
+        }
 #else
      // 
 #endif
@@ -323,6 +330,19 @@ public:
         std::string protocol = s.substr(0, s.find(":"));
         if(protocol.empty())
             return HandleUser(nullptr, true, true);
+
+        std::string afterProtocol = s.substr(s.find(":") + 1, s.length());
+
+        #ifdef ENABLE_CONFIGFILE
+            if (components.count(afterProtocol)){
+                auto& component = components.at(afterProtocol);
+                std::string& host = std::get<0>(component);
+                if (host.find(':') != std::string::npos){
+                    std::string pool = host.substr(0, host.find(':'));
+                    // TODO
+                }
+            }
+        #endif
 
         if(protocolsMap.count(protocol)) {
             Handle* handle = protocolsMap[protocol]->connect(s.substr(s.find(":") + 1, s.length()));
