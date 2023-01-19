@@ -81,12 +81,12 @@ void parseConfig(const std::string& f){
     if (doc.HasMember("pools") && doc["pools"].IsArray()){
         // architecture 
         for (auto& c : doc["pools"].GetArray())
-            if (c.IsObject() && c.HasMember("name") && c["name"].IsString() && c.HasMember("proxyIPs") && c["proxyIPs"].IsArray() && c.HasMember("nodes") && c["nodes"].IsArray()){
+            if (c.IsObject() && c.HasMember("name") && c["name"].IsString() && c.HasMember("proxyIp") && c["proxyIp"].IsArray() && c.HasMember("nodes") && c["nodes"].IsArray()){
                 auto name = c["name"].GetString();
                 if (pools.count(name))
                     MTCL_ERROR("[Manager]:\t", "parseConfig: one pool element is duplicate on configuration file. I'm overwriting it.\n");
                 
-                pools[name] = std::make_pair(JSONArray2VectorString(c["proxyIPs"].GetArray()), JSONArray2VectorString(c["nodes"].GetArray()));
+                pools[name] = std::make_pair(JSONArray2VectorString(c["proxyIp"].GetArray()), JSONArray2VectorString(c["nodes"].GetArray()));
             } else
                 MTCL_ERROR("[Manager]:\t", "parseConfig: an object in pool is not well defined. Skipping it.\n");
     }
@@ -248,13 +248,15 @@ int main(int argc, char** argv){
                 std::string& hostname = std::get<0>(componentInfo);
                 std::string poolOfDestination = hostname.substr(0, hostname.find(':'));
                 
-                if (poolOfDestination.empty()){
+                if (poolOfDestination.empty() || poolOfDestination == pool){ 
                     // desrtinazione visibile direttamente dal proxy JUST ONE HOP!!!
                     std::string protocol = connectString.substr(0, connectString.find(':'));
                     std::vector<std::string>& listen_endpoints = std::get<2>(componentInfo);
                     if (protocol.empty()){
                         // TODO: pigliane uno a caso che supporto anche io
                         // for for (auto& le : listen_endpoints) connect se ok bene!
+
+                        // per ora ce sempre
                     } else {
                         bool found = false;
                         for (auto& le : listen_endpoints)
@@ -279,7 +281,7 @@ int main(int argc, char** argv){
                 } else { // pool of destination non-empty
                     char* buff = new char[sizeof(cmd_t)+sizeof(handleID_t)+connectString.length()];
                     buff[0] = cmd_t::CONN;
-                    connID_t identifier = 3043; // tODO!!
+                    connID_t identifier = std::hash<std::string>{}(connectString + pool + std::to_string(h.getID()));
                     memcpy(buff+sizeof(cmd_t), &identifier, sizeof(connID_t));
                     memcpy(buff+sizeof(cmd_t)+sizeof(connID_t), connectString.c_str(), connectString.length());
                     proxies[poolOfDestination]->send(buff, sizeof(cmd_t)+sizeof(handleID_t)+connectString.length());
@@ -289,6 +291,7 @@ int main(int argc, char** argv){
 
                 h.yield();
                 id2handle.emplace(h.getID(), std::move(h));
+		continue;
             }
 
             handleID_t connId = h.getID();
