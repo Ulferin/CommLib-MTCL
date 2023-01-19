@@ -155,6 +155,11 @@ public:
         if (realHandle) realHandle->close(true, false);
     }
 
+	std::pair<bool, bool> isClosed(){
+		if (!realHandle) return {true, true};
+		return {realHandle->closed_rd, realHandle->closed_wr};
+	}
+
     ~HandleUser(){
         // if this handle is readable and it is not closed, when i destruct this handle implicitly i'm giving the control to the runtime.
         if (isReadable && realHandle) this->yield();
