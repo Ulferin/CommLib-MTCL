@@ -113,9 +113,14 @@ int main(int argc, char** argv){
 				}
             }
             else {
-				MTCL_PRINT(0, "[Server]:\t", "Connection closed by peer\n");
-				handle.close();
-				count++;
+                size_t sz;
+                handle.probe(sz);
+                if(sz == 0) {
+				    MTCL_PRINT(0, "[Server]:\t", "Connection closed by peer\n");
+				    handle.close();
+				    count++;
+                }
+
 			}
         }
     }
