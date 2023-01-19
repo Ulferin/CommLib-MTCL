@@ -15,7 +15,7 @@
 #include "protocolInterface.hpp"
 #include "protocols/tcp.hpp"
 #include "protocols/shm.hpp"
-
+#define ENABLE_CONFIGFILE
 #ifdef ENABLE_CONFIGFILE
 #include "rapidjson/rapidjson.h"
 #include <rapidjson/istreamwrapper.h>
@@ -50,6 +50,7 @@ class Manager {
 	inline static std::queue<HandleUser> handleReady;
     
     inline static std::string appName;
+    inline static std::string poolName;
 
 #ifdef ENABLE_CONFIGFILE
     inline static std::map<std::string, std::pair<std::vector<std::string>, std::vector<std::string>>> pools;
@@ -132,7 +133,7 @@ private:
 						MTCL_ERROR("[Manager]:\t", "parseConfig: one component element is duplicate on configuration file. I'm overwriting it.\n");
 					
                     auto listen_strs = (c.HasMember("listen-endpoints") && c["listen-endpoints"].IsArray()) ? JSONArray2VectorString(c["listen-endpoints"].GetArray()) : {};
-                    components[name] = std::make_tuple(c["host"].GetString(), JSONArray2VectorString(c["protocols"].GetArray(), listen_strs);
+                    components[name] = std::make_tuple(c["host"].GetString(), JSONArray2VectorString(c["protocols"].GetArray()), listen_strs);
                 } else
 					  MTCL_ERROR("[Manager]:\t", "parseConfig: an object in components is not well defined. Skipping it.\n");
     }
@@ -199,6 +200,10 @@ public:
             MTCL_ERROR("[Manager]", "Component %s not found in configuration file\n", appName.c_str());
             abort();
         }
+
+        // set the pool name if in the host definition
+        poolName = getPoolFromHost(std::get<0>(components[appName]));
+
 #else
      // 
 #endif
@@ -331,16 +336,58 @@ public:
         if(protocol.empty())
             return HandleUser(nullptr, true, true);
 
-        std::string afterProtocol = s.substr(s.find(":") + 1, s.length());
+        // POSSIBILE LABEL
+        std::string appLabel = s.substr(s.find(":") + 1, s.length());
 
         #ifdef ENABLE_CONFIGFILE
-            if (components.count(afterProtocol)){
-                auto& component = components.at(afterProtocol);
-                std::string& host = std::get<0>(component);
-                if (host.find(':') != std::string::npos){
-                    std::string pool = host.substr(0, host.find(':'));
-                    // TODO
-                }
+            if (components.count(appLabel)){ // l'utente ha scritto una label effettivamente
+                auto& component = components.at(appLabel);
+                std::string& host = std::get<0>(component); // host= [pool:]hostname
+                std::string pool = getPoolFromHost(host);
+
+                    if (pool != poolName){ // se entrambi vuoti o uguali non entro 
+                        std::string connectionString2Proxy;
+                        if (poolName.empty() && !pool.empty()){ // passo dal proxy del pool di destinazione
+                            // connect verso il proxy di pool
+                            if (protocol == "UCX" || protocol == "TCP"){
+                               for (auto& ip: pools[pool].first){
+                                auto* handle = protocolsMap[protocol]->connect(ip + ":" + (protocol == "UCX" ? "13001" : "13000"));
+                                handle->send(s.c_str(), s.length());
+                                if (handle) return HandleUser(handle, true, true);
+                               }
+                            } else {
+                                auto* handle = protocolsMap[protocol]->connect("PROXY-" + pool);
+                                handle->send(s.c_str(), s.length());
+                                if (handle) return HandleUser(handle, true, true);
+                            }
+                        }
+                    
+                        if (!poolName.empty() && !pool.empty()){ // contatto il mio proxy
+                            if (protocol == "UCX" || protocol == "TCP"){
+                               for (auto& ip: pools[poolName].first){
+                                auto* handle = protocolsMap[protocol]->connect(ip + ":" + (protocol == "UCX" ? "13001" : "13000"));
+                                handle->send(s.c_str(), s.length());
+                                if (handle) return HandleUser(handle, true, true);
+                               }
+                            } else {
+                                auto* handle = protocolsMap[protocol]->connect("PROXY-" + poolName);
+                                handle->send(s.c_str(), s.length());
+                                if (handle) return HandleUser(handle, true, true);
+                            }
+                        }
+                        return HandleUser(nullptr, true, true);
+                    } else {
+                        // connessione diretta
+                        for (auto& le : std::get<2>(component))
+                            if (le.find(protocol) != std::string::npos){
+                                auto* handle = protocolsMap[protocol]->connect(le.substr(le.find(":") + 1, le.length()));
+                                if (handle) return HandleUser(handle, true, true);
+                            }
+                        
+                        return HandleUser(nullptr, true, true);
+                    } 
+                
+  
             }
         #endif
 

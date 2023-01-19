@@ -80,4 +80,11 @@ static inline void print_prefix(FILE *stream, const char * str, const char *pref
     #define ECOMM 1147
 #endif // __APPLE__
 
+
+std::string getPoolFromHost(const std::string& host){
+    auto pos = host.find(':');
+    if (pos == std::string::npos) return {};
+    return host.substr(0, pos);
+}
+
 #endif

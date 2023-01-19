@@ -10,12 +10,13 @@
 #include "bimap.hpp"
 
 #include "../mtcl.hpp"
-
+#define PROXY_CLIENT_PORT 13000
+#define PROXY_CLIENT_PORT_UCX 13001
 #define PROXY_PORT 8002 // solo tra proxy
 #define MAX_DEST_STRING 60
 #define CHUNK_SIZE 1200
 
-enum cmd_t : char {FWD = 0, CONN = 1, PRX = 2};
+enum cmd_t : char {FWD = 0, CONN = 1, PRX = 2, ERR_CONN = 3};
 
 /**
  * PROXY <--> PROXY PROTOCOL
@@ -39,32 +40,24 @@ std::map<handleID_t, HandleUser> id2handle; // dato un handleID ritorna l'handle
 std::map<connID_t, HandleUser*> connid2proxy; // dato una connID (meaningful tra proxy) ritorna l'handle del proxy su cui scrivere
 bimap<handleID_t, connID_t> loc2connID;  // associazione bidirezionale handleID <-> conneID
 
+// singolo hop PROC <--> Proxy <--> Proc
 std::map<handleID_t, handleID_t> proc2proc; // associazioni handleID <-> handleID per connessioni tra processi mediante singolo proxy
 
 
 // invia un messaggio ad un proxy formattato secondo il protocollo definito
-void sendHeaderProxy(HandleUser& h, cmd_t cmd, size_t identifier){
+/*void sendHeaderProxy(HandleUser& h, cmd_t cmd, size_t identifier){
     headerBuffer[0] = cmd;
     memcpy(headerBuffer+sizeof(char), &identifier, sizeof(size_t)); 
     h.send(headerBuffer, sizeof(headerBuffer));
-}
+}*/
 
-// ritorna in base alla stringa se una connessione è locale o remota (ovvero mediante altro proxy)
-bool isLocal(const std::string& destination){
-    return true;
-}
-
-// ritorna in base alla destinazione l'handle del proxy che gestisce (può raggiungere) quella destinazione
-Handle&& getProxyFromDestination(const std::string& destination){
-
-}
 
 HandleUser* toHeap(HandleUser h){
     return new HandleUser(std::move(h));
 }
 
-    
-std::vector<std::string> JSONArray2VectorString_(rapidjson::GenericArray& arr){
+ template <bool B, typename T>   
+std::vector<std::string> JSONArray2VectorString(const rapidjson::GenericArray<B,T>& arr){
     std::vector<std::string> output;
     for(auto& e : arr)  
         output.push_back(e.GetString());
@@ -72,7 +65,7 @@ std::vector<std::string> JSONArray2VectorString_(rapidjson::GenericArray& arr){
     return output;
 }
 
-void parseConfig(std::string& f){
+void parseConfig(const std::string& f){
     std::ifstream ifs(f);
     if ( !ifs.is_open() ) {
         MTCL_ERROR("[Manager]:\t", "parseConfig: cannot open file %s for reading, skip it\n",
@@ -85,7 +78,7 @@ void parseConfig(std::string& f){
 
     assert(doc.IsObject());
 
-    if (doc.HasMember("pools") && doc["pools"].IsArray())
+    if (doc.HasMember("pools") && doc["pools"].IsArray()){
         // architecture 
         for (auto& c : doc["pools"].GetArray())
             if (c.IsObject() && c.HasMember("name") && c["name"].IsString() && c.HasMember("proxyIPs") && c["proxyIPs"].IsArray() && c.HasMember("nodes") && c["nodes"].IsArray()){
@@ -96,8 +89,9 @@ void parseConfig(std::string& f){
                 pools[name] = std::make_pair(JSONArray2VectorString(c["proxyIPs"].GetArray()), JSONArray2VectorString(c["nodes"].GetArray()));
             } else
                 MTCL_ERROR("[Manager]:\t", "parseConfig: an object in pool is not well defined. Skipping it.\n");
-    
-    if (doc.HasMember("components") && doc["components"].IsArray())
+    }
+
+    if (doc.HasMember("components") && doc["components"].IsArray()){
         // components
         for(auto& c : doc["components"].GetArray())
             if (c.IsObject() && c.HasMember("name") && c["name"].IsString() && c.HasMember("host") && c["host"].IsString() && c.HasMember("protocols") && c["protocols"].IsArray()){
@@ -105,29 +99,32 @@ void parseConfig(std::string& f){
                 if (components.count(name))
                     MTCL_ERROR("[Manager]:\t", "parseConfig: one component element is duplicate on configuration file. I'm overwriting it.\n");
                 
-                auto listen_strs = (c.HasMember("listen-endpoints") && c["listen-endpoints"].IsArray()) ? JSONArray2VectorString(c["listen-endpoints"].GetArray()) : {};
-                components[name] = std::make_tuple(c["host"].GetString(), JSONArray2VectorString(c["protocols"].GetArray(), listen_strs);
+                auto listen_strs = (c.HasMember("listen-endpoints") && c["listen-endpoints"].IsArray()) ? JSONArray2VectorString(c["listen-endpoints"].GetArray()) : std::vector<std::string>();
+                components[name] = std::make_tuple(c["host"].GetString(), JSONArray2VectorString(c["protocols"].GetArray()), listen_strs);
             } else
                     MTCL_ERROR("[Manager]:\t", "parseConfig: an object in components is not well defined. Skipping it.\n");
+    }
 }
 /*
     Connect verso proxy ---> pool e ip
     Accept da proxy ---> ricevo pool -> 
 
-
-
-
 */
 
 int main(int argc, char** argv){
-
-    Manager::registerType<ConnTcp>("TCP");
+    std::string pool(argv[1]);
     Manager::registerType<ConnTcp>("P");
     Manager::init("PROXY");
 
     // parse file config che prendo da argv[2]
+    parseConfig(std::string(argv[2]));
+    Manager::listen("TCP:0.0.0.0:" + std::to_string(PROXY_CLIENT_PORT));
+    Manager::listen("MQTT:PROXY-" + pool);
+    Manager::listen("MPIP2P:PROXY-" + pool);
+    Manager::listen("UCX:0.0.0.0:" + std::to_string(PROXY_CLIENT_PORT_UCX));
+    Manager::listen("P:0.0.0.0:" + std::to_string(PROXY_PORT));
 
-    std::string pool(argv[1]);
+    
 
     // check esistenza pool
     if (!pools.count(pool)){
@@ -188,47 +185,134 @@ int main(int argc, char** argv){
             char* payload = buff + sizeof(char) + sizeof(size_t);
             size_t size = sz - sizeof(char) - sizeof(size_t);
            
-            if (loc2connID.has_value(identifier))
-                id2handle[loc2connID.get_key(identifier)].send(payload, size);
-            else
-                std::cerr << "Received a forward message from a proxy but the identifier is unknown!\n";
+           if (cmd == cmd_t::FWD){
+                if (loc2connID.has_value(identifier))
+                    id2handle[loc2connID.get_key(identifier)].send(payload, size);
+                else
+                    std::cerr << "Received a forward message from a proxy but the identifier is unknown!\n";
+           }
+
+           if (cmd == cmd_t::CONN){
+                std::string connectionString(payload, size); // TCP:Appname
+                std::string componentName = connectionString.substr(connectionString.find(':')+1);
+
+                if (!components.count(componentName)){
+                    std::cerr << "Component name ["<< componentName << "] not found in configuration file\n";
+                    continue;
+                }
+
+                auto& componentInfo = components[componentName];
+                std::string protocol = connectionString.substr(0, connectionString.find(':'));
+                std::vector<std::string>& listen_endpoints = std::get<2>(componentInfo);
+
+                bool found = false;
+                for (auto& le : listen_endpoints)
+                    if (le.find(protocol) != std::string::npos){
+                        auto newHandle = Manager::connect(le);
+                        if (newHandle.isValid()){
+                            loc2connID.insert(newHandle.getID(), identifier);
+                            newHandle.yield();
+                            id2handle.emplace(newHandle.getID(), std::move(newHandle));
+                            found = true;
+                            break;
+                        }
+                    }
+                
+                if (!found){
+                    std::cerr << "Protocol specified ["<<protocol<<"] not supported by the remote peer ["<< componentName <<"]\n";
+                    // TODO: manda indietro errore al proxy di orgine 
+                }
+           }
             
             delete [] buff;
         
             continue;
         } else {
             if (h.isNewConnection()){
-                // read destination
-                char destination[MAX_DEST_STRING];
-                size_t read_ = h.receive(destination, MAX_DEST_STRING);
-                std::string destination_str(destination, read_);
-                
-                // se la destinazione è locale fai connect
-                if (isLocal(destination)){
-                    auto peer = Manager::connect(destination_str);
-                    size_t peer_id = peer.getID();
-                    chId2Proc.emplace(h.getID(), std::move(peer));
-                    chId2Proc.emplace(peer_id, std::move(h));
-                    continue;
-                } else {
-                    getProxyFromDestination(destination)
-                    // trovo qule proxy è la destinazione e setto qualcosa
+                // read destination PORTOCOL:ComponentName
 
-                    //TODO
+                size_t sz;
+                h.probe(sz);
+                char* destComponentName = new char[sz];
+                h.receive(destComponentName, sz);
+
+                std::string connectString(destComponentName, sz);
+                std::string componentName = connectString.substr(connectString.find(':')+1);
+
+                if (!components.count(componentName)){
+                    std::cerr << "Component name ["<< componentName << "] not found in configuration file\n";
+                    continue;
                 }
 
+                auto& componentInfo = components[componentName];
+                std::string& hostname = std::get<0>(componentInfo);
+                std::string poolOfDestination = hostname.substr(0, hostname.find(':'));
+                
+                if (poolOfDestination.empty()){
+                    // desrtinazione visibile direttamente dal proxy JUST ONE HOP!!!
+                    std::string protocol = connectString.substr(0, connectString.find(':'));
+                    std::vector<std::string>& listen_endpoints = std::get<2>(componentInfo);
+                    if (protocol.empty()){
+                        // TODO: pigliane uno a caso che supporto anche io
+                        // for for (auto& le : listen_endpoints) connect se ok bene!
+                    } else {
+                        bool found = false;
+                        for (auto& le : listen_endpoints)
+                            if (le.find(protocol) != std::string::npos){
+                                auto newHandle = Manager::connect(le);
+                                if (newHandle.isValid()){
+                                    proc2proc.emplace(h.getID(), newHandle.getID());
+                                    proc2proc.emplace(newHandle.getID(), h.getID());
+                                    newHandle.yield();
+                                    id2handle.emplace(newHandle.getID(), std::move(newHandle));
+                                    found = true;
+                                    break;
+                                }
+                            }
+                        
+                        if (!found){
+                           std::cerr << "Protocol specified ["<<protocol<<"] not supported by the remote peer ["<< componentName <<"]\n";
+                           h.close();
+                           continue; 
+                        }
+                    }
+                } else { // pool of destination non-empty
+                    char* buff = new char[sizeof(cmd_t)+sizeof(handleID_t)+connectString.length()];
+                    buff[0] = cmd_t::CONN;
+                    connID_t identifier = 3043; // tODO!!
+                    memcpy(buff+sizeof(cmd_t), &identifier, sizeof(connID_t));
+                    memcpy(buff+sizeof(cmd_t)+sizeof(connID_t), connectString.c_str(), connectString.length());
+                    proxies[poolOfDestination]->send(buff, sizeof(cmd_t)+sizeof(handleID_t)+connectString.length());
+                    loc2connID.insert(h.getID(), identifier);
+                    connid2proxy.emplace(identifier, proxies[poolOfDestination]);
+                }
+
+                h.yield();
+                id2handle.emplace(h.getID(), std::move(h));
             }
 
-            size_t sz = h.receive(chunkBuffer, CHUNK_SIZE);
-
-            const auto& dest = chId2Proxy.find(h.getID());
-            if (dest != chId2Proxy.end()){
-                dest->second.send(/**encaspsulated data*/);
+            handleID_t connId = h.getID();
+            size_t sz;
+            h.probe(sz);
+            if (sz == 0){
+                // EOS TODO!
                 continue;
             }
-            const auto& dest = chId2Proc.find(h.getID());
-            if (dest != chId2Proc.end()){
-                dest->second.send(chunkBuffer, sz);
+            char* buffer = new char[sizeof(cmd_t)+sizeof(connID_t)+sz];
+            h.receive(buffer+sizeof(cmd_t)+sizeof(connID_t), sz);
+
+            if (loc2connID.has_key(connId)){
+                buffer[0] = cmd_t::FWD;
+                connID_t connectionID = loc2connID.get_value(connId);
+                memcpy(buffer+sizeof(cmd_t), &connectionID, sizeof(connID_t));
+                connid2proxy[connectionID]->send(buffer, sizeof(cmd_t)+sizeof(connID_t)+sz);
+                delete [] buffer;
+                continue;
+            }
+            const auto& dest = proc2proc.find(connId);
+            if (dest != proc2proc.end()){
+                id2handle[dest->second].send(buffer+sizeof(cmd_t)+sizeof(connID_t), sz);
+                delete [] buffer;
                 continue;
             }
 
