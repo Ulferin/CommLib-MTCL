@@ -323,7 +323,7 @@ int main(int argc, char** argv){
 
                     if (h.isClosed() == std::make_pair(true, true)){
                         loc2connID.erase_key(connId);
-                        connid2proxy.erase_(connectionID);
+                        connid2proxy.erase(connectionID);
                         id2handle.erase(connId);
                     }
                 }
