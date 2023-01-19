@@ -16,7 +16,7 @@
 #define MAX_DEST_STRING 60
 #define CHUNK_SIZE 1200
 
-enum cmd_t : char {FWD = 0, CONN = 1, PRX = 2, ERR_CONN = 3};
+enum cmd_t : char {FWD = 0, CONN = 1, PRX = 2, ERR_CONN = 3, EOS = 4};
 
 /**
  * PROXY <--> PROXY PROTOCOL
@@ -181,9 +181,24 @@ int main(int argc, char** argv){
 
             cmd_t cmd = (cmd_t)buff[0];
             connID_t identifier = *reinterpret_cast<connID_t*>(buff+sizeof(char));
+
             
             char* payload = buff + sizeof(char) + sizeof(size_t);
             size_t size = sz - sizeof(char) - sizeof(size_t);
+
+            if (cmd == cmd_t::EOS){
+                if (loc2connID.has_value(identifier)){
+                    handleID_t hID_ = loc2connID.get_key(identifier);
+                    auto& h_ = id2handle.at(hID_);
+                    h_.close();
+                    if (h_.isClosed() == std::make_pair<bool, bool>(true, true)){
+                        id2handle.erase(hID_);
+                        loc2connID.erase_key(hID_);
+                    }
+                }
+                else
+                    std::cerr << "Received a EOS message from a proxy but the identifier is unknown!\n";
+            }
            
            if (cmd == cmd_t::FWD){
                 if (loc2connID.has_value(identifier))
@@ -291,14 +306,40 @@ int main(int argc, char** argv){
 
                 h.yield();
                 id2handle.emplace(h.getID(), std::move(h));
-		continue;
+		        continue;
             }
 
             handleID_t connId = h.getID();
             size_t sz;
             h.probe(sz);
             if (sz == 0){
-                // EOS TODO!
+
+                if (loc2connID.has_key(connId)){
+                    char buffer[sizeof(cmd_t)+sizeof(connID_t)];
+                    buffer[0] = cmd_t::EOS;
+                    connID_t connectionID = loc2connID.get_value(connId);
+                    memcpy(buffer+sizeof(cmd_t), &connectionID, sizeof(connID_t));
+                    connid2proxy[connectionID]->send(buffer, sizeof(buffer));
+
+                    if (h.isClosed() == std::make_pair(true, true)){
+                        loc2connID.erase_key(connId);
+                        connid2proxy.erase_(connectionID);
+                        id2handle.erase(connId);
+                    }
+                }
+                
+                const auto& dest = proc2proc.find(connId);
+                if (dest != proc2proc.end()){
+                    id2handle[dest->second].close();
+
+                    if (id2handle[dest->second].isClosed() == std::make_pair(true, true)){
+                        proc2proc.erase(dest->second);
+                        id2handle.erase(dest->second);
+                    }
+                }
+
+
+
                 continue;
             }
             char* buffer = new char[sizeof(cmd_t)+sizeof(connID_t)+sz];
