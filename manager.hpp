@@ -15,8 +15,9 @@
 #include "protocolInterface.hpp"
 #include "protocols/tcp.hpp"
 #include "protocols/shm.hpp"
-#define ENABLE_CONFIGFILE
+
 #ifdef ENABLE_CONFIGFILE
+#include <fstream>
 #include "rapidjson/rapidjson.h"
 #include <rapidjson/istreamwrapper.h>
 #include <rapidjson/document.h>
@@ -115,12 +116,12 @@ private:
         if (doc.HasMember("pools") && doc["pools"].IsArray()){
             // architecture 
             for (auto& c : doc["pools"].GetArray())
-                if (c.IsObject() && c.HasMember("name") && c["name"].IsString() && c.HasMember("proxyIPs") && c["proxyIPs"].IsArray() && c.HasMember("nodes") && c["nodes"].IsArray()){
+                if (c.IsObject() && c.HasMember("name") && c["name"].IsString() && c.HasMember("proxyIp") && c["proxyIp"].IsArray() && c.HasMember("nodes") && c["nodes"].IsArray()){
                     auto name = c["name"].GetString();
                     if (pools.count(name))
 						MTCL_ERROR("[Manager]:\t", "parseConfig: one pool element is duplicate on configuration file. I'm overwriting it.\n");
                     
-                    pools[name] = std::make_pair(JSONArray2VectorString(c["proxyIPs"].GetArray()), JSONArray2VectorString(c["nodes"].GetArray()));
+                    pools[name] = std::make_pair(JSONArray2VectorString(c["proxyIp"].GetArray()), JSONArray2VectorString(c["nodes"].GetArray()));
                 } else
 					MTCL_ERROR("[Manager]:\t", "parseConfig: an object in pool is not well defined. Skipping it.\n");
         }
