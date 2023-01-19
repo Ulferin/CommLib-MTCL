@@ -112,7 +112,7 @@ private:
 
         assert(doc.IsObject());
 
-        if (doc.HasMember("pools") && doc["pools"].IsArray())
+        if (doc.HasMember("pools") && doc["pools"].IsArray()){
             // architecture 
             for (auto& c : doc["pools"].GetArray())
                 if (c.IsObject() && c.HasMember("name") && c["name"].IsString() && c.HasMember("proxyIPs") && c["proxyIPs"].IsArray() && c.HasMember("nodes") && c["nodes"].IsArray()){
@@ -123,8 +123,8 @@ private:
                     pools[name] = std::make_pair(JSONArray2VectorString(c["proxyIPs"].GetArray()), JSONArray2VectorString(c["nodes"].GetArray()));
                 } else
 					MTCL_ERROR("[Manager]:\t", "parseConfig: an object in pool is not well defined. Skipping it.\n");
-        
-        if (doc.HasMember("components") && doc["components"].IsArray())
+        }
+        if (doc.HasMember("components") && doc["components"].IsArray()){
             // components
             for(auto& c : doc["components"].GetArray())
                 if (c.IsObject() && c.HasMember("name") && c["name"].IsString() && c.HasMember("host") && c["host"].IsString() && c.HasMember("protocols") && c["protocols"].IsArray()){
@@ -132,10 +132,11 @@ private:
                     if (components.count(name))
 						MTCL_ERROR("[Manager]:\t", "parseConfig: one component element is duplicate on configuration file. I'm overwriting it.\n");
 					
-                    auto listen_strs = (c.HasMember("listen-endpoints") && c["listen-endpoints"].IsArray()) ? JSONArray2VectorString(c["listen-endpoints"].GetArray()) : {};
+                    auto listen_strs = (c.HasMember("listen-endpoints") && c["listen-endpoints"].IsArray()) ? JSONArray2VectorString(c["listen-endpoints"].GetArray()) : std::vector<std::string>();
                     components[name] = std::make_tuple(c["host"].GetString(), JSONArray2VectorString(c["protocols"].GetArray()), listen_strs);
                 } else
 					  MTCL_ERROR("[Manager]:\t", "parseConfig: an object in components is not well defined. Skipping it.\n");
+        }
     }
 #endif
 
