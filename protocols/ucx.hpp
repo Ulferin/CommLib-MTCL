@@ -23,7 +23,7 @@
 class HandleUCX : public Handle {
 
     typedef struct test_req {
-        std::atomic<int> complete;
+        int complete;
     } test_req_t;
 
 
@@ -679,20 +679,10 @@ public:
 
         if(handle->already_closed) return;
 
-        if(close_wr && close_rd) {
+        REMOVE_CODE_IF(std::unique_lock l(shm));
+        if(close_rd) {
             connections.erase(handle->endpoint);
             handle->already_closed = true;
-
-            if(!handle->eos_received) {
-                size_t sz = 1;
-                while(true) {
-                    handle->probe(sz, sizeof(size_t));
-                    if(sz == 0) break;
-                    char* buff = new char[sz];
-                    handle->receive(buff, sz);
-                    delete[] buff;
-                }
-            }
             ep_close(handle->endpoint);
         }
 

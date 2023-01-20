@@ -76,7 +76,17 @@ public:
     virtual ssize_t send(const void* buff, size_t size) = 0; 
 
 
-	// COMMENTARE
+    /**
+     * @brief Check for incoming message and write in \b size the amount of data
+     * present in the message.
+     * 
+     * @param[out] size total size in byte of incoming message
+     * @param[in] blocking if true, the probe call blocks until a message
+     * is ready to be received. If false, the call returns immediately and sets
+     * \b errno to \b EWOULDBLOCK if no message is present on this handle.
+     * @return ssize_t \c sizeof(size_t) upon success. If \c -1 is returned,
+     * the error can be checked via \b errno.
+     */
 	virtual ssize_t probe(size_t& size, const bool blocking=true)=0;
 	
 
@@ -103,7 +113,25 @@ public:
 
 
 void ConnType::setAsClosed(Handle* h){
-    h->close();
+    // Send EOS if not already sent
+    if(!h->closed_wr)
+        h->close(true, false);
+
+    // If EOS is still not received we wait for it, discarding pending messages
+    if(!h->closed_rd) {
+        size_t sz = 1;
+        while(true) {
+            h->probe(sz, sizeof(size_t));
+            if(sz == 0) break;
+            char* buff = new char[sz];
+            h->receive(buff, sz);
+            delete[] buff;
+        }
+    }
+
+    // Finally closing the handle
+    h->close(false, true);
+
 }
 
 #endif
