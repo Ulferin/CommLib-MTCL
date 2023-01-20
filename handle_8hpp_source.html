@@ -156,7 +156,7 @@ $(function() {
 <div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;    <span class="keywordflow">if</span>(!h-&gt;closed_rd) {</div>
 <div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;        <span class="keywordtype">size_t</span> sz = 1;</div>
 <div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;        <span class="keywordflow">while</span>(<span class="keyword">true</span>) {</div>
-<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;            h-&gt;<a class="code" href="classHandle.html#ab6628ffd460524370d1681c86c242456">probe</a>(sz, <span class="keyword">sizeof</span>(<span class="keywordtype">size_t</span>));</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;            h-&gt;<a class="code" href="classHandle.html#ab6628ffd460524370d1681c86c242456">probe</a>(sz);</div>
 <div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;            <span class="keywordflow">if</span>(sz == 0) <span class="keywordflow">break</span>;</div>
 <div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;            <span class="keywordtype">char</span>* buff = <span class="keyword">new</span> <span class="keywordtype">char</span>[sz];</div>
 <div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;            h-&gt;<a class="code" href="classHandle.html#a9050a62bad7183e263f1eb55bb251780">receive</a>(buff, sz);</div>
