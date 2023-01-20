@@ -133,26 +133,43 @@ $(function() {
 <div class="line"><a name="l00076"></a><span class="lineno"><a class="line" href="classHandle.html#aae538673ad7023a3f7c298a7cfd5f513">   76</a></span>&#160;    <span class="keyword">virtual</span> ssize_t <a class="code" href="classHandle.html#aae538673ad7023a3f7c298a7cfd5f513">send</a>(<span class="keyword">const</span> <span class="keywordtype">void</span>* buff, <span class="keywordtype">size_t</span> size) = 0; </div>
 <div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160; </div>
 <div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160; </div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    <span class="comment">// COMMENTARE</span></div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    <span class="keyword">virtual</span> ssize_t probe(<span class="keywordtype">size_t</span>&amp; size, <span class="keyword">const</span> <span class="keywordtype">bool</span> blocking=<span class="keyword">true</span>)=0;</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    </div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160; </div>
-<div class="line"><a name="l00094"></a><span class="lineno"><a class="line" href="classHandle.html#a9050a62bad7183e263f1eb55bb251780">   94</a></span>&#160;    <span class="keyword">virtual</span> ssize_t <a class="code" href="classHandle.html#a9050a62bad7183e263f1eb55bb251780">receive</a>(<span class="keywordtype">void</span>* buff, <span class="keywordtype">size_t</span> size) = 0; </div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160; </div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160; </div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;    <span class="keywordtype">void</span> setName(<span class="keyword">const</span> std::string &amp;name) { handleName = name; }</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;    <span class="keyword">const</span> std::string&amp; getName() { <span class="keywordflow">return</span> handleName; }</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">bool</span> isClosed()   { <span class="keywordflow">return</span> closed_rd &amp;&amp; closed_wr; }</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    </div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;    <span class="keyword">virtual</span> ~<a class="code" href="classHandle.html">Handle</a>() {};</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;};</div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160; </div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160; </div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;<span class="keywordtype">void</span> ConnType::setAsClosed(<a class="code" href="classHandle.html">Handle</a>* h){</div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;    h-&gt;close();</div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;}</div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160; </div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00090"></a><span class="lineno"><a class="line" href="classHandle.html#ab6628ffd460524370d1681c86c242456">   90</a></span>&#160;    <span class="keyword">virtual</span> ssize_t <a class="code" href="classHandle.html#ab6628ffd460524370d1681c86c242456">probe</a>(<span class="keywordtype">size_t</span>&amp; size, <span class="keyword">const</span> <span class="keywordtype">bool</span> blocking=<span class="keyword">true</span>)=0;</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    </div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160; </div>
+<div class="line"><a name="l00104"></a><span class="lineno"><a class="line" href="classHandle.html#a9050a62bad7183e263f1eb55bb251780">  104</a></span>&#160;    <span class="keyword">virtual</span> ssize_t <a class="code" href="classHandle.html#a9050a62bad7183e263f1eb55bb251780">receive</a>(<span class="keywordtype">void</span>* buff, <span class="keywordtype">size_t</span> size) = 0; </div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160; </div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160; </div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;    <span class="keywordtype">void</span> setName(<span class="keyword">const</span> std::string &amp;name) { handleName = name; }</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;    <span class="keyword">const</span> std::string&amp; getName() { <span class="keywordflow">return</span> handleName; }</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">bool</span> isClosed()   { <span class="keywordflow">return</span> closed_rd &amp;&amp; closed_wr; }</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;    </div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;    <span class="keyword">virtual</span> ~<a class="code" href="classHandle.html">Handle</a>() {};</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;};</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160; </div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160; </div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;<span class="keywordtype">void</span> ConnType::setAsClosed(<a class="code" href="classHandle.html">Handle</a>* h){</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;    <span class="comment">// Send EOS if not already sent</span></div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;    <span class="keywordflow">if</span>(!h-&gt;closed_wr)</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;        h-&gt;close(<span class="keyword">true</span>, <span class="keyword">false</span>);</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160; </div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;    <span class="comment">// If EOS is still not received we wait for it, discarding pending messages</span></div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;    <span class="keywordflow">if</span>(!h-&gt;closed_rd) {</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;        <span class="keywordtype">size_t</span> sz = 1;</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;        <span class="keywordflow">while</span>(<span class="keyword">true</span>) {</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;            h-&gt;<a class="code" href="classHandle.html#ab6628ffd460524370d1681c86c242456">probe</a>(sz, <span class="keyword">sizeof</span>(<span class="keywordtype">size_t</span>));</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;            <span class="keywordflow">if</span>(sz == 0) <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;            <span class="keywordtype">char</span>* buff = <span class="keyword">new</span> <span class="keywordtype">char</span>[sz];</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;            h-&gt;<a class="code" href="classHandle.html#a9050a62bad7183e263f1eb55bb251780">receive</a>(buff, sz);</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;            <span class="keyword">delete</span>[] buff;</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;        }</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;    }</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160; </div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;    <span class="comment">// Finally closing the handle</span></div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;    h-&gt;close(<span class="keyword">false</span>, <span class="keyword">true</span>);</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160; </div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;}</div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160; </div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassConnType_html"><div class="ttname"><a href="classConnType.html">ConnType</a></div><div class="ttdef"><b>Definition:</b> protocolInterface.hpp:10</div></div>
 <div class="ttc" id="aclassConnType_html_a33ffcb5c5ead496305f167496896d677"><div class="ttname"><a href="classConnType.html#a33ffcb5c5ead496305f167496896d677">ConnType::notify_close</a></div><div class="ttdeci">virtual void notify_close(Handle *h, bool shut_wr=true, bool shut_rd=true)=0</div><div class="ttdoc">Manage the notification of an Handle object h issuing a close operation. The Handle is invalidated an...</div></div>
 <div class="ttc" id="aclassConnType_html_a87399427d64cc8f2355d4f1eb325ec71"><div class="ttname"><a href="classConnType.html#a87399427d64cc8f2355d4f1eb325ec71">ConnType::notify_yield</a></div><div class="ttdeci">virtual void notify_yield(Handle *h)=0</div><div class="ttdoc">Manage the notification of an Handle object h issuing a yield operation. After this method is complet...</div></div>
@@ -160,6 +177,7 @@ $(function() {
 <div class="ttc" id="aclassHandle_html"><div class="ttname"><a href="classHandle.html">Handle</a></div><div class="ttdef"><b>Definition:</b> handle.hpp:9</div></div>
 <div class="ttc" id="aclassHandle_html_a9050a62bad7183e263f1eb55bb251780"><div class="ttname"><a href="classHandle.html#a9050a62bad7183e263f1eb55bb251780">Handle::receive</a></div><div class="ttdeci">virtual ssize_t receive(void *buff, size_t size)=0</div><div class="ttdoc">Read at most size byte into buff from the remote end connected to this Handle. Wait until all size da...</div></div>
 <div class="ttc" id="aclassHandle_html_aae538673ad7023a3f7c298a7cfd5f513"><div class="ttname"><a href="classHandle.html#aae538673ad7023a3f7c298a7cfd5f513">Handle::send</a></div><div class="ttdeci">virtual ssize_t send(const void *buff, size_t size)=0</div><div class="ttdoc">Send size byte of buff to the remote end connected to this Handle. Wait until all data has been sent ...</div></div>
+<div class="ttc" id="aclassHandle_html_ab6628ffd460524370d1681c86c242456"><div class="ttname"><a href="classHandle.html#ab6628ffd460524370d1681c86c242456">Handle::probe</a></div><div class="ttdeci">virtual ssize_t probe(size_t &amp;size, const bool blocking=true)=0</div><div class="ttdoc">Check for incoming message and write in size the amount of data present in the message.</div></div>
 <div class="ttc" id="aclassManager_html"><div class="ttname"><a href="classManager.html">Manager</a></div><div class="ttdef"><b>Definition:</b> manager.hpp:47</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

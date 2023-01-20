@@ -162,7 +162,7 @@ $(function() {
 <div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;        <span class="keywordflow">return</span> 0;</div>
 <div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    }</div>
 <div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160; </div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    ssize_t probe(<span class="keywordtype">size_t</span>&amp; size, <span class="keyword">const</span> <span class="keywordtype">bool</span> blocking=<span class="keyword">true</span>) {</div>
+<div class="line"><a name="l00094"></a><span class="lineno"><a class="line" href="classHandleMQTT.html#af1460b23945b2bd91c79c9eaf1e1ef13">   94</a></span>&#160;    ssize_t <a class="code" href="classHandleMQTT.html#af1460b23945b2bd91c79c9eaf1e1ef13">probe</a>(<span class="keywordtype">size_t</span>&amp; size, <span class="keyword">const</span> <span class="keywordtype">bool</span> blocking=<span class="keyword">true</span>) {</div>
 <div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;        <span class="keywordtype">size_t</span> sz;</div>
 <div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160; </div>
 <div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;        <span class="comment">// It means the Manager put the message header in the queue for us</span></div>
@@ -449,6 +449,7 @@ $(function() {
 <div class="ttc" id="aclassHandleMQTT_html"><div class="ttname"><a href="classHandleMQTT.html">HandleMQTT</a></div><div class="ttdef"><b>Definition:</b> mqtt.hpp:29</div></div>
 <div class="ttc" id="aclassHandleMQTT_html_a750e03ab4897ea7bec9eee88e1119b3f"><div class="ttname"><a href="classHandleMQTT.html#a750e03ab4897ea7bec9eee88e1119b3f">HandleMQTT::send</a></div><div class="ttdeci">ssize_t send(const void *buff, size_t size)</div><div class="ttdoc">Send size byte of buff to the remote end connected to this Handle. Wait until all data has been sent ...</div><div class="ttdef"><b>Definition:</b> mqtt.hpp:50</div></div>
 <div class="ttc" id="aclassHandleMQTT_html_a7cf56407f80b658c41196ed2eaef524b"><div class="ttname"><a href="classHandleMQTT.html#a7cf56407f80b658c41196ed2eaef524b">HandleMQTT::receive</a></div><div class="ttdeci">ssize_t receive(void *buff, size_t size)</div><div class="ttdoc">Read at most size byte into buff from the remote end connected to this Handle. Wait until all size da...</div><div class="ttdef"><b>Definition:</b> mqtt.hpp:62</div></div>
+<div class="ttc" id="aclassHandleMQTT_html_af1460b23945b2bd91c79c9eaf1e1ef13"><div class="ttname"><a href="classHandleMQTT.html#af1460b23945b2bd91c79c9eaf1e1ef13">HandleMQTT::probe</a></div><div class="ttdeci">ssize_t probe(size_t &amp;size, const bool blocking=true)</div><div class="ttdoc">Check for incoming message and write in size the amount of data present in the message.</div><div class="ttdef"><b>Definition:</b> mqtt.hpp:94</div></div>
 <div class="ttc" id="aclassHandle_html"><div class="ttname"><a href="classHandle.html">Handle</a></div><div class="ttdef"><b>Definition:</b> handle.hpp:9</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

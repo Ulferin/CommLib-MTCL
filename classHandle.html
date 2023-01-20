@@ -94,8 +94,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:aae538673ad7023a3f7c298a7cfd5f513"><td class="memItemLeft" align="right" valign="top">virtual ssize_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHandle.html#aae538673ad7023a3f7c298a7cfd5f513">send</a> (const void *buff, size_t size)=0</td></tr>
 <tr class="memdesc:aae538673ad7023a3f7c298a7cfd5f513"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send <b>size</b> byte of <b>buff</b> to the remote end connected to this <a class="el" href="classHandle.html">Handle</a>. Wait until all data has been sent or until the peer close the connection.  <a href="classHandle.html#aae538673ad7023a3f7c298a7cfd5f513">More...</a><br /></td></tr>
 <tr class="separator:aae538673ad7023a3f7c298a7cfd5f513"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab6628ffd460524370d1681c86c242456"><td class="memItemLeft" align="right" valign="top"><a id="ab6628ffd460524370d1681c86c242456"></a>
-virtual ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>probe</b> (size_t &amp;size, const bool blocking=true)=0</td></tr>
+<tr class="memitem:ab6628ffd460524370d1681c86c242456"><td class="memItemLeft" align="right" valign="top">virtual ssize_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHandle.html#ab6628ffd460524370d1681c86c242456">probe</a> (size_t &amp;size, const bool blocking=true)=0</td></tr>
+<tr class="memdesc:ab6628ffd460524370d1681c86c242456"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check for incoming message and write in <b>size</b> the amount of data present in the message.  <a href="classHandle.html#ab6628ffd460524370d1681c86c242456">More...</a><br /></td></tr>
 <tr class="separator:ab6628ffd460524370d1681c86c242456"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9050a62bad7183e263f1eb55bb251780"><td class="memItemLeft" align="right" valign="top">virtual ssize_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHandle.html#a9050a62bad7183e263f1eb55bb251780">receive</a> (void *buff, size_t size)=0</td></tr>
 <tr class="memdesc:a9050a62bad7183e263f1eb55bb251780"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read at most <b>size</b> byte into <b>buff</b> from the remote end connected to this <a class="el" href="classHandle.html">Handle</a>. Wait until all <b>size</b> data has been received or until the connection is closed by the remote peer.  <a href="classHandle.html#a9050a62bad7183e263f1eb55bb251780">More...</a><br /></td></tr>
@@ -141,6 +141,54 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>ConnType</b></td></t
 <tr class="separator:aa1301868855ff45ebf2bc6734a388429"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="ab6628ffd460524370d1681c86c242456"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab6628ffd460524370d1681c86c242456">&#9670;&nbsp;</a></span>probe()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual ssize_t Handle::probe </td>
+          <td>(</td>
+          <td class="paramtype">size_t &amp;&#160;</td>
+          <td class="paramname"><em>size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const bool&#160;</td>
+          <td class="paramname"><em>blocking</em> = <code>true</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Check for incoming message and write in <b>size</b> the amount of data present in the message. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[out]</td><td class="paramname">size</td><td>total size in byte of incoming message </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">blocking</td><td>if true, the probe call blocks until a message is ready to be received. If false, the call returns immediately and sets <b>errno</b> to <b>EWOULDBLOCK</b> if no message is present on this handle. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>ssize_t <code>sizeof(size_t)</code> upon success. If <code>-1</code> is returned, the error can be checked via <b>errno</b>. </dd></dl>
+
+<p>Implemented in <a class="el" href="classHandleUCX.html#a460968034f0b54085aef8cc92c85bbe9">HandleUCX</a>, <a class="el" href="classHandleTCP.html#a1e80b08cb7ed59f5e5bb05d8c82a998e">HandleTCP</a>, <a class="el" href="classHandleSHM.html#acdd5693f94d382c5295607d99ca6bb46">HandleSHM</a>, <a class="el" href="classHandleMQTT.html#af1460b23945b2bd91c79c9eaf1e1ef13">HandleMQTT</a>, <a class="el" href="classHandleMPIP2P.html#a363628c14a8126efa4af0cec6a56507a">HandleMPIP2P</a>, and <a class="el" href="classHandleMPI.html#aaf262a6da4ccf2ca57ca37191837a63d">HandleMPI</a>.</p>
+
+</div>
+</div>
 <a id="a9050a62bad7183e263f1eb55bb251780"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9050a62bad7183e263f1eb55bb251780">&#9670;&nbsp;</a></span>receive()</h2>
 

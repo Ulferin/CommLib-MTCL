@@ -178,7 +178,7 @@ $(function() {
 <div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;        <span class="keywordflow">return</span> r;</div>
 <div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;    }</div>
 <div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160; </div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;    ssize_t probe(<span class="keywordtype">size_t</span>&amp; size, <span class="keyword">const</span> <span class="keywordtype">bool</span> blocking=<span class="keyword">true</span>){</div>
+<div class="line"><a name="l00110"></a><span class="lineno"><a class="line" href="classHandleMPI.html#aaf262a6da4ccf2ca57ca37191837a63d">  110</a></span>&#160;    ssize_t <a class="code" href="classHandleMPI.html#aaf262a6da4ccf2ca57ca37191837a63d">probe</a>(<span class="keywordtype">size_t</span>&amp; size, <span class="keyword">const</span> <span class="keywordtype">bool</span> blocking=<span class="keyword">true</span>){</div>
 <div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;        <span class="keywordtype">int</span> f;</div>
 <div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;        <span class="keywordflow">if</span> (!blocking){</div>
 <div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;            <span class="keywordflow">if</span> (MPI_Iprobe(this-&gt;rank, this-&gt;tag, MPI_COMM_WORLD,&amp;f, MPI_STATUS_IGNORE) != MPI_SUCCESS){</div>
@@ -427,6 +427,7 @@ $(function() {
 <div class="ttc" id="aclassHandleMPI_html"><div class="ttname"><a href="classHandleMPI.html">HandleMPI</a></div><div class="ttdef"><b>Definition:</b> mpi.hpp:20</div></div>
 <div class="ttc" id="aclassHandleMPI_html_a4f418644d25dde36202814fc7dec1598"><div class="ttname"><a href="classHandleMPI.html#a4f418644d25dde36202814fc7dec1598">HandleMPI::receive</a></div><div class="ttdeci">ssize_t receive(void *buff, size_t size)</div><div class="ttdoc">Read at most size byte into buff from the remote end connected to this Handle. Wait until all size da...</div><div class="ttdef"><b>Definition:</b> mpi.hpp:98</div></div>
 <div class="ttc" id="aclassHandleMPI_html_a528e2453243e9cb95e546cf4063aa8b1"><div class="ttname"><a href="classHandleMPI.html#a528e2453243e9cb95e546cf4063aa8b1">HandleMPI::send</a></div><div class="ttdeci">ssize_t send(const void *buff, size_t size)</div><div class="ttdoc">Send size byte of buff to the remote end connected to this Handle. Wait until all data has been sent ...</div><div class="ttdef"><b>Definition:</b> mpi.hpp:51</div></div>
+<div class="ttc" id="aclassHandleMPI_html_aaf262a6da4ccf2ca57ca37191837a63d"><div class="ttname"><a href="classHandleMPI.html#aaf262a6da4ccf2ca57ca37191837a63d">HandleMPI::probe</a></div><div class="ttdeci">ssize_t probe(size_t &amp;size, const bool blocking=true)</div><div class="ttdoc">Check for incoming message and write in size the amount of data present in the message.</div><div class="ttdef"><b>Definition:</b> mpi.hpp:110</div></div>
 <div class="ttc" id="aclassHandle_html"><div class="ttname"><a href="classHandle.html">Handle</a></div><div class="ttdef"><b>Definition:</b> handle.hpp:9</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

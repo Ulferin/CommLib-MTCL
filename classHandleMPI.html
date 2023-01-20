@@ -90,8 +90,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a4f418644d25dde36202814fc7dec1598"><td class="memItemLeft" align="right" valign="top">ssize_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHandleMPI.html#a4f418644d25dde36202814fc7dec1598">receive</a> (void *buff, size_t size)</td></tr>
 <tr class="memdesc:a4f418644d25dde36202814fc7dec1598"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read at most <b>size</b> byte into <b>buff</b> from the remote end connected to this <a class="el" href="classHandle.html">Handle</a>. Wait until all <b>size</b> data has been received or until the connection is closed by the remote peer.  <a href="classHandleMPI.html#a4f418644d25dde36202814fc7dec1598">More...</a><br /></td></tr>
 <tr class="separator:a4f418644d25dde36202814fc7dec1598"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaf262a6da4ccf2ca57ca37191837a63d"><td class="memItemLeft" align="right" valign="top"><a id="aaf262a6da4ccf2ca57ca37191837a63d"></a>
-ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>probe</b> (size_t &amp;size, const bool blocking=true)</td></tr>
+<tr class="memitem:aaf262a6da4ccf2ca57ca37191837a63d"><td class="memItemLeft" align="right" valign="top">ssize_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHandleMPI.html#aaf262a6da4ccf2ca57ca37191837a63d">probe</a> (size_t &amp;size, const bool blocking=true)</td></tr>
+<tr class="memdesc:aaf262a6da4ccf2ca57ca37191837a63d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check for incoming message and write in <b>size</b> the amount of data present in the message.  <a href="classHandleMPI.html#aaf262a6da4ccf2ca57ca37191837a63d">More...</a><br /></td></tr>
 <tr class="separator:aaf262a6da4ccf2ca57ca37191837a63d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aab489ce7f6fc9ce6570807a0fa0b18a9"><td class="memItemLeft" align="right" valign="top"><a id="aab489ce7f6fc9ce6570807a0fa0b18a9"></a>
 ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>sendEOS</b> ()</td></tr>
@@ -136,6 +136,54 @@ std::atomic&lt; bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>
 <tr class="separator:aa1ec3c70e694e15d3a1f1944c439cd89 inherit pro_attribs_classHandle"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="aaf262a6da4ccf2ca57ca37191837a63d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaf262a6da4ccf2ca57ca37191837a63d">&#9670;&nbsp;</a></span>probe()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">ssize_t HandleMPI::probe </td>
+          <td>(</td>
+          <td class="paramtype">size_t &amp;&#160;</td>
+          <td class="paramname"><em>size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const bool&#160;</td>
+          <td class="paramname"><em>blocking</em> = <code>true</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Check for incoming message and write in <b>size</b> the amount of data present in the message. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[out]</td><td class="paramname">size</td><td>total size in byte of incoming message </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">blocking</td><td>if true, the probe call blocks until a message is ready to be received. If false, the call returns immediately and sets <b>errno</b> to <b>EWOULDBLOCK</b> if no message is present on this handle. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>ssize_t <code>sizeof(size_t)</code> upon success. If <code>-1</code> is returned, the error can be checked via <b>errno</b>. </dd></dl>
+
+<p>Implements <a class="el" href="classHandle.html#ab6628ffd460524370d1681c86c242456">Handle</a>.</p>
+
+</div>
+</div>
 <a id="a4f418644d25dde36202814fc7dec1598"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a4f418644d25dde36202814fc7dec1598">&#9670;&nbsp;</a></span>receive()</h2>
 
