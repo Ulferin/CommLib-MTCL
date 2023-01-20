@@ -392,10 +392,6 @@ public:
             return -1;
         }
 
-        /*NOTE: qui si possono richiedere più modalità per lo stesso contesto,
-                in particolare si può richiedere la compatibilità sia con TAG
-                che STREAM. Potrebbe essere interessante usarli entrambi in modo
-                da ricevere gli header su TAG e i dati su stream*/
         /* UCX context initialization */
         ucp_params.field_mask   = UCP_PARAM_FIELD_FEATURES;
         ucp_params.features     = UCP_FEATURE_STREAM;
@@ -442,7 +438,6 @@ public:
 
 
     int listen(std::string s) {
-        /*TODO: inserire controllo stringa malformata in listen*/
         address = s.substr(0, s.find(":"));
         port    = stoi(s.substr(address.length()+1));
 
@@ -462,8 +457,6 @@ public:
 
 
     Handle* connect(const std::string& address) {
-        /*TODO: inserire controllo stringa connect malformata*/
-
         const std::string host = address.substr(0, address.find(":"));
 		const std::string svc  = address.substr(host.length()+1);
 

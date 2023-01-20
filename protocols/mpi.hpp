@@ -179,10 +179,33 @@ public:
         // per ora solo tag, poi si vede
 
         //parse della stringa
-        int rank = stoi(dest.substr(0, dest.find(":")));
-        int tag = stoi(dest.substr(dest.find(":") + 1, dest.length()));
+        int rank;
+        try {
+            rank = stoi(dest.substr(0, dest.find(":")));
+        }
+        catch(std::invalid_argument&) {
+            MTCL_MPI_PRINT(100, "ConnMPI::connect rank must be an integer greater or equal than 0\n");
+            errno = EINVAL;
+            return nullptr;
+        }
+        
+        int tag;
+        try {
+            tag = stoi(dest.substr(dest.find(":") + 1, dest.length()));
+        }
+        catch(std::invalid_argument&) {
+            MTCL_MPI_PRINT(100, "ConnMPI::connect rank must be an integer greater than 0\n");
+            errno = EINVAL;
+            return nullptr;
+        }
 
-        if (tag == MPI_CONNECTION_TAG){
+        if(rank < 0) {
+			MTCL_MPI_PRINT(100, "ConnMPI::connect the connection rank must be greater or equal than 0\n");
+            errno = EINVAL;
+            return nullptr;
+        }
+
+        if (tag <= (int)MPI_CONNECTION_TAG){
 			MTCL_MPI_PRINT(100, "ConnMPI::connect the connection tag must be greater than 0\n");
 			errno = EINVAL;
             return nullptr;

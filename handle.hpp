@@ -121,10 +121,16 @@ void ConnType::setAsClosed(Handle* h){
     if(!h->closed_rd) {
         size_t sz = 1;
         while(true) {
-            h->probe(sz);
+            if(h->probe(sz) == -1) {
+                MTCL_PRINT(100, "[internal]:\t", "ConnType::setAsClosed probe error\n");
+                return;
+            }
             if(sz == 0) break;
             char* buff = new char[sz];
-            h->receive(buff, sz);
+            if(h->receive(buff, sz) == -1) {
+                MTCL_PRINT(100, "[internal]:\t", "ConnType::setAsClosed receive error\n");
+                return;
+            }
             delete[] buff;
         }
     }

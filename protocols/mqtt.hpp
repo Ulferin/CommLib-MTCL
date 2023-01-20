@@ -204,6 +204,13 @@ public:
 
     int listen(std::string s) {
         manager_name = s.substr(s.find(":")+1, s.length());
+
+        if(manager_name.empty()) {
+            MTCL_MQTT_PRINT(100, "ConnMQTT::listen: server listen string must be defined\n");
+            errno = EINVAL;
+            return -1;
+        }
+
         new_connection_topic = manager_name + MQTT_CONNECTION_TOPIC;
 
 		try {
@@ -291,6 +298,13 @@ public:
     // String for connection composed of manager_id:topic
     Handle* connect(const std::string& address) {
         std::string manager_id = address.substr(0, address.find(":"));
+
+        if(manager_id.empty()) {
+            MTCL_MQTT_PRINT(100, "ConnMQTT::connect: server connect string must be defined\n");
+            errno = EINVAL;
+            return nullptr;
+        }
+
         std::string topic = appName + std::to_string(count++);
         mqtt::string topic_out = topic+MQTT_OUT_SUFFIX;
         mqtt::string topic_in = topic+MQTT_IN_SUFFIX;
