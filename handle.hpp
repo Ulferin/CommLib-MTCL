@@ -121,7 +121,7 @@ void ConnType::setAsClosed(Handle* h){
     if(!h->closed_rd) {
         size_t sz = 1;
         while(true) {
-            h->probe(sz, sizeof(size_t));
+            h->probe(sz);
             if(sz == 0) break;
             char* buff = new char[sz];
             h->receive(buff, sz);
