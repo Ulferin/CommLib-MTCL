@@ -138,7 +138,9 @@ int main(int argc, char** argv){
         if (name > pool) {
             for(auto& addr : val.first){
                 ///if (add == mioaddr) continue; ## TODO!!
-                auto h = Manager::connect("P:" + addr + ":" + std::to_string(PROXY_PORT));
+                
+                // check if there is a ":", it means there is a port_; in this case do not add the default PROXY_PORT
+                auto h = Manager::connect("P:" + addr + (addr.find(":") == std::string::npos ? ":" + std::to_string(PROXY_PORT) : ""));
                 if (h.isValid()) {
 
                     // send cmd: PRX - ID: 0 - Payload: {pool name}
@@ -337,8 +339,6 @@ int main(int argc, char** argv){
                         id2handle.erase(dest->second);
                     }
                 }
-
-
 
                 continue;
             }

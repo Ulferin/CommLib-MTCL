@@ -335,8 +335,23 @@ public:
     */
     static HandleUser connect(std::string s) {
         std::string protocol = s.substr(0, s.find(":"));
-        if(protocol.empty())
+       
+        if(protocol.empty()){
+            // vedo se uso il file di config e provo a ciclo tutte le listen del componente di destinazione 
+#ifdef ENABLE_CONFIG
+            if (components.count(s))
+                for(auto& le : std::get<2>(components[s])){
+                    std::string sWoProtocol = s.substr(s.find(":") + 1, s.length());
+                    std::string protocol = s.substr(0, s.find(":"));
+                    if (protocolsMap.count(protocol)){
+                        auto* h = protocolsMap[protocol]->connect(sWoProtocol);
+                        if (h) return HandleUser(h, true, true);
+                    }
+                }
+#endif
+            // stampa di errore??
             return HandleUser(nullptr, true, true);
+        }
 
         // POSSIBILE LABEL
         std::string appLabel = s.substr(s.find(":") + 1, s.length());
@@ -353,6 +368,8 @@ public:
                             // connect verso il proxy di pool
                             if (protocol == "UCX" || protocol == "TCP"){
                                for (auto& ip: pools[pool].first){
+                                // if the ip contains a port is better to skip it, probably is a tunnel used betweens proxies
+                                if (ip.find(":") != std::string::npos) continue;
                                 auto* handle = protocolsMap[protocol]->connect(ip + ":" + (protocol == "UCX" ? "13001" : "13000"));
                                 handle->send(s.c_str(), s.length());
                                 if (handle) return HandleUser(handle, true, true);
