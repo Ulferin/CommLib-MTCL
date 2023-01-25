@@ -77,6 +77,11 @@ Dependencies</h2>
  cd paho.mqtt.cpp cmake -Bbuild -H. -DCMAKE_INSTALL_PREFIX=${MQTT_HOME} \ -DCMAKE_PREFIX_PATH=${MQTT_HOME} cd build make install</p>
 </li>
 <li>** UCX ** (OPTIONAL) :</li>
+<li>** UCC ** (OPTIONAL, <em>requires UCX</em>): Download UCC from github: <a href="https://github.com/openucx/ucc">https://github.com/openucx/ucc</a> <div class="fragment"><div class="line">$ export UCC_HOME=&lt;ucc-install-path&gt;</div>
+<div class="line">$ ./autogen.sh</div>
+<div class="line">$ ./configure --prefix=${UCC_HOME} --with-ucx=&lt;ucx-install-path&gt; [--with-rocm=no --with-ibverbs=no --with-cuda=no]</div>
+<div class="line">$ make</div>
+</div><!-- fragment --></li>
 <li><p class="startli">** RapidJSON **</p>
 <p class="startli">We use RapidJSON to parse configuration files. If you do not want to use the config file you don't need to install it. </p>
 </li>
