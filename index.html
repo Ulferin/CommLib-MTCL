@@ -73,15 +73,32 @@ Dependencies</h2>
 <p class="startli">OpenMPI is required for using the MPI library as transport protocol. By default, it is disabled. It can be enabled by defining the environmental variable TPROTOCOL=MPI and by properly setting MPI_HOME to point to the OpenMPI install dir.</p>
 </li>
 <li><p class="startli">** MQTT ** (OPTIONAL) :</p>
-<p class="startli">For using the MQTT protocol as transport layer, Paho MQTT Cpp and a MQTT broker/server are needed. By default, MQTT is disabled. It can be enabled by defining the environmental variable TPROTOCOL=MQTT and by properly setting MQTT_HOME to point to the Paho MQTT Cpp install dir. As MQTT broker/server Mosquitto is one of the options. Under Linux Ubuntu it can be installed using 'sudo apt install mosquitto'. &mdash; How to compile and install Paho MQTT Cpp -&mdash; Download Paho MQTT C from github: <a href="https://github.com/eclipse/paho.mqtt.c">https://github.com/eclipse/paho.mqtt.c</a> export MQTT_HOME=&lt;where-you-want-to-install-paho&gt; cd paho.mqtt.c prefix=${MQTT_HOME} make install Download Paho MQTT Cpp from github: <a href="https://github.com/eclipse/paho.mqtt.cpp">https://github.com/eclipse/paho.mqtt.cpp</a> <br  />
- cd paho.mqtt.cpp cmake -Bbuild -H. -DCMAKE_INSTALL_PREFIX=${MQTT_HOME} \ -DCMAKE_PREFIX_PATH=${MQTT_HOME} cd build make install</p>
+<p class="startli">For using the MQTT protocol as transport layer, Paho MQTT Cpp and a MQTT broker/server are needed. By default, MQTT is disabled. It can be enabled by defining the environmental variable <code>TPROTOCOL=MQTT</code> and by properly setting <code>MQTT_HOME</code> to point to the Paho MQTT Cpp install dir. As MQTT broker/server Mosquitto is one of the options. Under Linux Ubuntu it can be installed using 'sudo apt install mosquitto'.</p>
+<p class="startli">&mdash; How to compile and install Paho MQTT Cpp -&mdash;</p>
+<p class="startli">Download Paho MQTT C from github: <a href="https://github.com/eclipse/paho.mqtt.c">https://github.com/eclipse/paho.mqtt.c</a></p>
 </li>
-<li>** UCX ** (OPTIONAL) :</li>
-<li>** UCC ** (OPTIONAL, <em>requires UCX</em>): Download UCC from github: <a href="https://github.com/openucx/ucc">https://github.com/openucx/ucc</a> <div class="fragment"><div class="line">$ export UCC_HOME=&lt;ucc-install-path&gt;</div>
-<div class="line">$ ./autogen.sh</div>
-<div class="line">$ ./configure --prefix=${UCC_HOME} --with-ucx=&lt;ucx-install-path&gt; [--with-rocm=no --with-ibverbs=no --with-cuda=no]</div>
-<div class="line">$ make</div>
-</div><!-- fragment --></li>
+</ul>
+<div class="fragment"><div class="line">export MQTT_HOME=&lt;where-you-want-to-install-paho&gt;</div>
+<div class="line">cd paho.mqtt.c</div>
+<div class="line">prefix=${MQTT_HOME} make install</div>
+</div><!-- fragment --><p> Download Paho MQTT Cpp from github: <a href="https://github.com/eclipse/paho.mqtt.cpp">https://github.com/eclipse/paho.mqtt.cpp</a> <br  />
+</p>
+<div class="fragment"><div class="line">cd paho.mqtt.cpp</div>
+<div class="line">cmake -Bbuild -H. -DCMAKE_INSTALL_PREFIX=${MQTT_HOME} \</div>
+<div class="line">                  -DCMAKE_PREFIX_PATH=${MQTT_HOME}</div>
+<div class="line">cd build</div>
+<div class="line">make install</div>
+</div><!-- fragment --><ul>
+<li><p class="startli">** UCX ** (OPTIONAL) :</p>
+<p class="startli">Download UCX from github: <a href="https://github.com/openucx/ucx">https://github.com/openucx/ucx</a></p>
+<p class="startli">&mdash; How to compile and install UCX &mdash;</p>
+<p class="startli">``` $ export UCX_HOME=&lt;ucx-install-path&gt; $ ./autogen.sh $ ./contrib/configure-release &ndash;prefix=${UCX_HOME} &ndash;enable-mt $ make -j8 $ make install ```</p>
+</li>
+<li><p class="startli">** UCC ** (OPTIONAL, <em>requires UCX</em>):</p>
+<p class="startli">Download UCC from github: <a href="https://github.com/openucx/ucc">https://github.com/openucx/ucc</a></p>
+<p class="startli">&mdash; How to compile and install UCC &mdash;</p>
+<p class="startli">``` $ export UCC_HOME=&lt;ucc-install-path&gt; $ ./autogen.sh $ ./configure &ndash;prefix=${UCC_HOME} &ndash;with-ucx=&lt;ucx-install-path&gt; [&ndash;with-rocm=no &ndash;with-ibverbs=no &ndash;with-cuda=no] $ make ```</p>
+</li>
 <li><p class="startli">** RapidJSON **</p>
 <p class="startli">We use RapidJSON to parse configuration files. If you do not want to use the config file you don't need to install it. </p>
 </li>
