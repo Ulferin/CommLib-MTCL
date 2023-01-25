@@ -369,10 +369,16 @@ public:
                             if (protocol == "UCX" || protocol == "TCP"){
                                for (auto& ip: pools[pool].first){
                                 // if the ip contains a port is better to skip it, probably is a tunnel used betweens proxies
-                                if (ip.find(":") != std::string::npos) continue;
-                                auto* handle = protocolsMap[protocol]->connect(ip + ":" + (protocol == "UCX" ? "13001" : "13000"));
-                                handle->send(s.c_str(), s.length());
-                                if (handle) return HandleUser(handle, true, true);
+                                Handle* handle;
+				if (ip.find(":") != std::string::npos) 
+                                	handle = protocolsMap["TCP"]->connect(ip);
+				else
+					 handle = protocolsMap[protocol]->connect(ip + ":" + (protocol == "UCX" ? "13001" : "13000"));
+                                //handle->send(s.c_str(), s.length());
+                                if (handle){
+					handle->send(s.c_str(), s.length());
+				       	return HandleUser(handle, true, true);
+				}
                                }
                             } else {
                                 auto* handle = protocolsMap[protocol]->connect("PROXY-" + pool);
