@@ -34,6 +34,15 @@
 
 - ** UCX ** (OPTIONAL) :
 
+- ** UCC ** (OPTIONAL, *requires UCX*):
+Download UCC from github: https://github.com/openucx/ucc
+```
+$ export UCC_HOME=<ucc-install-path>
+$ ./autogen.sh
+$ ./configure --prefix=${UCC_HOME} --with-ucx=<ucx-install-path> [--with-rocm=no --with-ibverbs=no --with-cuda=no]
+$ make
+```
+
 - ** RapidJSON **
 
   We use RapidJSON to parse configuration files. If you do not want

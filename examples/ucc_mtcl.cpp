@@ -2,7 +2,7 @@
  * 
  * UCC installation
  * ^^^^^^^^^^^^^^^^
- * ./configure --prefix=<installation path> [--enable-debug] --with-ucx=${UCX_INSTALL_PATH} --with-rocm=no --with-ibverbs=no --with-cuda=no
+ * ./configure --prefix=<installation path> [--enable-debug] --with-ucx=${UCX_LIB_PATH} --with-rocm=no --with-ibverbs=no --with-cuda=no
  * make
  * make install
  * 
@@ -31,12 +31,12 @@
  * 
  * NOTE: MPI is used only as a launcher and to retrieve rank/size values
  * Compile with:
- *  $> mpicxx --std=c++17 ucc_mtcl.cpp -g -o ucc_mtcl -I .. -I${UCC_HOME}/include -L${UCC_HOME}/lib -lucc -Wl,-rpath="${UCC_HOME}/lib" -DENABLE_UCX -lucp -lucs -luct
+ *  $> ENABLE_COLLECTIVES=1 UCX_HOME=<UCX_PATH> TPROTOCOL=UCX make clean ucc_mtcl
  * 
  * Run with:
  *  $> mpirun -n <num_proc> ./ucc_mtcl <N>
  * 
- * or, equivalently in MPMD fashion:
+ * or, equivalently, in MPMD fashion:
  *  $> mpirun -n 1 ./ucc_mtcl <N> : -n 1 ./ucc_mtcl <N> : ... num_proc times ... : -n 1 ./ucc_mtcl <N>
  * 
  * 
@@ -69,8 +69,6 @@ typedef struct my_info {
 static ucc_status_t oob_allgather(void *sbuf, void *rbuf, size_t msglen,
                                   void *coll_info, void **req)
 {
-    MPI_Request request;
-
     my_info_t* info = (my_info_t*)coll_info;
     // printf("local rank: %d - team size: %d - msglen: %ld\n", info->rank, info->size, msglen);
 
@@ -145,7 +143,7 @@ int main (int argc, char **argv) {
     ucc_context_h        ctx;
     ucc_lib_h            lib;
     size_t               msglen;
-    size_t               count;
+    int                  count;
     int                 *sbuf, *rbuf;
     ucc_coll_req_h       req;
     ucc_coll_args_t      args;
@@ -171,7 +169,7 @@ int main (int argc, char **argv) {
     MPI_Barrier(MPI_COMM_WORLD);
 
     // Faccio accept da quelli prima
-    while(handles.size() != rank) {
+    while(handles.size() != (long unsigned int)rank) {
         auto h = new HandleUser(std::move(Manager::getNext()));
         size_t sz;
         if(h->probe(sz) <= 0) {
