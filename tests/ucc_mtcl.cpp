@@ -1,11 +1,19 @@
 /*
+ * 
+ * UCC installation
+ * ^^^^^^^^^^^^^^^^
+ * ./configure --prefix=<installation path> [--enable-debug] --with-ucx=${UCX_INSTALL_PATH} --with-rocm=no --with-ibverbs=no --with-cuda=no
+ * make
+ * make install
+ * 
+ *
  * Basic example using MTCL handles to perform allgather handshake between
  * peers in order to allow UCC library to create a context/team and perform
  * collective operations.
  * 
  * The collective operation used in this example is the AllReduce collective
  * using SUM as a reduction operation. Each of the peers participating in the
- * collective has <N> local elements equal to its rank value + 1.
+ * collective has <N> local elements equal to (rank + 1).
  *
  * ======
  * Example (with N=2, num_proc=3):
@@ -21,12 +29,15 @@
  *  - rank 2: |6|6|
  * ======
  * 
- *
+ * NOTE: MPI is used only as a launcher and to retrieve rank/size values
  * Compile with:
  *  $> mpicxx --std=c++17 ucc_mtcl.cpp -g -o ucc_mtcl -I .. -I${UCC_HOME}/include -L${UCC_HOME}/lib -lucc -Wl,-rpath="${UCC_HOME}/lib" -DENABLE_UCX -lucp -lucs -luct
  * 
  * Run with:
  *  $> mpirun -n <num_proc> ./ucc_mtcl <N>
+ * 
+ * or, equivalently in MPMD fashion:
+ *  $> mpirun -n 1 ./ucc_mtcl <N> : -n 1 ./ucc_mtcl <N> : ... num_proc times ... : -n 1 ./ucc_mtcl <N>
  * 
  * 
  * */
@@ -61,7 +72,7 @@ static ucc_status_t oob_allgather(void *sbuf, void *rbuf, size_t msglen,
     MPI_Request request;
 
     my_info_t* info = (my_info_t*)coll_info;
-    printf("local rank: %d - team size: %d - msglen: %ld\n", info->rank, info->size, msglen);
+    // printf("local rank: %d - team size: %d - msglen: %ld\n", info->rank, info->size, msglen);
 
     auto handles = info->handles;
 
@@ -122,7 +133,7 @@ static ucc_team_h create_ucc_team(my_info_t* info, ucc_context_h ctx)
 int main (int argc, char **argv) {
 
     if(argc < 2) {
-        printf("Usage: %s <appName>\n", argv[0]);
+        printf("Usage: %s <N>\n", argv[0]);
         return 1;
     }
 
@@ -220,7 +231,7 @@ int main (int argc, char **argv) {
 
     team = create_ucc_team(info, ctx);
 
-    count = 2;
+    count = std::stoi(argv[1]);
     msglen = count * sizeof(int);
 
     sbuf = (int*)malloc(msglen);
