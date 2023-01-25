@@ -31,7 +31,7 @@
  * 
  * NOTE: MPI is used only as a launcher and to retrieve rank/size values
  * Compile with:
- *  $> ENABLE_COLLECTIVES=1 UCX_HOME=<UCX_PATH> TPROTOCOL=UCX make clean ucc_mtcl
+ *  $> ENABLE_COLLECTIVES=1 UCC_HOME<UCC_PATH> UCX_HOME=<UCX_PATH> TPROTOCOL=UCX make clean ucc_mtcl
  * 
  * Run with:
  *  $> mpirun -n <num_proc> ./ucc_mtcl <N>
