@@ -1,14 +1,32 @@
 /*
- * Basic example using MTCL handles to perform allgather handshake between two
- * peers in order to allow UCC library to create a context/team
- * and perform collective operations.
+ * Basic example using MTCL handles to perform allgather handshake between
+ * peers in order to allow UCC library to create a context/team and perform
+ * collective operations.
+ * 
+ * The collective operation used in this example is the AllReduce collective
+ * using SUM as a reduction operation. Each of the peers participating in the
+ * collective has <N> local elements equal to its rank value + 1.
  *
+ * ======
+ * Example (with N=2, num_proc=3):
+ *  - rank 0: |1|1|
+ *  - rank 1: |2|2|
+ *  - rank 2: |3|3|
+ * 
+ * (The expected result is the sum of the first N natural numbers, i.e. ((n+1)*n)/2)
+ * 
+ * At the end, every rank will have a vector like:
+ *  - rank 0: |6|6|
+ *  - rank 1: |6|6|
+ *  - rank 2: |6|6|
+ * ======
+ * 
  *
  * Compile with:
- *  $> mpicxx --std=c++17 ucc_mtcl.cpp -g -o ucc_mtcl -I .. -I/home/federico/includes/ucc/src/ -L/home/federico/install/lib -lucc -Wl,-rpath="/home/federico/install/lib" -DENABLE_UCX -lucp -lucs -luct
+ *  $> mpicxx --std=c++17 ucc_mtcl.cpp -g -o ucc_mtcl -I .. -I${UCC_HOME}/include -L${UCC_HOME}/lib -lucc -Wl,-rpath="${UCC_HOME}/lib" -DENABLE_UCX -lucp -lucs -luct
  * 
  * Run with:
- *  $> mpirun -n 1 ./ucc_mtcl 0 server : -n 1 ./ucc_mtcl 0 client
+ *  $> mpirun -n <num_proc> ./ucc_mtcl <N>
  * 
  * 
  * */
@@ -45,14 +63,17 @@ static ucc_status_t oob_allgather(void *sbuf, void *rbuf, size_t msglen,
     my_info_t* info = (my_info_t*)coll_info;
     printf("local rank: %d - team size: %d - msglen: %ld\n", info->rank, info->size, msglen);
 
-    auto handle = info->handles;
+    auto handles = info->handles;
 
+    // Per ognuno dei partecipanti (abbiano un handle per ognuno di loro), inviamo
+    // il nostro rank e i nostri dati. Poi riceviamo il rank di quel partecipante
+    // e mettiamo nel buffer i dati alla posizione associata al rank
     for(int i = 0; i < info->size-1; i++) {
-        handle->at(i)->send(&info->rank, sizeof(int));
-        handle->at(i)->send(sbuf, msglen);
+        handles->at(i)->send(&info->rank, sizeof(int));
+        handles->at(i)->send(sbuf, msglen);
         int remote_rank;
-        handle->at(i)->receive(&remote_rank, sizeof(int));
-        handle->at(i)->receive((char*)rbuf+(remote_rank*msglen), msglen);
+        handles->at(i)->receive(&remote_rank, sizeof(int));
+        handles->at(i)->receive((char*)rbuf+(remote_rank*msglen), msglen);
     }
 
     memcpy((char*)rbuf+(info->rank*msglen), sbuf, msglen);
@@ -70,10 +91,7 @@ static ucc_status_t oob_allgather_free(void *req)
     return UCC_OK;
 }
 
-/* Creates UCC team for a group of processes represented by MPI
-   communicator. UCC API provides different ways to create a team,
-   one of them is to use out-of-band (OOB) allgather provided by
-   the calling runtime. */
+/* Creates UCC team from a group of handles. */
 static ucc_team_h create_ucc_team(my_info_t* info, ucc_context_h ctx)
 {
     int rank = info->rank;
@@ -111,7 +129,7 @@ int main (int argc, char **argv) {
 
     ucc_lib_config_h     lib_config;
     ucc_context_config_h ctx_config;
-    int                  rank, size, i;
+    int                  rank, size;
     ucc_team_h           team;
     ucc_context_h        ctx;
     ucc_lib_h            lib;
@@ -125,7 +143,7 @@ int main (int argc, char **argv) {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    Manager::init(argv[0]);
+    Manager::init("app-"+std::to_string(rank));
 
     std::vector<HandleUser*> handles;
 
@@ -137,39 +155,39 @@ int main (int argc, char **argv) {
 
     printf("Info rank: %d - size: %d\n", info->rank, info->size);
 
-    if(rank == 0) {
-        Manager::listen("UCX:0.0.0.0:42000");
-        MPI_Barrier(MPI_COMM_WORLD);
+    // Tutti i peer ascoltano su una porta prefissata in base al rank
+    Manager::listen("UCX:0.0.0.0:4200" + std::to_string(rank));
+    MPI_Barrier(MPI_COMM_WORLD);
 
-        int count = 0;
-        while(count < size-1) {
-            auto h = new HandleUser(std::move(Manager::getNext()));
-            size_t sz;
-            if(h->probe(sz) <= 0) {
-                MTCL_PRINT(100, "[Server]:\t", "Unexpected probe status\n");
-                return 1;
-            }
-            char* buff = new char[sz+1];
-            if(h->receive(buff, sz) <= 0) {
-                MTCL_PRINT(100, "[Server]:\t", "Unexpected receive status\n");
-                return 1;
-            }
-            buff[sz] = '\0';
-            std::cout << "Client sent hello message: " << buff << std::endl;
-            delete[] buff;
-
-            handles.push_back(h);
-            count++;
+    // Faccio accept da quelli prima
+    while(handles.size() != rank) {
+        auto h = new HandleUser(std::move(Manager::getNext()));
+        size_t sz;
+        if(h->probe(sz) <= 0) {
+            MTCL_PRINT(100, "[Accept]:\t", "Unexpected probe status\n");
+            return 1;
         }
-    }
-    else if(rank == 1) {
-        MPI_Barrier(MPI_COMM_WORLD);
-        auto h = new HandleUser(std::move(Manager::connect("UCX:0.0.0.0:42000")));
+        char* buff = new char[sz+1];
+        if(h->receive(buff, sz) <= 0) {
+            MTCL_PRINT(100, "[Accept]:\t", "Unexpected receive status\n");
+            return 1;
+        }
+        buff[sz] = '\0';
+        std::cout << "Peer sent hello message: " << buff << std::endl;
+        delete[] buff;
 
+        handles.push_back(h);
+    }
+
+    // Faccio connect a quelli dopo
+    int remote = rank+1;
+    while(remote <= size-1) {
+        auto h = new HandleUser(std::move(Manager::connect("UCX:0.0.0.0:4200" + std::to_string(remote))));
         std::string hello{"Hello server!"};
         h->send(hello.c_str(), hello.length());
 
         handles.push_back(h);
+        remote++;
     }
 
     /* Init ucc library */
@@ -207,7 +225,7 @@ int main (int argc, char **argv) {
 
     sbuf = (int*)malloc(msglen);
     rbuf = (int*)malloc(msglen);    
-    for (i = 0; i < count; i++) {
+    for (int i = 0; i < count; i++) {
         sbuf[i] = rank + 1;
         rbuf[i] = 0;
     }
@@ -233,7 +251,7 @@ int main (int argc, char **argv) {
 
     /* Check result */
     int sum = ((size + 1) * size) / 2;
-    for (i = 0; i < count; i++) {
+    for (int i = 0; i < count; i++) {
         printf("rbuf[%d]: %d\n", i, rbuf[i]);
         if (rbuf[i] != sum) {
             printf("ERROR at rank %d, pos %d, value %d, expected %d\n", rank, i, rbuf[i], sum);
