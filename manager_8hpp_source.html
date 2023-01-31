@@ -361,14 +361,14 @@ $(function() {
 <div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;       </div>
 <div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;        <span class="keywordflow">if</span>(protocol.empty()){</div>
 <div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;            <span class="comment">// vedo se uso il file di config e provo a ciclo tutte le listen del componente di destinazione </span></div>
-<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;<span class="preprocessor">#ifdef ENABLE_CONFIG</span></div>
+<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;<span class="preprocessor">#ifdef ENABLE_CONFIGFILE</span></div>
 <div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;            <span class="keywordflow">if</span> (components.count(s))</div>
 <div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;                <span class="keywordflow">for</span>(<span class="keyword">auto</span>&amp; le : std::get&lt;2&gt;(components[s])){</div>
-<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;                    std::string sWoProtocol = s.substr(s.find(<span class="stringliteral">&quot;:&quot;</span>) + 1, s.length());</div>
-<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160;                    std::string protocol = s.substr(0, s.find(<span class="stringliteral">&quot;:&quot;</span>));</div>
-<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;                    <span class="keywordflow">if</span> (protocolsMap.count(protocol)){</div>
-<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;                        <span class="keyword">auto</span>* h = protocolsMap[protocol]-&gt;connect(sWoProtocol);</div>
-<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;                        <span class="keywordflow">if</span> (h) <span class="keywordflow">return</span> <a class="code" href="classHandleUser.html">HandleUser</a>(h, <span class="keyword">true</span>, <span class="keyword">true</span>);</div>
+<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;                    std::string sWoProtocol = le.substr(le.find(<span class="stringliteral">&quot;:&quot;</span>) + 1, le.length());</div>
+<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160;                    std::string remote_protocol = le.substr(0, le.find(<span class="stringliteral">&quot;:&quot;</span>));</div>
+<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;                    <span class="keywordflow">if</span> (protocolsMap.count(remote_protocol)){</div>
+<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;                        <span class="keyword">auto</span>* h = protocolsMap[remote_protocol]-&gt;connect(sWoProtocol);</div>
+<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;                        <span class="keywordflow">if</span> (h) <span class="keywordflow">return</span> h;</div>
 <div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;                    }</div>
 <div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160;                }</div>
 <div class="line"><a name="l00351"></a><span class="lineno">  351</span>&#160;<span class="preprocessor">#endif</span></div>
