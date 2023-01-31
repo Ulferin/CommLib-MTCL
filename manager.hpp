@@ -338,14 +338,14 @@ public:
        
         if(protocol.empty()){
             // vedo se uso il file di config e provo a ciclo tutte le listen del componente di destinazione 
-#ifdef ENABLE_CONFIG
+#ifdef ENABLE_CONFIGFILE
             if (components.count(s))
                 for(auto& le : std::get<2>(components[s])){
-                    std::string sWoProtocol = s.substr(s.find(":") + 1, s.length());
-                    std::string protocol = s.substr(0, s.find(":"));
-                    if (protocolsMap.count(protocol)){
-                        auto* h = protocolsMap[protocol]->connect(sWoProtocol);
-                        if (h) return HandleUser(h, true, true);
+                    std::string sWoProtocol = le.substr(le.find(":") + 1, le.length());
+                    std::string remote_protocol = le.substr(0, le.find(":"));
+                    if (protocolsMap.count(remote_protocol)){
+                        auto* h = protocolsMap[remote_protocol]->connect(sWoProtocol);
+                        if (h) return h;
                     }
                 }
 #endif
