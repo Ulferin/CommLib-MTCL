@@ -86,6 +86,12 @@ int main(int argc, char** argv){
     connect_str = {"MQTT:0:app0"};
 #endif
 
+
+#ifdef ENABLE_UCX
+    listen_str = {"UCX:0.0.0.0:42000"};
+    connect_str = {"UCX:0.0.0.0:42000"};
+#endif
+
     int rank = atoi(argv[1]);
 	Manager::init(argv[1]);
 
