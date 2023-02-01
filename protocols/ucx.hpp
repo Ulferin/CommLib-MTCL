@@ -67,20 +67,20 @@ protected:
         param->user_data    = ctx;
     }
 
-    int request_wait(void* request, test_req_t* ctx, char* operation) {
+    ucs_status_t request_wait(void* request, test_req_t* ctx, char* operation) {
         ucs_status_t status = UCS_OK;
 
         // Operation completed immediately, callback is not called!
         if(request == NULL) {
-            return 0;
+            return status;
         }
 
         if(UCS_PTR_IS_ERR(request)) {
+            status = ucp_request_check_status(request);
             MTCL_UCX_PRINT(100, "HandleUCX::request_wait UCX_%s request error (%s)\n",
                 operation, ucs_status_string(status));
-            errno = ECOMM;
             ucp_request_free(request);
-            return -1;
+            return status;
         }
 
         while(ctx->complete == 0) {
@@ -92,11 +92,9 @@ protected:
         if(status != UCS_OK) {
             MTCL_UCX_PRINT(100, "HandleUCX::request_wait UCX_%s status error (%s)\n",
                 operation, ucs_status_string(status));
-            errno = ECOMM;
-            return -1;
         }
 
-        return 0;
+        return status;
     }
 
     ssize_t receive_internal(void* buff, size_t size, bool blocking) {
@@ -120,8 +118,18 @@ protected:
             }
         }
 
-        if(request_wait(request, &ctx, (char*)"receive_internal") != 0)
-            return -1;
+        ucs_status_t status;
+        if((status = request_wait(request, &ctx, (char*)"receive_internal")) != UCS_OK) {
+            int res = -1;
+            if(status == UCS_ERR_CONNECTION_RESET) {
+                res = 0;
+            }
+            else {
+                errno = EINVAL;
+            }
+
+            return res;
+        }
 
         return size;
     }
@@ -155,8 +163,16 @@ public:
         param.cb.send = send_cb;
         request       = (test_req_t*)ucp_stream_send_nbx(endpoint, iov, 1, &param);
 
-        if(request_wait(request, &ctx, (char*)"sendEOS") != 0)
-            return -1;
+        ucs_status_t status;
+        if((status = request_wait(request, &ctx, (char*)"sendEOS")) != UCS_OK) {
+            int res = -1;
+            if(status == UCS_ERR_CONNECTION_RESET)
+                errno = ECONNRESET;
+            else
+                errno = EINVAL;
+            
+            return res;
+        }
 
         return sz;
     }
@@ -178,8 +194,16 @@ public:
         param.cb.send = send_cb;
         request       = (test_req_t*)ucp_stream_send_nbx(endpoint, iov, 2, &param);
 
-        if(request_wait(request, &ctx, (char*)"send") != 0)
-            return -1;
+        ucs_status_t status;
+        if((status = request_wait(request, &ctx, (char*)"send")) != UCS_OK) {
+            int res = -1;
+            if(status == UCS_ERR_CONNECTION_RESET)
+                errno = ECONNRESET;
+            else
+                errno = EINVAL;
+            
+            return res;
+        }
 
         return size;
     }
@@ -653,7 +677,6 @@ public:
         // have data
         size_t size;
         if(handle->probe(size, false) > 0) {
-            REMOVE_CODE_IF(std::unique_lock l(shm));
             addinQ(false, handle);
             return;
         }
@@ -688,7 +711,7 @@ public:
                 setAsClosed(handlePair.first);
         
         ucp_worker_release_address(ucp_worker, local_addr);
-        ucp_worker_destroy(ucp_worker);
+        // ucp_worker_destroy(ucp_worker);
         ucp_cleanup(ucp_context);
     }
 
