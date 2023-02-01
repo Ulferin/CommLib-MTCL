@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['fanin_50',['FanIn',['../classFanIn.html',1,'']]]
+  ['fanin_51',['FanIn',['../classFanIn.html',1,'']]],
+  ['fanout_52',['FanOut',['../classFanOut.html',1,'']]]
 ];
