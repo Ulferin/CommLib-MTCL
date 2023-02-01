@@ -143,11 +143,70 @@ public:
 };
 
 
+class FanOut : public CollectiveContext {
+private:
+    size_t current = 0;
+
+public:
+    FanOut(int size, bool root) : CollectiveContext(size, root) {}
+
+    bool update(int count) {
+        completed = count == size - 1; 
+
+        return completed;
+    }
+
+    bool canSend() {
+        return root;
+    }
+
+    bool canReceive() {
+        return !root;
+    }
+
+    ssize_t receive(std::vector<Handle*> participants, void* buff, size_t size) {
+        if(!canReceive()) {
+            MTCL_PRINT(100, "[internal]:\t", "Invalid operation for the collective\n");
+            return -1;
+        }
+
+        int res = 0;
+        for(auto& h : participants) {
+            size_t s;
+            res = h->probe(s, true);
+            res = h->receive(buff, s);
+        }
+
+        return res;
+    }
+
+    ssize_t send(std::vector<Handle*> participants, const void* buff, size_t size) {
+        if(!canSend()) {
+            MTCL_PRINT(100, "[internal]:\t", "Invalid operation for the collective\n");
+            return -1;
+        }
+
+        size_t count = participants.size();
+        auto h = participants.at(current);
+        
+        int res = h->send(buff, size);
+
+        printf("Sent message to %ld\n", current);
+        
+        ++current %= count;
+
+        return res;
+    }
+};
+
+
 CollectiveContext *createContext(std::string type, int size, bool root)
 {
     static const std::map<std::string, std::function<CollectiveContext*()>> contexts = {
         {"broadcast",  [&]{return new Broadcast(size, root);}},
-        {"fan-in",  [&]{return new FanIn(size, root);}}
+        {"fan-in",  [&]{return new FanIn(size, root);}},
+        {"fan-out",  [&]{return new FanOut(size, root);}}
+
     };
 
     if (auto found = contexts.find(type); found != contexts.end()) {
