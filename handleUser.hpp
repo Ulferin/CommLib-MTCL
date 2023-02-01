@@ -1,10 +1,66 @@
 #ifndef HANDLEUSER_HPP
 #define HANDLEUSER_HPP
 
+#include "collectives.hpp"
 #include "handle.hpp"
 #include "errno.h"
 
-class HandleUser {
+class HandleGeneric {
+
+protected:
+    bool collective;
+
+public:
+    HandleGeneric() {}
+    HandleGeneric(bool collective) : collective(collective) {}
+
+    virtual bool isCollective() {
+        return collective;
+    }
+
+    virtual bool isValid() = 0;
+    virtual ssize_t receive(void* buff, size_t size) = 0;
+    virtual ssize_t send(const void* buff, size_t size) = 0;
+    virtual void close() = 0;
+
+};
+
+class HandleGroup : public HandleGeneric {
+    friend class Manager;
+
+protected:
+    CollectiveContext* ctx;
+    std::vector<Handle*> participants;
+    std::string type;
+    bool root;
+
+
+public:
+    HandleGroup() : HandleGeneric(true) {}
+    HandleGroup(CollectiveContext* ctx, std::vector<Handle*> participants, std::string type, bool root) :  HandleGeneric(true),
+        ctx(ctx), participants(std::move(participants)), type(type), root(root) {}
+
+    bool isValid() {
+        return !participants.empty();
+    }
+
+    ssize_t receive(void* buff, size_t size) {
+        return ctx->receive(participants, buff, size);
+    }
+
+    ssize_t send(const void* buff, size_t size) {
+        return ctx->send(participants, buff, size);
+    }
+
+    void close() {
+        for(auto& h : participants)
+            h->close(true, false);
+    }
+
+};
+
+
+class HandleUser : public HandleGeneric {
     friend class ConnType;
     friend class Manager;
     Handle * realHandle;
@@ -12,7 +68,7 @@ class HandleUser {
     bool newConnection = true;
 public:
     HandleUser() : HandleUser(nullptr, false, false) {}
-    HandleUser(Handle* h, bool r, bool n):
+    HandleUser(Handle* h, bool r, bool n): HandleGeneric(false),
 		realHandle(h), isReadable(r), newConnection(n) {
 		if (h) h->incrementReferenceCounter();
     }

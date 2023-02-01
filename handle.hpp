@@ -7,6 +7,7 @@
 #include "protocolInterface.hpp"
 
 class Handle {
+    friend class HandleGroup;
     friend class HandleUser;
     friend class Manager;
     friend class ConnType;
@@ -36,6 +37,8 @@ private:
             parent->notify_yield(this);
     }
 
+
+public:
     void close(bool close_wr=true, bool close_rd=true){
 		if (close_wr && !closed_wr){
             this->sendEOS();
@@ -59,8 +62,7 @@ private:
             delete this;
 		}*/
     }
-
-public:
+    
     Handle(ConnType* parent) : parent(parent) {}
 
     /**

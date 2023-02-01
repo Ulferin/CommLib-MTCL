@@ -9,16 +9,18 @@
 #include <mutex>
 #include <thread>
 #include <condition_variable>
+#include <sstream>
 
 #include "handle.hpp"
 #include "handleUser.hpp"
 #include "protocolInterface.hpp"
 #include "protocols/tcp.hpp"
 #include "protocols/shm.hpp"
+#include "collectives.hpp"
 
 #ifdef ENABLE_CONFIGFILE
 #include <fstream>
-#include "rapidjson/rapidjson.h"
+#include <rapidjson/rapidjson.h>
 #include <rapidjson/istreamwrapper.h>
 #include <rapidjson/document.h>
 #endif
@@ -49,6 +51,7 @@ class Manager {
    
     inline static std::map<std::string, std::shared_ptr<ConnType>> protocolsMap;    
 	inline static std::queue<HandleUser> handleReady;
+    inline static std::map<std::string, std::vector<Handle*>> groupsReady;
     
     inline static std::string appName;
     inline static std::string poolName;
@@ -63,17 +66,58 @@ class Manager {
     inline static bool initialized = false;
 
     inline static std::mutex mutex;
+    inline static std::mutex group_mutex;
     inline static std::condition_variable condv;
+    inline static std::condition_variable group_cond;
 
 private:
     Manager() {}
 
+//TODO: sistemare addinQ per SINGLE_IO_THREAD
 #if defined(SINGLE_IO_THREAD)
 	static inline void addinQ(bool b, Handle* h) {
 		handleReady.push(HandleUser(h, true, b));
 	}
 #else	
     static inline void addinQ(bool b, Handle* h) {
+
+        // new connection, read handle type (p2p=0, collective=1)
+        //
+        // Con mappa del contesto riesco a separare due 
+        // Se l'handle è associato alla collettiva manda ulteriori
+        // dati con "participants:root:type"
+        // Con quella stringa possiamo associare uno ed un solo contesto a tutti
+        // gli handle della stessa collettiva in modo da aggiornare stato della
+        // collettiva da qui in avanti
+        int collective = 0;
+
+        // Ad ogni nuova connessione controllo se l'handle è riferito a collettiva
+        if(b) {
+            size_t size;
+            h->probe(size, true);
+            h->receive(&collective, sizeof(int));
+        
+            // Se collettiva, leggo il teamID e aggiorno il contesto
+            // Questo serve per sincronizzazione del root sulle accept
+            if(collective) {
+                size_t size;
+                h->probe(size, true);
+                char* teamID = new char[size+1];
+                h->receive(teamID, size);
+                teamID[size] = '\0';
+
+                printf("Received connection for team: %s\n", teamID);
+
+                std::unique_lock lk(group_mutex);
+                if(groupsReady.count(teamID) == 0)
+                    groupsReady.emplace(teamID, std::vector<Handle*>{});
+
+                groupsReady.at(teamID).push_back(h);
+                group_cond.notify_one();
+                return;
+            }
+        }
+
         std::unique_lock lk(mutex);
         handleReady.push(HandleUser(h, true, b));
 		condv.notify_one();
@@ -87,6 +131,12 @@ private:
             }			
 			if constexpr (IO_THREAD_POLL_TIMEOUT)
 				std::this_thread::sleep_for(std::chrono::microseconds(IO_THREAD_POLL_TIMEOUT));
+
+
+            // for(HandleGroup hg : groups) {
+            //     bool ready = hg->update;
+            //     if(ready) addinQ(hg,....);
+            // }
         }
     }
 
@@ -325,32 +375,25 @@ public:
         return protocolsMap[protocol]->listen(s.substr(protocol.length()+1, s.length()));
     }
 
-    /**
-     * \brief Connect to a peer
-     * 
-     * Connect to a peer following the URI passed in the connection string or following a label defined in the configuration file.
-     * The URI is of the form "PROTOCOL:param:param: ... : param"
-     * 
-     * @param connectionString URI of the peer or label 
-    */
-    static HandleUser connect(std::string s) {
+
+    static Handle* connectHandle(std::string s) {
         std::string protocol = s.substr(0, s.find(":"));
        
         if(protocol.empty()){
             // vedo se uso il file di config e provo a ciclo tutte le listen del componente di destinazione 
-#ifdef ENABLE_CONFIG
+#ifdef ENABLE_CONFIGFILE
             if (components.count(s))
                 for(auto& le : std::get<2>(components[s])){
-                    std::string sWoProtocol = s.substr(s.find(":") + 1, s.length());
-                    std::string protocol = s.substr(0, s.find(":"));
-                    if (protocolsMap.count(protocol)){
-                        auto* h = protocolsMap[protocol]->connect(sWoProtocol);
-                        if (h) return HandleUser(h, true, true);
+                    std::string sWoProtocol = le.substr(le.find(":") + 1, le.length());
+                    std::string remote_protocol = le.substr(0, le.find(":"));
+                    if (protocolsMap.count(remote_protocol)){
+                        auto* h = protocolsMap[remote_protocol]->connect(sWoProtocol);
+                        if (h) return h;
                     }
                 }
 #endif
             // stampa di errore??
-            return HandleUser(nullptr, true, true);
+            return nullptr;
         }
 
         // POSSIBILE LABEL
@@ -377,13 +420,13 @@ public:
                                 //handle->send(s.c_str(), s.length());
                                 if (handle){
 					handle->send(s.c_str(), s.length());
-				       	return HandleUser(handle, true, true);
+				       	return handle;
 				}
                                }
                             } else {
                                 auto* handle = protocolsMap[protocol]->connect("PROXY-" + pool);
                                 handle->send(s.c_str(), s.length());
-                                if (handle) return HandleUser(handle, true, true);
+                                if (handle) return handle;
                             }
                         }
                     
@@ -392,24 +435,24 @@ public:
                                for (auto& ip: pools[poolName].first){
                                 auto* handle = protocolsMap[protocol]->connect(ip + ":" + (protocol == "UCX" ? "13001" : "13000"));
                                 handle->send(s.c_str(), s.length());
-                                if (handle) return HandleUser(handle, true, true);
+                                if (handle) return handle;
                                }
                             } else {
                                 auto* handle = protocolsMap[protocol]->connect("PROXY-" + poolName);
                                 handle->send(s.c_str(), s.length());
-                                if (handle) return HandleUser(handle, true, true);
+                                if (handle) return handle;
                             }
                         }
-                        return HandleUser(nullptr, true, true);
+                        return nullptr;
                     } else {
                         // connessione diretta
                         for (auto& le : std::get<2>(component))
                             if (le.find(protocol) != std::string::npos){
                                 auto* handle = protocolsMap[protocol]->connect(le.substr(le.find(":") + 1, le.length()));
-                                if (handle) return HandleUser(handle, true, true);
+                                if (handle) return handle;
                             }
                         
-                        return HandleUser(nullptr, true, true);
+                        return nullptr;
                     } 
                 
   
@@ -419,11 +462,131 @@ public:
         if(protocolsMap.count(protocol)) {
             Handle* handle = protocolsMap[protocol]->connect(s.substr(s.find(":") + 1, s.length()));
             if(handle) {
-                return HandleUser(handle, true, true);
+                return handle;
             }
         }
 
-        return HandleUser(nullptr, true, true);
+        return nullptr;
+    }
+
+
+    // Stringa participants non strettamente necessaria a patto di trovare
+    // un metodo alternativo per generare un teamID univoco
+    /* Broadcast:
+          App1(root) ---->  | App2
+                            | App3
+
+        Fan-out
+            App1(root) --> | App2 o App3
+
+        Fan-in
+            App2 ----> | --> App1(root)
+            App3 ----> |
+
+
+        AllGather
+            App1 --> |App2 e App3   ==  App2 & App3 --> | App1 (gather) --> | App2 & App3 (Broadcast result)
+            App2 --> |App1 e App3
+            App3 --> |App1 e App2
+    */
+    static HandleGroup createTeam(std::string participants, std::string root, std::string type) {
+
+
+#ifndef ENABLE_CONFIGFILE
+        MTCL_ERROR("[Manager]:\t", "Team creation is only available with a configuration file\n");
+        return HandleGroup(nullptr, std::vector<Handle*>{}, type, false);
+#else
+
+        // Retrieve team size
+        int size = 0;
+        std::istringstream is(participants);
+        std::string line;
+        while(std::getline(is, line, ':')) size++;
+        printf("Initializing collective with size: %d\n", size);
+
+        std::string teamID{participants + root + type};
+
+        std::vector<Handle*> coll_handles;
+
+        auto ctx = createContext(type, size, Manager::appName == root);
+        if(Manager::appName == root) {
+            if(ctx == nullptr) {
+                MTCL_ERROR("[Manager]:\t", "Operation type not supported\n");
+                return HandleGroup(nullptr, std::vector<Handle*>{}, type, false);
+            }
+
+            // Accetta tante connessioni quanti sono i partecipanti
+            // Qui mi serve recuperare esattamente gli handle che hanno fatto
+            // connect per partecipazione ad una collettiva specifica
+            std::unique_lock lk(group_mutex);
+            group_cond.wait(lk, [&]{
+                if(groupsReady.count(teamID) != 0) {
+                    printf("Condition: %ld\n", groupsReady.at(teamID).size());
+                }
+                return (groupsReady.count(teamID) != 0) && ctx->update(groupsReady.at(teamID).size());
+            });
+            coll_handles = groupsReady.at(teamID);
+            printf("coll size: %ld\n", coll_handles.size());
+            groupsReady.erase(teamID);
+            size--;
+        }
+        else {
+            if(components.count(root) == 0) {
+                MTCL_ERROR("[Manager]:\t", "Requested root node is not in configuration file\n");
+                return HandleGroup(nullptr, {}, type, false);
+            }
+
+            // Retrieve root listening addresses and connect to one of them
+            auto root_addrs = std::get<2>(components.at(root));
+            MTCL_PRINT(100, "[Manager]:\t", "Root endpoints are: %d\n", root_addrs.size());
+
+            Handle* handle;
+            for(auto& addr : root_addrs) {
+                handle = connectHandle(addr);
+                if(handle != nullptr) {
+                    MTCL_PRINT(100, "[Manager]:\t", "Connection ok to %s\n", addr.c_str());
+                    break; 
+                }
+                MTCL_PRINT(100, "[Manager]:\t", "Connection failed to %s\n", addr.c_str());
+            }
+
+            if(handle == nullptr) {
+                MTCL_ERROR("[Manager]:\t", "Could not establish a connection with root node\n");
+                return HandleGroup(nullptr, {}, type, false);
+            }
+
+            int collective = 1;
+            handle->send(&collective, sizeof(int));
+            handle->send(teamID.c_str(), teamID.length());
+
+            coll_handles.push_back(handle);
+        }
+
+        return HandleGroup(ctx, coll_handles, type, Manager::appName == root);
+
+#endif
+
+    }
+
+
+    /**
+     * \brief Connect to a peer
+     * 
+     * Connect to a peer following the URI passed in the connection string or following a label defined in the configuration file.
+     * The URI is of the form "PROTOCOL:param:param: ... : param"
+     * 
+     * @param connectionString URI of the peer or label 
+    */
+    static HandleUser connect(std::string s) {
+        Handle* handle = connectHandle(s);
+
+        // if handle is connected, we perform the handshake
+        if(handle) {
+            int collective = 0;
+            handle->send(&collective, sizeof(int));
+        }
+
+        return HandleUser(handle, true, true);
     };
 
     /**
