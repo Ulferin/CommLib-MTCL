@@ -1,5 +1,21 @@
+/*
+ *
+ * Fan-in implementation test
+ *
+ *
+ * Compile with:
+ *  $> RAPIDJSON_HOME="/rapidjson/install/path" make clean test_fanin
+ * 
+ * Execution:
+ *  $> ./test_fanin 1 App2
+ *  $> ./test_fanin 0 App1
+ *  $> ./test_fanin 0 App3
+ * 
+ * 
+ * */
 
-#define ENABLE_CONFIGFILE
+
+
 #include <iostream>
 #include "../../mtcl.hpp"
 
@@ -25,8 +41,8 @@ int main(int argc, char** argv){
         if(hg.isValid())
             printf("Correctly created team\n");
 
-        if(std::string{argv[2]} == "App1") hg.execute((void*)hello.c_str(), hello.length());
-        if(std::string{argv[2]} == "App3") hg.execute((void*)bye.c_str(), bye.length());
+        if(std::string{argv[2]} == "App1") hg.send((void*)hello.c_str(), hello.length());
+        if(std::string{argv[2]} == "App3") hg.send((void*)bye.c_str(), bye.length());
 
         hg.close();
     }
@@ -37,13 +53,13 @@ int main(int argc, char** argv){
             printf("Correctly created team\n");
 
         char* s = new char[hello.length()+1];
-        hg.execute(s, hello.length());
+        hg.receive(s, hello.length());
         s[hello.length()] = '\0';
         std::cout << "Received: " << s << std::endl;
         delete[] s;
 
         s = new char[bye.length()+1];
-        hg.execute(s, bye.length());
+        hg.receive(s, bye.length());
         s[bye.length()] = '\0';
         printf("Received bye: %s\n", s);
         delete[] s;

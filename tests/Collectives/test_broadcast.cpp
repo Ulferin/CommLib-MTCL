@@ -3,6 +3,16 @@
  * Simple collectives test to check if functionalities are working as intended
  * and to keep track of features yet to be implemented
  *
+ * 
+ * Compile with:
+ *  $> RAPIDJSON_HOME="/rapidjson/install/path" make clean test_broadcast
+ * 
+ * Execution:
+ *  $> ./test_broadcast 0 App1
+ *  $> ./test_broadcast 1 App2
+ *  $> ./test_broadcast 2 App3 
+ * 
+ * 
  * [x] Definizione interfaccia gruppo
  * [x] Sincronizzazione su accept da parte del root 
  * [x] Broadcast collective 
@@ -11,7 +21,6 @@
  * 
  */
 
-#define ENABLE_CONFIGFILE
 
 #include <iostream>
 #include "../mtcl.hpp"
@@ -24,13 +33,12 @@ inline static std::string bye{"Bye team!"};
 int main(int argc, char** argv){
 
     if(argc < 2) {
-        printf("Usage: %s <0|1> <Server|Client1|Client2>\n", argv[0]);
+        printf("Usage: %s <0|1> <App1|App2|App3>\n", argv[0]);
         return 1;
     }
 
     std::string listen_str{};
     std::string connect_str{};
-
 
     listen_str = {"TCP:0.0.0.0:42000"};
     connect_str = {"TCP:0.0.0.0:42000"};
@@ -39,11 +47,11 @@ int main(int argc, char** argv){
 	Manager::init(argv[2], "test_collectives.json");
 
     // Root
-    auto hg = Manager::createTeam("App1:App2:App3", "App1", "broadcast");
     if(rank == 0) {
         Manager::listen(listen_str);
 
-        auto hg2 = Manager::createTeam("App1:App2", "App2", "broadcast");
+        auto hg = Manager::createTeam("App1:App2:App3", "App1", "broadcast");
+        auto hg2 = Manager::createTeam("App1:App2", "App1", "broadcast");
 
         hg.send((void*)hello.c_str(), hello.length());
         hg2.send((void*)hello.c_str(), hello.length());
@@ -52,7 +60,7 @@ int main(int argc, char** argv){
 
     }
     else {
-		// auto hg = Manager::createTeam("App1:App2:App3", "App1", "broadcast");
+		auto hg = Manager::createTeam("App1:App2:App3", "App1", "broadcast");
 
         HandleGroup hg2;
         if(rank==1)
