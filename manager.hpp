@@ -76,6 +76,15 @@ private:
 //TODO: sistemare addinQ per SINGLE_IO_THREAD
 #if defined(SINGLE_IO_THREAD)
 	static inline void addinQ(bool b, Handle* h) {
+        int collective = 0;
+
+        if(b) {
+            size_t size;
+            h->probe(size, true);
+            h->receive(&collective, sizeof(int));
+        }
+
+
 		handleReady.push(HandleUser(h, true, b));
 	}
 #else	
