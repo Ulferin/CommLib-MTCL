@@ -57,7 +57,8 @@ int main(int argc, char** argv){
         hg2.send((void*)hello.c_str(), hello.length());
         hg.send((void*)bye.c_str(), bye.length());
 
-
+        hg.close();
+        hg2.close();
     }
     else {
 		auto hg = Manager::createTeam("App1:App2:App3", 3, "App1", "broadcast");
@@ -67,7 +68,6 @@ int main(int argc, char** argv){
             hg2 = Manager::createTeam("App1:App2", 2, "App1", "broadcast");
         
         char* s = new char[hello.length()+1];
-
         hg.receive(s, hello.length());
         s[hello.length()] = '\0';
         std::cout << "Received: " << s << std::endl;
@@ -76,13 +76,18 @@ int main(int argc, char** argv){
         s[bye.length()] = '\0';
         if(std::string(s) == bye)
             printf("Received bye message\n");
+        delete[] s;
 
         if(rank == 1) {
             char* s2 = new char[hello.length()+1];
             hg2.receive(s2, hello.length());
             s2[hello.length()] = '\0';
             std::cout << "Received: " << s2 << std::endl;
+            delete[] s2;
+            hg2.close();
         }
+
+        hg.close();
     }
 
     Manager::finalize();

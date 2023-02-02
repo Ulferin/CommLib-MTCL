@@ -12,6 +12,9 @@
  *  $> ./test_fanin 1 App3
  * 
  * 
+ * TODO
+ * [ ] check termination of clients while others are still sending
+ * 
  * */
 
 
@@ -40,7 +43,6 @@ int main(int argc, char** argv){
         Manager::listen("TCP:0.0.0.0:42000");
         auto hg = Manager::createTeam("App1:App2:App3", 3, "App1", "fan-in");
 
-        hg.close();
         if(hg.isValid())
             printf("Correctly created team\n");
 
@@ -67,6 +69,8 @@ int main(int argc, char** argv){
 
         if(std::string{argv[2]} == "App2") hg.send((void*)hello.c_str(), hello.length());
         if(std::string{argv[2]} == "App3") hg.send((void*)bye.c_str(), bye.length());
+
+        hg.close();
     }
 
     Manager::finalize();

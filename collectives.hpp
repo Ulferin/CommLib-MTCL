@@ -16,11 +16,56 @@ protected:
 public:
     CollectiveContext(int size, bool root) : size(size), root(root) {}
 
+    /**
+     * @brief Updates the status of the collective during the creation and
+     * checks if the team is ready to be used.
+     * 
+     * @param count number of received connections
+     * @return true if the collective group is ready, false otherwise
+     */
     virtual bool update(int count) = 0;
+
+    /**
+     * @brief Checks if the current state of the collective allows to perform
+     * send operations.
+     * 
+     * @return true if the caller can send, false otherwise
+     */
     virtual bool canSend() = 0;
+
+    /**
+     * @brief Checks if the current state of the collective allows to perform
+     * receive operations.
+     * 
+     * @return true if the caller can receive, false otherwise
+     */
     virtual bool canReceive() = 0;
-    virtual ssize_t receive(std::vector<Handle*> participants, void* buff, size_t size) = 0;
-    virtual ssize_t send(std::vector<Handle*> participants, const void* buff, size_t size) = 0;
+
+    /**
+     * @brief Receives at most \b size data into \b buff from the \b participants,
+     * based on the semantics of the collective.
+     * 
+     * @param participants vector of participants to the collective operation
+     * @param buff buffer used to write data
+     * @param size maximum amount of data to be written in the buffer
+     * @return ssize_t if successful, returns the amount of data written in the
+     * buffer. Otherwise, -1 is return and \b errno is set.
+     */
+    virtual ssize_t receive(std::vector<Handle*>& participants, void* buff, size_t size) = 0;
+    
+    /**
+     * @brief Sends \b size bytes of \b buff to the \b participants, following
+     * the semantics of the collective.
+     * 
+     * @param participants vector of participatns to the collective operation
+     * @param buff buffer of data to be sent
+     * @param size amount of data to be sent
+     * @return ssize_t if successful, returns \b size. Otherwise, -1 is returned
+     * and \b errno is set.
+     */
+    virtual ssize_t send(std::vector<Handle*>& participants, const void* buff, size_t size) = 0;
+
+    virtual ~CollectiveContext() {};
 };
 
 
@@ -44,7 +89,7 @@ public:
         return !root;
     }
 
-    ssize_t send(std::vector<Handle*> participants, const void* buff, size_t size) {
+    ssize_t send(std::vector<Handle*>& participants, const void* buff, size_t size) {
         if(!canSend()) {
             MTCL_PRINT(100, "[internal]:\t", "Invalid operation for the collective\n");
             return -1;
@@ -58,7 +103,7 @@ public:
         return size;
     }
 
-    ssize_t receive(std::vector<Handle*> participants, void* buff, size_t size) {
+    ssize_t receive(std::vector<Handle*>& participants, void* buff, size_t size) {
         if(!canReceive()) {
             MTCL_PRINT(100, "[internal]:\t", "Invalid operation for the collective\n");
             return -1;
@@ -67,8 +112,15 @@ public:
         // Broadcast for non-root should always have 1 handle
         size_t s;
         if(participants.size() == 1) {
-            participants.at(0)->probe(s, true);
-            if(participants.at(0)->receive(buff, s) <= 0)
+            auto h = participants.at(0);
+            size_t res = h->probe(s, true);
+            if(res > 0 && s == 0) {
+                h->close();
+                participants.pop_back();
+                return 0;
+            }
+            
+            if(h->receive(buff, s) <= 0)
                 return -1;
         }
         else {
@@ -78,6 +130,8 @@ public:
 
         return s;
     }
+
+    ~Broadcast() {}
 
 };
 
@@ -99,7 +153,7 @@ public:
         return root;
     }
 
-    ssize_t receive(std::vector<Handle*> participants, void* buff, size_t size) {
+    ssize_t receive(std::vector<Handle*>& participants, void* buff, size_t size) {
         if(!canReceive()) {
             MTCL_PRINT(100, "[internal]:\t", "Invalid operation for the collective\n");
             return -1;
@@ -111,10 +165,12 @@ public:
             size_t s = 0;
             auto h = *iter;
             res = h->probe(s, false);
-            // Cheating
             if(res > 0 && s == 0) {
                 h->close();
+                iter = participants.erase(iter);
+                if(iter == participants.end()) iter = participants.begin();
                 res = -1;
+                continue;
             }
             printf("Probed message with size: %ld\n", s);
             if(res > 0) {
@@ -128,7 +184,7 @@ public:
         return 0;
     }
 
-    ssize_t send(std::vector<Handle*> participants, const void* buff, size_t size) {
+    ssize_t send(std::vector<Handle*>& participants, const void* buff, size_t size) {
         if(!canSend()) {
             MTCL_PRINT(100, "[internal]:\t", "Invalid operation for the collective\n");
             return -1;
@@ -140,6 +196,8 @@ public:
 
         return 0;
     }
+
+    ~FanIn() {}
 };
 
 
@@ -164,7 +222,7 @@ public:
         return !root;
     }
 
-    ssize_t receive(std::vector<Handle*> participants, void* buff, size_t size) {
+    ssize_t receive(std::vector<Handle*>& participants, void* buff, size_t size) {
         if(!canReceive()) {
             MTCL_PRINT(100, "[internal]:\t", "Invalid operation for the collective\n");
             return -1;
@@ -184,7 +242,7 @@ public:
         return res;
     }
 
-    ssize_t send(std::vector<Handle*> participants, const void* buff, size_t size) {
+    ssize_t send(std::vector<Handle*>& participants, const void* buff, size_t size) {
         if(!canSend()) {
             MTCL_PRINT(100, "[internal]:\t", "Invalid operation for the collective\n");
             return -1;
@@ -201,6 +259,8 @@ public:
 
         return res;
     }
+
+    ~FanOut () {}
 };
 
 

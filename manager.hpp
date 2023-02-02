@@ -122,6 +122,7 @@ private:
                     groupsReady.emplace(teamID, std::vector<Handle*>{});
 
                 groupsReady.at(teamID).push_back(h);
+                delete[] teamID;
                 group_cond.notify_one();
                 return;
             }
