@@ -188,8 +188,8 @@ $(function() {
 <div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;                <span class="keywordflow">if</span>(h-&gt;receive(buff, s) &lt;= 0)</div>
 <div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;                    <span class="keywordflow">return</span> -1;</div>
 <div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;            }</div>
-<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;            <span class="keywordflow">if</span>(iter == participants.end()) iter = participants.begin();</div>
-<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;            <span class="keywordflow">else</span> iter++;</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;            iter++;</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;            <span class="keywordflow">if</span>(iter == participants.end()) iter = participants.begin();</div>
 <div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;        }</div>
 <div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160; </div>
 <div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;        <span class="keywordflow">return</span> 0;</div>
@@ -239,53 +239,57 @@ $(function() {
 <div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160; </div>
 <div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;        <span class="keywordtype">int</span> res = 0;</div>
 <div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;        <span class="keywordflow">for</span>(<span class="keyword">auto</span>&amp; h : participants) {</div>
-<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;            <span class="keywordtype">size_t</span> s;</div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;            <span class="keywordtype">size_t</span> s = -1;</div>
 <div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;            res = h-&gt;probe(s, <span class="keyword">true</span>);</div>
-<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;            res = h-&gt;receive(buff, s);</div>
-<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;        }</div>
-<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160; </div>
-<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;        <span class="keywordflow">return</span> res;</div>
-<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;    }</div>
-<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160; </div>
-<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;    ssize_t send(std::vector&lt;Handle*&gt; participants, <span class="keyword">const</span> <span class="keywordtype">void</span>* buff, <span class="keywordtype">size_t</span> size) {</div>
-<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;        <span class="keywordflow">if</span>(!canSend()) {</div>
-<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;            MTCL_PRINT(100, <span class="stringliteral">&quot;[internal]:\t&quot;</span>, <span class="stringliteral">&quot;Invalid operation for the collective\n&quot;</span>);</div>
-<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;            <span class="keywordflow">return</span> -1;</div>
-<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;        }</div>
-<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160; </div>
-<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;        <span class="keywordtype">size_t</span> count = participants.size();</div>
-<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;        <span class="keyword">auto</span> h = participants.at(current);</div>
-<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;        </div>
-<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;        <span class="keywordtype">int</span> res = h-&gt;send(buff, size);</div>
-<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160; </div>
-<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;        printf(<span class="stringliteral">&quot;Sent message to %ld\n&quot;</span>, current);</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;            <span class="keywordflow">if</span>(s == 0) {</div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;                h-&gt;close();</div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;                <span class="keywordflow">return</span> -1;</div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;            }</div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;            res = h-&gt;receive(buff, s);</div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;        }</div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160; </div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;        <span class="keywordflow">return</span> res;</div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;    }</div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160; </div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;    ssize_t send(std::vector&lt;Handle*&gt; participants, <span class="keyword">const</span> <span class="keywordtype">void</span>* buff, <span class="keywordtype">size_t</span> size) {</div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;        <span class="keywordflow">if</span>(!canSend()) {</div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;            MTCL_PRINT(100, <span class="stringliteral">&quot;[internal]:\t&quot;</span>, <span class="stringliteral">&quot;Invalid operation for the collective\n&quot;</span>);</div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;            <span class="keywordflow">return</span> -1;</div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;        }</div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160; </div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;        <span class="keywordtype">size_t</span> count = participants.size();</div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;        <span class="keyword">auto</span> h = participants.at(current);</div>
 <div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;        </div>
-<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;        ++current %= count;</div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;        <span class="keywordtype">int</span> res = h-&gt;send(buff, size);</div>
 <div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160; </div>
-<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;        <span class="keywordflow">return</span> res;</div>
-<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;    }</div>
-<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;};</div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;        printf(<span class="stringliteral">&quot;Sent message to %ld\n&quot;</span>, current);</div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;        </div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;        ++current %= count;</div>
 <div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160; </div>
-<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160; </div>
-<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;<a class="code" href="classCollectiveContext.html">CollectiveContext</a> *createContext(std::string type, <span class="keywordtype">int</span> size, <span class="keywordtype">bool</span> root)</div>
-<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;{</div>
-<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;    <span class="keyword">static</span> <span class="keyword">const</span> std::map&lt;std::string, std::function&lt;<a class="code" href="classCollectiveContext.html">CollectiveContext</a>*()&gt;&gt; contexts = {</div>
-<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;        {<span class="stringliteral">&quot;broadcast&quot;</span>,  [&amp;]{<span class="keywordflow">return</span> <span class="keyword">new</span> <a class="code" href="classBroadcast.html">Broadcast</a>(size, root);}},</div>
-<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;        {<span class="stringliteral">&quot;fan-in&quot;</span>,  [&amp;]{<span class="keywordflow">return</span> <span class="keyword">new</span> <a class="code" href="classFanIn.html">FanIn</a>(size, root);}},</div>
-<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;        {<span class="stringliteral">&quot;fan-out&quot;</span>,  [&amp;]{<span class="keywordflow">return</span> <span class="keyword">new</span> <a class="code" href="classFanOut.html">FanOut</a>(size, root);}}</div>
-<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160; </div>
-<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;    };</div>
-<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160; </div>
-<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;    <span class="keywordflow">if</span> (<span class="keyword">auto</span> found = contexts.find(type); found != contexts.end()) {</div>
-<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;        <span class="keywordflow">return</span> found-&gt;second();</div>
-<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;    } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;    }</div>
-<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;}</div>
-<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160; </div>
-<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160; </div>
-<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160; </div>
-<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;<span class="preprocessor">#endif </span><span class="comment">//COLLECTIVES_HPP</span></div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;        <span class="keywordflow">return</span> res;</div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;    }</div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;};</div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160; </div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160; </div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;<a class="code" href="classCollectiveContext.html">CollectiveContext</a> *createContext(std::string type, <span class="keywordtype">int</span> size, <span class="keywordtype">bool</span> root)</div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;{</div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;    <span class="keyword">static</span> <span class="keyword">const</span> std::map&lt;std::string, std::function&lt;<a class="code" href="classCollectiveContext.html">CollectiveContext</a>*()&gt;&gt; contexts = {</div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;        {<span class="stringliteral">&quot;broadcast&quot;</span>,  [&amp;]{<span class="keywordflow">return</span> <span class="keyword">new</span> <a class="code" href="classBroadcast.html">Broadcast</a>(size, root);}},</div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;        {<span class="stringliteral">&quot;fan-in&quot;</span>,  [&amp;]{<span class="keywordflow">return</span> <span class="keyword">new</span> <a class="code" href="classFanIn.html">FanIn</a>(size, root);}},</div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;        {<span class="stringliteral">&quot;fan-out&quot;</span>,  [&amp;]{<span class="keywordflow">return</span> <span class="keyword">new</span> <a class="code" href="classFanOut.html">FanOut</a>(size, root);}}</div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160; </div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;    };</div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160; </div>
+<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;    <span class="keywordflow">if</span> (<span class="keyword">auto</span> found = contexts.find(type); found != contexts.end()) {</div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;        <span class="keywordflow">return</span> found-&gt;second();</div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;    } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;    }</div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;}</div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160; </div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160; </div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160; </div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;<span class="preprocessor">#endif </span><span class="comment">//COLLECTIVES_HPP</span></div>
 <div class="ttc" id="aclassBroadcast_html"><div class="ttname"><a href="classBroadcast.html">Broadcast</a></div><div class="ttdef"><b>Definition:</b> collectives.hpp:28</div></div>
 <div class="ttc" id="aclassCollectiveContext_html"><div class="ttname"><a href="classCollectiveContext.html">CollectiveContext</a></div><div class="ttdef"><b>Definition:</b> collectives.hpp:10</div></div>
 <div class="ttc" id="aclassFanIn_html"><div class="ttname"><a href="classFanIn.html">FanIn</a></div><div class="ttdef"><b>Definition:</b> collectives.hpp:84</div></div>
