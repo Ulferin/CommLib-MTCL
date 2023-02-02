@@ -16,7 +16,7 @@
  * [x] Definizione interfaccia gruppo
  * [x] Sincronizzazione su accept da parte del root 
  * [x] Broadcast collective 
- * [ ] Fan-in/Fan-out
+ * [x] Fan-in/Fan-out
  * [ ] Restituzione gruppo a Manager
  * 
  */
@@ -50,8 +50,8 @@ int main(int argc, char** argv){
     if(rank == 0) {
         Manager::listen(listen_str);
 
-        auto hg = Manager::createTeam("App1:App2:App3", "App1", "broadcast");
-        auto hg2 = Manager::createTeam("App1:App2", "App1", "broadcast");
+        auto hg = Manager::createTeam("App1:App2:App3", 3, "App1", "broadcast");
+        auto hg2 = Manager::createTeam("App1:App2", 2, "App1", "broadcast");
 
         hg.send((void*)hello.c_str(), hello.length());
         hg2.send((void*)hello.c_str(), hello.length());
@@ -60,11 +60,11 @@ int main(int argc, char** argv){
 
     }
     else {
-		auto hg = Manager::createTeam("App1:App2:App3", "App1", "broadcast");
+		auto hg = Manager::createTeam("App1:App2:App3", 3, "App1", "broadcast");
 
         HandleGroup hg2;
         if(rank==1)
-            hg2 = Manager::createTeam("App1:App2", "App1", "broadcast");
+            hg2 = Manager::createTeam("App1:App2", 2, "App1", "broadcast");
         
         char* s = new char[hello.length()+1];
 

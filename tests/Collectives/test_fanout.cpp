@@ -7,9 +7,9 @@
  *  $> RAPIDJSON_HOME="/rapidjson/install/path" make clean test_fanout
  * 
  * Execution:
- *  $> ./test_fanin 0 App1
- *  $> ./test_fanin 1 App2
- *  $> ./test_fanin 1 App3
+ *  $> ./test_fanout 0 App1
+ *  $> ./test_fanout 1 App2
+ *  $> ./test_fanout 1 App3
  * 
  * 
  * */
@@ -38,7 +38,7 @@ int main(int argc, char** argv){
     // Root
     if(rank == 0) {
         Manager::listen("TCP:0.0.0.0:42000");
-        auto hg = Manager::createTeam("App1:App2:App3", "App1", "fan-out");
+        auto hg = Manager::createTeam("App1:App2:App3", 3, "App1", "fan-out");
         if(hg.isValid())
             printf("Correctly created team\n");
 
@@ -50,7 +50,7 @@ int main(int argc, char** argv){
         hg.close();
     }
     else {
-        auto hg = Manager::createTeam("App1:App2:App3", "App1", "fan-out");
+        auto hg = Manager::createTeam("App1:App2:App3", 3, "App1", "fan-out");
         if(hg.isValid())
             printf("Correctly created team\n");
 

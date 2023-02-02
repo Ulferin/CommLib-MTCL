@@ -7,9 +7,9 @@
  *  $> RAPIDJSON_HOME="/rapidjson/install/path" make clean test_fanin
  * 
  * Execution:
- *  $> ./test_fanin 1 App2
  *  $> ./test_fanin 0 App1
- *  $> ./test_fanin 0 App3
+ *  $> ./test_fanin 1 App2
+ *  $> ./test_fanin 1 App3
  * 
  * 
  * */
@@ -37,18 +37,10 @@ int main(int argc, char** argv){
 
     // Root
     if(rank == 0) {
-        auto hg = Manager::createTeam("App1:App2:App3", "App2", "fan-in");
-        if(hg.isValid())
-            printf("Correctly created team\n");
-
-        if(std::string{argv[2]} == "App1") hg.send((void*)hello.c_str(), hello.length());
-        if(std::string{argv[2]} == "App3") hg.send((void*)bye.c_str(), bye.length());
+        Manager::listen("TCP:0.0.0.0:42000");
+        auto hg = Manager::createTeam("App1:App2:App3", 3, "App1", "fan-in");
 
         hg.close();
-    }
-    else {
-        Manager::listen("TCP:0.0.0.0:42001");
-        auto hg = Manager::createTeam("App1:App2:App3", "App2", "fan-in");
         if(hg.isValid())
             printf("Correctly created team\n");
 
@@ -65,6 +57,16 @@ int main(int argc, char** argv){
         delete[] s;
 
         hg.close();
+        
+    }
+    else {
+        auto hg = Manager::createTeam("App1:App2:App3", 3, "App1", "fan-in");
+
+        if(hg.isValid())
+            printf("Correctly created team\n");
+
+        if(std::string{argv[2]} == "App2") hg.send((void*)hello.c_str(), hello.length());
+        if(std::string{argv[2]} == "App3") hg.send((void*)bye.c_str(), bye.length());
     }
 
     Manager::finalize();

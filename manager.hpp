@@ -498,7 +498,7 @@ public:
             App2 --> |App1 e App3
             App3 --> |App1 e App2
     */
-    static HandleGroup createTeam(std::string participants, std::string root, std::string type) {
+    static HandleGroup createTeam(std::string participants, int size, std::string root, std::string type) {
 
 
 #ifndef ENABLE_CONFIGFILE
@@ -507,10 +507,10 @@ public:
 #else
 
         // Retrieve team size
-        int size = 0;
-        std::istringstream is(participants);
-        std::string line;
-        while(std::getline(is, line, ':')) size++;
+        // int size = 0;
+        // std::istringstream is(participants);
+        // std::string line;
+        // while(std::getline(is, line, ':')) size++;
         printf("Initializing collective with size: %d\n", size);
 
         std::string teamID{participants + root + type};
@@ -560,7 +560,7 @@ public:
             }
 
             if(handle == nullptr) {
-                MTCL_ERROR("[Manager]:\t", "Could not establish a connection with root node\n");
+                MTCL_ERROR("[Manager]:\t", "Could not establish a connection with root node \"%s\"\n", root.c_str());
                 return HandleGroup(nullptr, {}, type, false);
             }
 

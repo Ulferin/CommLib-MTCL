@@ -121,8 +121,8 @@ public:
                 if(h->receive(buff, s) <= 0)
                     return -1;
             }
+            iter++;
             if(iter == participants.end()) iter = participants.begin();
-            else iter++;
         }
 
         return 0;
@@ -172,8 +172,12 @@ public:
 
         int res = 0;
         for(auto& h : participants) {
-            size_t s;
+            size_t s = -1;
             res = h->probe(s, true);
+            if(s == 0) {
+                h->close();
+                return -1;
+            }
             res = h->receive(buff, s);
         }
 
