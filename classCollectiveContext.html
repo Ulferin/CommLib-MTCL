@@ -86,21 +86,21 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a34612562b3038dc9e00d515090c96afe"><td class="memItemLeft" align="right" valign="top"><a id="a34612562b3038dc9e00d515090c96afe"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>CollectiveContext</b> (int size, bool root)</td></tr>
 <tr class="separator:a34612562b3038dc9e00d515090c96afe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a292b36c59bb0037317c9c5e56c8990fe"><td class="memItemLeft" align="right" valign="top"><a id="a292b36c59bb0037317c9c5e56c8990fe"></a>
-virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>update</b> (int count)=0</td></tr>
+<tr class="memitem:a292b36c59bb0037317c9c5e56c8990fe"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCollectiveContext.html#a292b36c59bb0037317c9c5e56c8990fe">update</a> (int count)=0</td></tr>
+<tr class="memdesc:a292b36c59bb0037317c9c5e56c8990fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Updates the status of the collective during the creation and checks if the team is ready to be used.  <a href="classCollectiveContext.html#a292b36c59bb0037317c9c5e56c8990fe">More...</a><br /></td></tr>
 <tr class="separator:a292b36c59bb0037317c9c5e56c8990fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a696e575291f57e560b5bbdee2bc82ac1"><td class="memItemLeft" align="right" valign="top"><a id="a696e575291f57e560b5bbdee2bc82ac1"></a>
-virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>canSend</b> ()=0</td></tr>
+<tr class="memitem:a696e575291f57e560b5bbdee2bc82ac1"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCollectiveContext.html#a696e575291f57e560b5bbdee2bc82ac1">canSend</a> ()=0</td></tr>
+<tr class="memdesc:a696e575291f57e560b5bbdee2bc82ac1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if the current state of the collective allows to perform send operations.  <a href="classCollectiveContext.html#a696e575291f57e560b5bbdee2bc82ac1">More...</a><br /></td></tr>
 <tr class="separator:a696e575291f57e560b5bbdee2bc82ac1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abbf15146ef4ce40c6a893965fffbd666"><td class="memItemLeft" align="right" valign="top"><a id="abbf15146ef4ce40c6a893965fffbd666"></a>
-virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>canReceive</b> ()=0</td></tr>
+<tr class="memitem:abbf15146ef4ce40c6a893965fffbd666"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCollectiveContext.html#abbf15146ef4ce40c6a893965fffbd666">canReceive</a> ()=0</td></tr>
+<tr class="memdesc:abbf15146ef4ce40c6a893965fffbd666"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if the current state of the collective allows to perform receive operations.  <a href="classCollectiveContext.html#abbf15146ef4ce40c6a893965fffbd666">More...</a><br /></td></tr>
 <tr class="separator:abbf15146ef4ce40c6a893965fffbd666"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a074bb043a4aa09ec3c1ae65cd9c74d35"><td class="memItemLeft" align="right" valign="top"><a id="a074bb043a4aa09ec3c1ae65cd9c74d35"></a>
-virtual ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>receive</b> (std::vector&lt; <a class="el" href="classHandle.html">Handle</a> * &gt; participants, void *buff, size_t size)=0</td></tr>
-<tr class="separator:a074bb043a4aa09ec3c1ae65cd9c74d35"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a00b1ec301f3e2421edbee534cb29f562"><td class="memItemLeft" align="right" valign="top"><a id="a00b1ec301f3e2421edbee534cb29f562"></a>
-virtual ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>send</b> (std::vector&lt; <a class="el" href="classHandle.html">Handle</a> * &gt; participants, const void *buff, size_t size)=0</td></tr>
-<tr class="separator:a00b1ec301f3e2421edbee534cb29f562"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac8b63150eb3cf0583b1e390691a3b630"><td class="memItemLeft" align="right" valign="top">virtual ssize_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCollectiveContext.html#ac8b63150eb3cf0583b1e390691a3b630">receive</a> (std::vector&lt; <a class="el" href="classHandle.html">Handle</a> * &gt; &amp;participants, void *buff, size_t size)=0</td></tr>
+<tr class="memdesc:ac8b63150eb3cf0583b1e390691a3b630"><td class="mdescLeft">&#160;</td><td class="mdescRight">Receives at most <b>size</b> data into <b>buff</b> from the <b>participants</b>, based on the semantics of the collective.  <a href="classCollectiveContext.html#ac8b63150eb3cf0583b1e390691a3b630">More...</a><br /></td></tr>
+<tr class="separator:ac8b63150eb3cf0583b1e390691a3b630"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5e649f981b093e6882ee2ab5aa61a4d9"><td class="memItemLeft" align="right" valign="top">virtual ssize_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCollectiveContext.html#a5e649f981b093e6882ee2ab5aa61a4d9">send</a> (std::vector&lt; <a class="el" href="classHandle.html">Handle</a> * &gt; &amp;participants, const void *buff, size_t size)=0</td></tr>
+<tr class="memdesc:a5e649f981b093e6882ee2ab5aa61a4d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sends <b>size</b> bytes of <b>buff</b> to the <b>participants</b>, following the semantics of the collective.  <a href="classCollectiveContext.html#a5e649f981b093e6882ee2ab5aa61a4d9">More...</a><br /></td></tr>
+<tr class="separator:a5e649f981b093e6882ee2ab5aa61a4d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
@@ -114,6 +114,214 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>root</b></td></tr>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>completed</b> = false</td></tr>
 <tr class="separator:aa04190da788592867d3c85361f095422"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="abbf15146ef4ce40c6a893965fffbd666"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abbf15146ef4ce40c6a893965fffbd666">&#9670;&nbsp;</a></span>canReceive()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual bool CollectiveContext::canReceive </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Checks if the current state of the collective allows to perform receive operations. </p>
+<dl class="section return"><dt>Returns</dt><dd>true if the caller can receive, false otherwise </dd></dl>
+
+<p>Implemented in <a class="el" href="classFanOut.html#ab87b1e2a6394a6b81e0ddb952a7245fe">FanOut</a>, <a class="el" href="classFanIn.html#a10f44f81d95210be1f4d61e1c9a44ad9">FanIn</a>, and <a class="el" href="classBroadcast.html#a6644bcb8f36aabbc7ee697607a8b7ebf">Broadcast</a>.</p>
+
+</div>
+</div>
+<a id="a696e575291f57e560b5bbdee2bc82ac1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a696e575291f57e560b5bbdee2bc82ac1">&#9670;&nbsp;</a></span>canSend()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual bool CollectiveContext::canSend </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Checks if the current state of the collective allows to perform send operations. </p>
+<dl class="section return"><dt>Returns</dt><dd>true if the caller can send, false otherwise </dd></dl>
+
+<p>Implemented in <a class="el" href="classFanOut.html#a0d9642a9cc202dc722bceeca8a7d6ba3">FanOut</a>, <a class="el" href="classFanIn.html#a6249a3d3d9b1bcdc5195c0c5286cd729">FanIn</a>, and <a class="el" href="classBroadcast.html#a72de48155cf9dfc6ad5c97e457db5f1e">Broadcast</a>.</p>
+
+</div>
+</div>
+<a id="ac8b63150eb3cf0583b1e390691a3b630"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac8b63150eb3cf0583b1e390691a3b630">&#9670;&nbsp;</a></span>receive()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual ssize_t CollectiveContext::receive </td>
+          <td>(</td>
+          <td class="paramtype">std::vector&lt; <a class="el" href="classHandle.html">Handle</a> * &gt; &amp;&#160;</td>
+          <td class="paramname"><em>participants</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>buff</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Receives at most <b>size</b> data into <b>buff</b> from the <b>participants</b>, based on the semantics of the collective. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">participants</td><td>vector of participants to the collective operation </td></tr>
+    <tr><td class="paramname">buff</td><td>buffer used to write data </td></tr>
+    <tr><td class="paramname">size</td><td>maximum amount of data to be written in the buffer </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>ssize_t if successful, returns the amount of data written in the buffer. Otherwise, -1 is return and <b>errno</b> is set. </dd></dl>
+
+<p>Implemented in <a class="el" href="classFanOut.html#af3e4fa65e98419cd1507ffddd26a3977">FanOut</a>, <a class="el" href="classFanIn.html#aab25c3f938ca5f97dcd4c75fd552dcdb">FanIn</a>, and <a class="el" href="classBroadcast.html#a7c99015b4fbcd7670d44a69be52f4a93">Broadcast</a>.</p>
+
+</div>
+</div>
+<a id="a5e649f981b093e6882ee2ab5aa61a4d9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5e649f981b093e6882ee2ab5aa61a4d9">&#9670;&nbsp;</a></span>send()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual ssize_t CollectiveContext::send </td>
+          <td>(</td>
+          <td class="paramtype">std::vector&lt; <a class="el" href="classHandle.html">Handle</a> * &gt; &amp;&#160;</td>
+          <td class="paramname"><em>participants</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const void *&#160;</td>
+          <td class="paramname"><em>buff</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Sends <b>size</b> bytes of <b>buff</b> to the <b>participants</b>, following the semantics of the collective. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">participants</td><td>vector of participatns to the collective operation </td></tr>
+    <tr><td class="paramname">buff</td><td>buffer of data to be sent </td></tr>
+    <tr><td class="paramname">size</td><td>amount of data to be sent </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>ssize_t if successful, returns <b>size</b>. Otherwise, -1 is returned and <b>errno</b> is set. </dd></dl>
+
+<p>Implemented in <a class="el" href="classFanOut.html#a7494c476ec5ef840d5439a15263300a7">FanOut</a>, <a class="el" href="classFanIn.html#ae30d1db707503434a2df79035abd55e3">FanIn</a>, and <a class="el" href="classBroadcast.html#a88a6decad4dbc6ece5b3a478a7d5bee1">Broadcast</a>.</p>
+
+</div>
+</div>
+<a id="a292b36c59bb0037317c9c5e56c8990fe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a292b36c59bb0037317c9c5e56c8990fe">&#9670;&nbsp;</a></span>update()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual bool CollectiveContext::update </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>count</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Updates the status of the collective during the creation and checks if the team is ready to be used. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">count</td><td>number of received connections </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if the collective group is ready, false otherwise </dd></dl>
+
+<p>Implemented in <a class="el" href="classFanOut.html#ad6b5a42e9946fcbcc15ff74fdae015e8">FanOut</a>, <a class="el" href="classFanIn.html#a8ef254f78784fb4284df9c7d04562897">FanIn</a>, and <a class="el" href="classBroadcast.html#a46fc25bff12f725ea3c60fedc669d9a7">Broadcast</a>.</p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li><a class="el" href="collectives_8hpp_source.html">collectives.hpp</a></li>
 </ul>
