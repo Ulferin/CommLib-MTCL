@@ -63,6 +63,7 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="classCollectiveContext-members.html">List of all members</a>  </div>
   <div class="headertitle">
@@ -78,14 +79,15 @@ Inheritance diagram for CollectiveContext:</div>
 <area href="classBroadcast.html" alt="Broadcast" shape="rect" coords="0,56,110,80"/>
 <area href="classFanIn.html" alt="FanIn" shape="rect" coords="120,56,230,80"/>
 <area href="classFanOut.html" alt="FanOut" shape="rect" coords="240,56,350,80"/>
+<area href="classGather.html" alt="Gather" shape="rect" coords="360,56,470,80"/>
   </map>
 </div></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a34612562b3038dc9e00d515090c96afe"><td class="memItemLeft" align="right" valign="top"><a id="a34612562b3038dc9e00d515090c96afe"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>CollectiveContext</b> (int size, bool root)</td></tr>
-<tr class="separator:a34612562b3038dc9e00d515090c96afe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8cd8302cb581b87bbed020fd2dbcd2b7"><td class="memItemLeft" align="right" valign="top"><a id="a8cd8302cb581b87bbed020fd2dbcd2b7"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>CollectiveContext</b> (int size, bool root, int rank)</td></tr>
+<tr class="separator:a8cd8302cb581b87bbed020fd2dbcd2b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a292b36c59bb0037317c9c5e56c8990fe"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCollectiveContext.html#a292b36c59bb0037317c9c5e56c8990fe">update</a> (int count)=0</td></tr>
 <tr class="memdesc:a292b36c59bb0037317c9c5e56c8990fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Updates the status of the collective during the creation and checks if the team is ready to be used.  <a href="classCollectiveContext.html#a292b36c59bb0037317c9c5e56c8990fe">More...</a><br /></td></tr>
 <tr class="separator:a292b36c59bb0037317c9c5e56c8990fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -101,6 +103,18 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a5e649f981b093e6882ee2ab5aa61a4d9"><td class="memItemLeft" align="right" valign="top">virtual ssize_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCollectiveContext.html#a5e649f981b093e6882ee2ab5aa61a4d9">send</a> (std::vector&lt; <a class="el" href="classHandle.html">Handle</a> * &gt; &amp;participants, const void *buff, size_t size)=0</td></tr>
 <tr class="memdesc:a5e649f981b093e6882ee2ab5aa61a4d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sends <b>size</b> bytes of <b>buff</b> to the <b>participants</b>, following the semantics of the collective.  <a href="classCollectiveContext.html#a5e649f981b093e6882ee2ab5aa61a4d9">More...</a><br /></td></tr>
 <tr class="separator:a5e649f981b093e6882ee2ab5aa61a4d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9d183d2f4d9a480ac9a212a37630f877"><td class="memItemLeft" align="right" valign="top">virtual ssize_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCollectiveContext.html#a9d183d2f4d9a480ac9a212a37630f877">probe</a> (std::vector&lt; <a class="el" href="classHandle.html">Handle</a> * &gt; &amp;participants, size_t &amp;size, const bool blocking=true)=0</td></tr>
+<tr class="memdesc:a9d183d2f4d9a480ac9a212a37630f877"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check for incoming message and write in <b>size</b> the amount of data present in the message.  <a href="classCollectiveContext.html#a9d183d2f4d9a480ac9a212a37630f877">More...</a><br /></td></tr>
+<tr class="separator:a9d183d2f4d9a480ac9a212a37630f877"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
+Protected Member Functions</h2></td></tr>
+<tr class="memitem:a3f727a9b0f772896f4158bd2ed54a7b5"><td class="memItemLeft" align="right" valign="top"><a id="a3f727a9b0f772896f4158bd2ed54a7b5"></a>
+ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>probeHandle</b> (<a class="el" href="classHandle.html">Handle</a> *realHandle, size_t &amp;size, const bool blocking=true)</td></tr>
+<tr class="separator:a3f727a9b0f772896f4158bd2ed54a7b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a615a368f3b59e69ad75cd54ccf9ab02f"><td class="memItemLeft" align="right" valign="top"><a id="a615a368f3b59e69ad75cd54ccf9ab02f"></a>
+ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>receiveFromHandle</b> (<a class="el" href="classHandle.html">Handle</a> *realHandle, void *buff, size_t size)</td></tr>
+<tr class="separator:a615a368f3b59e69ad75cd54ccf9ab02f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
@@ -110,6 +124,9 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>size</b></td></tr>
 <tr class="memitem:a91990327109822ea2378463213132369"><td class="memItemLeft" align="right" valign="top"><a id="a91990327109822ea2378463213132369"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>root</b></td></tr>
 <tr class="separator:a91990327109822ea2378463213132369"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1c281c8c20fb967c5f857f200b255c0f"><td class="memItemLeft" align="right" valign="top"><a id="a1c281c8c20fb967c5f857f200b255c0f"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>rank</b></td></tr>
+<tr class="separator:a1c281c8c20fb967c5f857f200b255c0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa04190da788592867d3c85361f095422"><td class="memItemLeft" align="right" valign="top"><a id="aa04190da788592867d3c85361f095422"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>completed</b> = false</td></tr>
 <tr class="separator:aa04190da788592867d3c85361f095422"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -141,7 +158,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>completed</b> = false
 <p>Checks if the current state of the collective allows to perform receive operations. </p>
 <dl class="section return"><dt>Returns</dt><dd>true if the caller can receive, false otherwise </dd></dl>
 
-<p>Implemented in <a class="el" href="classFanOut.html#ab87b1e2a6394a6b81e0ddb952a7245fe">FanOut</a>, <a class="el" href="classFanIn.html#a10f44f81d95210be1f4d61e1c9a44ad9">FanIn</a>, and <a class="el" href="classBroadcast.html#a6644bcb8f36aabbc7ee697607a8b7ebf">Broadcast</a>.</p>
+<p>Implemented in <a class="el" href="classGather.html#a7007133f8e71e5cad4a74a2e6362c386">Gather</a>, <a class="el" href="classFanOut.html#ab87b1e2a6394a6b81e0ddb952a7245fe">FanOut</a>, <a class="el" href="classFanIn.html#a10f44f81d95210be1f4d61e1c9a44ad9">FanIn</a>, and <a class="el" href="classBroadcast.html#a6644bcb8f36aabbc7ee697607a8b7ebf">Broadcast</a>.</p>
 
 </div>
 </div>
@@ -171,7 +188,62 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>completed</b> = false
 <p>Checks if the current state of the collective allows to perform send operations. </p>
 <dl class="section return"><dt>Returns</dt><dd>true if the caller can send, false otherwise </dd></dl>
 
-<p>Implemented in <a class="el" href="classFanOut.html#a0d9642a9cc202dc722bceeca8a7d6ba3">FanOut</a>, <a class="el" href="classFanIn.html#a6249a3d3d9b1bcdc5195c0c5286cd729">FanIn</a>, and <a class="el" href="classBroadcast.html#a72de48155cf9dfc6ad5c97e457db5f1e">Broadcast</a>.</p>
+<p>Implemented in <a class="el" href="classGather.html#a8afa3b1cc011c12421b2e09f1301bce8">Gather</a>, <a class="el" href="classFanOut.html#a0d9642a9cc202dc722bceeca8a7d6ba3">FanOut</a>, <a class="el" href="classFanIn.html#a6249a3d3d9b1bcdc5195c0c5286cd729">FanIn</a>, and <a class="el" href="classBroadcast.html#a72de48155cf9dfc6ad5c97e457db5f1e">Broadcast</a>.</p>
+
+</div>
+</div>
+<a id="a9d183d2f4d9a480ac9a212a37630f877"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9d183d2f4d9a480ac9a212a37630f877">&#9670;&nbsp;</a></span>probe()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual ssize_t CollectiveContext::probe </td>
+          <td>(</td>
+          <td class="paramtype">std::vector&lt; <a class="el" href="classHandle.html">Handle</a> * &gt; &amp;&#160;</td>
+          <td class="paramname"><em>participants</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t &amp;&#160;</td>
+          <td class="paramname"><em>size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const bool&#160;</td>
+          <td class="paramname"><em>blocking</em> = <code>true</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Check for incoming message and write in <b>size</b> the amount of data present in the message. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">participants</td><td>vector of participatns to the collective operation </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">size</td><td>total size in byte of incoming message </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">blocking</td><td>if true, the probe call blocks until a message is ready to be received. If false, the call returns immediately and sets <b>errno</b> to <b>EWOULDBLOCK</b> if no message is present on this handle. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>ssize_t <code>sizeof(size_t)</code> upon success. If <code>-1</code> is returned, the error can be checked via <b>errno</b>. </dd></dl>
+
+<p>Implemented in <a class="el" href="classGather.html#a04f9d07af93ae0f74622b52091908ee2">Gather</a>, <a class="el" href="classFanOut.html#a70fcdde631c8fd023927b0bce4811ba9">FanOut</a>, <a class="el" href="classFanIn.html#a47d70ef1df3a3a3403bfc262b1555790">FanIn</a>, and <a class="el" href="classBroadcast.html#a3c8a772d4a8e35277f1c700497d012e8">Broadcast</a>.</p>
 
 </div>
 </div>
@@ -218,15 +290,15 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>completed</b> = false
 <p>Receives at most <b>size</b> data into <b>buff</b> from the <b>participants</b>, based on the semantics of the collective. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">participants</td><td>vector of participants to the collective operation </td></tr>
-    <tr><td class="paramname">buff</td><td>buffer used to write data </td></tr>
-    <tr><td class="paramname">size</td><td>maximum amount of data to be written in the buffer </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">participants</td><td>vector of participants to the collective operation </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">buff</td><td>buffer used to write data </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">size</td><td>maximum amount of data to be written in the buffer </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ssize_t if successful, returns the amount of data written in the buffer. Otherwise, -1 is return and <b>errno</b> is set. </dd></dl>
 
-<p>Implemented in <a class="el" href="classFanOut.html#af3e4fa65e98419cd1507ffddd26a3977">FanOut</a>, <a class="el" href="classFanIn.html#aab25c3f938ca5f97dcd4c75fd552dcdb">FanIn</a>, and <a class="el" href="classBroadcast.html#a7c99015b4fbcd7670d44a69be52f4a93">Broadcast</a>.</p>
+<p>Implemented in <a class="el" href="classGather.html#a985fdb72373e2a717b73ce0503f4f89d">Gather</a>, <a class="el" href="classFanOut.html#af3e4fa65e98419cd1507ffddd26a3977">FanOut</a>, <a class="el" href="classFanIn.html#aab25c3f938ca5f97dcd4c75fd552dcdb">FanIn</a>, and <a class="el" href="classBroadcast.html#a7c99015b4fbcd7670d44a69be52f4a93">Broadcast</a>.</p>
 
 </div>
 </div>
@@ -273,15 +345,15 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>completed</b> = false
 <p>Sends <b>size</b> bytes of <b>buff</b> to the <b>participants</b>, following the semantics of the collective. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">participants</td><td>vector of participatns to the collective operation </td></tr>
-    <tr><td class="paramname">buff</td><td>buffer of data to be sent </td></tr>
-    <tr><td class="paramname">size</td><td>amount of data to be sent </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">participants</td><td>vector of participatns to the collective operation </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">buff</td><td>buffer of data to be sent </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">size</td><td>amount of data to be sent </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ssize_t if successful, returns <b>size</b>. Otherwise, -1 is returned and <b>errno</b> is set. </dd></dl>
 
-<p>Implemented in <a class="el" href="classFanOut.html#a7494c476ec5ef840d5439a15263300a7">FanOut</a>, <a class="el" href="classFanIn.html#ae30d1db707503434a2df79035abd55e3">FanIn</a>, and <a class="el" href="classBroadcast.html#a88a6decad4dbc6ece5b3a478a7d5bee1">Broadcast</a>.</p>
+<p>Implemented in <a class="el" href="classGather.html#a53402bbfea012c1f3434a90b2b684cde">Gather</a>, <a class="el" href="classFanOut.html#a7494c476ec5ef840d5439a15263300a7">FanOut</a>, <a class="el" href="classFanIn.html#ae30d1db707503434a2df79035abd55e3">FanIn</a>, and <a class="el" href="classBroadcast.html#a88a6decad4dbc6ece5b3a478a7d5bee1">Broadcast</a>.</p>
 
 </div>
 </div>
@@ -312,13 +384,13 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>completed</b> = false
 <p>Updates the status of the collective during the creation and checks if the team is ready to be used. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">count</td><td>number of received connections </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>number of received connections </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if the collective group is ready, false otherwise </dd></dl>
 
-<p>Implemented in <a class="el" href="classFanOut.html#ad6b5a42e9946fcbcc15ff74fdae015e8">FanOut</a>, <a class="el" href="classFanIn.html#a8ef254f78784fb4284df9c7d04562897">FanIn</a>, and <a class="el" href="classBroadcast.html#a46fc25bff12f725ea3c60fedc669d9a7">Broadcast</a>.</p>
+<p>Implemented in <a class="el" href="classGather.html#ad99e239fef7862984e67afd580ab1af8">Gather</a>, <a class="el" href="classFanOut.html#ad6b5a42e9946fcbcc15ff74fdae015e8">FanOut</a>, <a class="el" href="classFanIn.html#a8ef254f78784fb4284df9c7d04562897">FanIn</a>, and <a class="el" href="classBroadcast.html#a46fc25bff12f725ea3c60fedc669d9a7">Broadcast</a>.</p>
 
 </div>
 </div>
