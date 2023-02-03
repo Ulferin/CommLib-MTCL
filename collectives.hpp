@@ -82,6 +82,10 @@ protected:
 public:
     CollectiveContext(int size, bool root, int rank) : size(size), root(root), rank(rank) {}
 
+    size_t getSize() {
+        return size;
+    }
+
     /**
      * @brief Updates the status of the collective during the creation and
      * checks if the team is ready to be used.
@@ -145,6 +149,10 @@ public:
      * the error can be checked via \b errno.
      */
 	virtual ssize_t probe(std::vector<Handle*>& participants, size_t& size, const bool blocking=true)=0;
+
+    virtual ssize_t execute(std::vector<Handle*>& participants, const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
+        return 0;
+    }
 
     virtual ~CollectiveContext() {};
 };
@@ -516,6 +524,16 @@ public:
         }
 
         return 0;
+    }
+
+    ssize_t execute(std::vector<Handle*>& participants, const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
+        if(root) {
+            memcpy((char*)recvbuff+(rank*sendsize), sendbuff, sendsize);
+            return this->receive(participants, recvbuff, recvsize);
+        }
+        else {
+            return this->send(participants, sendbuff, sendsize);
+        }
     }
 
     ~Gather () {}

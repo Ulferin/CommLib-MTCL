@@ -17,7 +17,7 @@
 #include "protocols/tcp.hpp"
 #include "protocols/shm.hpp"
 #include "collectives.hpp"
-
+// #define ENABLE_CONFIGFILE
 #ifdef ENABLE_CONFIGFILE
 #include <fstream>
 #include <rapidjson/rapidjson.h>
@@ -499,7 +499,7 @@ public:
             App2 --> |App1 e App3
             App3 --> |App1 e App2
     */
-    static HandleGroup createTeam(std::string participants, int size, std::string root, std::string type) {
+    static HandleGroup createTeam(std::string participants, std::string root, std::string type) {
 
 
 #ifndef ENABLE_CONFIGFILE
@@ -508,15 +508,15 @@ public:
 #else
 
         // Retrieve team size
-        // int size = 0;
+        int size = 0;
         std::istringstream is(participants);
         std::string line;
         int rank = 0;
         while(std::getline(is, line, ':')) {
             if(Manager::appName == line) {
-                break;
+                rank=size;
             }
-            rank++;
+            size++;
         }
         printf("Initializing collective with size: %d - AppName: %s - rank: %d\n", size, Manager::appName.c_str(), rank);
 
@@ -536,6 +536,7 @@ public:
             // connect per partecipazione ad una collettiva specifica
             std::unique_lock lk(group_mutex);
             group_cond.wait(lk, [&]{
+                printf("TeamID: %s\n", teamID.c_str());
                 if(groupsReady.count(teamID) != 0) {
                     printf("Condition: %ld\n", groupsReady.at(teamID).size());
                 }

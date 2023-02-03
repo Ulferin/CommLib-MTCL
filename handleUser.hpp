@@ -21,6 +21,13 @@ public:
     virtual bool isValid() = 0;
     virtual ssize_t receive(void* buff, size_t size) = 0;
     virtual ssize_t send(const void* buff, size_t size) = 0;
+    virtual ssize_t execute(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
+        errno = EINVAL;
+        return -1;
+    }
+    virtual size_t size() {
+        return 1;
+    }
     virtual void close() = 0;
 
 };
@@ -50,6 +57,14 @@ public:
 
     ssize_t send(const void* buff, size_t size) {
         return ctx->send(participants, buff, size);
+    }
+
+    ssize_t execute(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize){
+        return ctx->execute(participants, sendbuff, sendsize, recvbuff, recvsize);
+    }
+
+    size_t size() {
+        return ctx->getSize();
     }
 
     void close() {
