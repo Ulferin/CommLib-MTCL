@@ -10,7 +10,7 @@
  * Execution:
  *  $> ./test_reducesum 0 App1 size
  *  $> ./test_reducesum 2 App3 size
- *  $> for i in {1..size}; do ./test_reducesum 1 App2 & done
+ *  $> for i in {1..size}; do ./test_reducesum 1 App2 size & done
  * 
  * 
  * */

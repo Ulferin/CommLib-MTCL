@@ -54,7 +54,7 @@ public:
 
     void close() {
         for(auto& h : participants)
-            h->close(true, false);
+            h->close(true, true);
 
         delete ctx;
     }

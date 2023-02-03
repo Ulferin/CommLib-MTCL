@@ -509,16 +509,22 @@ public:
 
         // Retrieve team size
         // int size = 0;
-        // std::istringstream is(participants);
-        // std::string line;
-        // while(std::getline(is, line, ':')) size++;
-        printf("Initializing collective with size: %d\n", size);
+        std::istringstream is(participants);
+        std::string line;
+        int rank = 0;
+        while(std::getline(is, line, ':')) {
+            if(Manager::appName == line) {
+                break;
+            }
+            rank++;
+        }
+        printf("Initializing collective with size: %d - AppName: %s - rank: %d\n", size, Manager::appName.c_str(), rank);
 
         std::string teamID{participants + root + type};
 
         std::vector<Handle*> coll_handles;
 
-        auto ctx = createContext(type, size, Manager::appName == root);
+        auto ctx = createContext(type, size, Manager::appName == root, rank);
         if(Manager::appName == root) {
             if(ctx == nullptr) {
                 MTCL_ERROR("[Manager]:\t", "Operation type not supported\n");
