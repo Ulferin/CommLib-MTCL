@@ -88,6 +88,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a8cd8302cb581b87bbed020fd2dbcd2b7"><td class="memItemLeft" align="right" valign="top"><a id="a8cd8302cb581b87bbed020fd2dbcd2b7"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>CollectiveContext</b> (int size, bool root, int rank)</td></tr>
 <tr class="separator:a8cd8302cb581b87bbed020fd2dbcd2b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2e119306e72372226dcc5ec6551274a8"><td class="memItemLeft" align="right" valign="top"><a id="a2e119306e72372226dcc5ec6551274a8"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>getSize</b> ()</td></tr>
+<tr class="separator:a2e119306e72372226dcc5ec6551274a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a292b36c59bb0037317c9c5e56c8990fe"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCollectiveContext.html#a292b36c59bb0037317c9c5e56c8990fe">update</a> (int count)=0</td></tr>
 <tr class="memdesc:a292b36c59bb0037317c9c5e56c8990fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Updates the status of the collective during the creation and checks if the team is ready to be used.  <a href="classCollectiveContext.html#a292b36c59bb0037317c9c5e56c8990fe">More...</a><br /></td></tr>
 <tr class="separator:a292b36c59bb0037317c9c5e56c8990fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -106,6 +109,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a9d183d2f4d9a480ac9a212a37630f877"><td class="memItemLeft" align="right" valign="top">virtual ssize_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCollectiveContext.html#a9d183d2f4d9a480ac9a212a37630f877">probe</a> (std::vector&lt; <a class="el" href="classHandle.html">Handle</a> * &gt; &amp;participants, size_t &amp;size, const bool blocking=true)=0</td></tr>
 <tr class="memdesc:a9d183d2f4d9a480ac9a212a37630f877"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check for incoming message and write in <b>size</b> the amount of data present in the message.  <a href="classCollectiveContext.html#a9d183d2f4d9a480ac9a212a37630f877">More...</a><br /></td></tr>
 <tr class="separator:a9d183d2f4d9a480ac9a212a37630f877"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af261395edda0fa5718a7891ca4dc6dfa"><td class="memItemLeft" align="right" valign="top"><a id="af261395edda0fa5718a7891ca4dc6dfa"></a>
+virtual ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>execute</b> (std::vector&lt; <a class="el" href="classHandle.html">Handle</a> * &gt; &amp;participants, const void *sendbuff, size_t sendsize, void *recvbuff, size_t recvsize)</td></tr>
+<tr class="separator:af261395edda0fa5718a7891ca4dc6dfa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
