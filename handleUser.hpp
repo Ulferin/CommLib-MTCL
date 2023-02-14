@@ -37,30 +37,31 @@ class HandleGroup : public HandleGeneric {
 
 protected:
     CollectiveContext* ctx;
-    std::vector<Handle*> participants;
-    std::string type;
-    bool root;
+    CollectiveType type;
+    bool root, valid;
 
 
 public:
     HandleGroup() : HandleGeneric(true) {}
-    HandleGroup(CollectiveContext* ctx, std::vector<Handle*> participants, std::string type, bool root) :  HandleGeneric(true),
-        ctx(ctx), participants(std::move(participants)), type(type), root(root) {}
+    HandleGroup(CollectiveContext* ctx, int size, CollectiveType type, bool root) :  HandleGeneric(true),
+        ctx(ctx), type(type), root(root) {
+            valid = (size != 0);
+        }
 
     bool isValid() {
-        return !participants.empty();
+        return valid;
     }
 
     ssize_t receive(void* buff, size_t size) {
-        return ctx->receive(participants, buff, size);
+        return ctx->receive(buff, size);
     }
 
     ssize_t send(const void* buff, size_t size) {
-        return ctx->send(participants, buff, size);
+        return ctx->send(buff, size);
     }
 
     ssize_t execute(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize){
-        return ctx->execute(participants, sendbuff, sendsize, recvbuff, recvsize);
+        return ctx->execute(sendbuff, sendsize, recvbuff, recvsize);
     }
 
     size_t size() {
@@ -68,9 +69,7 @@ public:
     }
 
     void close() {
-        for(auto& h : participants)
-            h->close(true, true);
-
+        ctx->close();
         delete ctx;
     }
 

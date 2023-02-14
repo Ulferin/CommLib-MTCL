@@ -29,16 +29,12 @@ int main(int argc, char** argv){
         return 1;
     }
 
-    std::string listen_str{};
-    std::string connect_str{};
-
     int rank = atoi(argv[1]);
 	Manager::init(argv[2], "test_collectives.json");
 
     // Root
     if(rank == 0) {
-        Manager::listen("TCP:0.0.0.0:42000");
-        auto hg = Manager::createTeam("App1:App2:App3", 3, "App1", "fan-out");
+        auto hg = Manager::createTeam("App1:App2:App3", "App1", FANOUT);
         if(hg.isValid())
             printf("Correctly created team\n");
 
@@ -50,7 +46,7 @@ int main(int argc, char** argv){
         hg.close();
     }
     else {
-        auto hg = Manager::createTeam("App1:App2:App3", 3, "App1", "fan-out");
+        auto hg = Manager::createTeam("App1:App2:App3", "App1", FANOUT);
         if(hg.isValid())
             printf("Correctly created team\n");
 

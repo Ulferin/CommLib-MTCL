@@ -8,7 +8,7 @@
 
 class Handle {
     friend class HandleGroup;
-    friend class CollectiveContext;
+    friend class CollectiveImpl;
     friend class HandleUser;
     friend class Manager;
     friend class ConnType;

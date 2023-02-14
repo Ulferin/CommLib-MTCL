@@ -4,6 +4,7 @@
 #include <csignal>
 #include <cstdlib>
 #include <map>
+#include <set>
 #include <vector>
 #include <queue>
 #include <mutex>
@@ -52,6 +53,7 @@ class Manager {
     inline static std::map<std::string, std::shared_ptr<ConnType>> protocolsMap;    
 	inline static std::queue<HandleUser> handleReady;
     inline static std::map<std::string, std::vector<Handle*>> groupsReady;
+    inline static std::set<std::string> listening_endps;
     
     inline static std::string appName;
     inline static std::string poolName;
@@ -83,6 +85,8 @@ private:
             h->probe(size, true);
             h->receive(&collective, sizeof(int));
         }
+
+        //NOTE: invece che fare notify_one, fa semplicemente push_back sul vettore
 
 
 		handleReady.push(HandleUser(h, true, b));
@@ -276,7 +280,10 @@ public:
 			}
         }
 #ifdef ENABLE_CONFIGFILE
-        // listen da file di config se ce ne sono
+        // Automatically listen from endpoints listed in config file
+        for(auto& le : std::get<2>(components[Manager::appName])){
+            Manager::listen(le);
+        }
 #endif
 
         REMOVE_CODE_IF(t1 = std::thread([&](){Manager::getReadyBackend();}));
@@ -376,6 +383,10 @@ public:
      * @param connectionString URI containing parameters to perform the effective listen operation
     */
     static int listen(std::string s) {
+        // Check if Manager has already this endpoint listening
+        if(listening_endps.count(s) != 0) return 0;
+        listening_endps.insert(s);
+
         std::string protocol = s.substr(0, s.find(":"));
         
         if (!protocolsMap.count(protocol)){
@@ -480,8 +491,6 @@ public:
     }
 
 
-    // Stringa participants non strettamente necessaria a patto di trovare
-    // un metodo alternativo per generare un teamID univoco
     /* Broadcast:
           App1(root) ---->  | App2
                             | App3
@@ -499,12 +508,12 @@ public:
             App2 --> |App1 e App3
             App3 --> |App1 e App2
     */
-    static HandleGroup createTeam(std::string participants, std::string root, std::string type) {
+    static HandleGroup createTeam(std::string participants, std::string root, CollectiveType type) {
 
 
 #ifndef ENABLE_CONFIGFILE
         MTCL_ERROR("[Manager]:\t", "Team creation is only available with a configuration file\n");
-        return HandleGroup(nullptr, std::vector<Handle*>{}, type, false);
+        return HandleGroup(nullptr, 0, type, false);
 #else
 
         // Retrieve team size
@@ -512,40 +521,60 @@ public:
         std::istringstream is(participants);
         std::string line;
         int rank = 0;
+        bool mpi_impl = true, ucc_impl = true;
         while(std::getline(is, line, ':')) {
             if(Manager::appName == line) {
                 rank=size;
             }
+
+            bool mpi = false;
+            bool ucc = false;
+            auto protocols = std::get<1>(components[line]);
+            for (auto &prot : protocols) {
+                mpi |= prot == "MPI";
+                ucc |= prot == "UCX";
+            }
+
+            mpi_impl &= mpi;
+            ucc_impl &= ucc;
+
             size++;
         }
-        printf("Initializing collective with size: %d - AppName: %s - rank: %d\n", size, Manager::appName.c_str(), rank);
+        printf("Initializing collective with size: %d - AppName: %s - rank: %d - mpi: %d - ucc: %d\n", size, Manager::appName.c_str(), rank, mpi_impl, ucc_impl);
 
-        std::string teamID{participants + root + type};
+        std::string teamID{participants + root + std::to_string(type)};
 
         std::vector<Handle*> coll_handles;
+
+        ImplementationType impl;
+        if(mpi_impl) impl = MPI;
+        else if(ucc_impl) impl = UCC;
+        else impl = GENERIC;
 
         auto ctx = createContext(type, size, Manager::appName == root, rank);
         if(Manager::appName == root) {
             if(ctx == nullptr) {
                 MTCL_ERROR("[Manager]:\t", "Operation type not supported\n");
-                return HandleGroup(nullptr, std::vector<Handle*>{}, type, false);
+                return HandleGroup(nullptr, 0, type, false);
             }
+
+            //#ifdef SINGLE_IO_THREAD
+            //TODO: codice single_io_thread con chiamata a conn->update come per
+            //      getNext in single_io_thread
+
+            //#else
 
             // Accetta tante connessioni quanti sono i partecipanti
             // Qui mi serve recuperare esattamente gli handle che hanno fatto
             // connect per partecipazione ad una collettiva specifica
             std::unique_lock lk(group_mutex);
             group_cond.wait(lk, [&]{
-                printf("TeamID: %s\n", teamID.c_str());
-                if(groupsReady.count(teamID) != 0) {
-                    printf("Condition: %ld\n", groupsReady.at(teamID).size());
-                }
                 return (groupsReady.count(teamID) != 0) && ctx->update(groupsReady.at(teamID).size());
             });
             coll_handles = groupsReady.at(teamID);
-            printf("coll size: %ld\n", coll_handles.size());
             groupsReady.erase(teamID);
             size--;
+            //#endif
         }
         else {
             if(components.count(root) == 0) {
@@ -578,8 +607,9 @@ public:
 
             coll_handles.push_back(handle);
         }
-
-        return HandleGroup(ctx, coll_handles, type, Manager::appName == root);
+        printf("Coll_handles size: %ld\n", coll_handles.size());
+        ctx->setImplementation(impl, coll_handles);
+        return HandleGroup(ctx, coll_handles.size(), type, Manager::appName == root);
 
 #endif
 

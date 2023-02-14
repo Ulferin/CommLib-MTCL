@@ -40,8 +40,7 @@ int main(int argc, char** argv){
 
     // Root
     if(rank == 0) {
-        Manager::listen("TCP:0.0.0.0:42000");
-        auto hg = Manager::createTeam("App1:App2:App3", 3, "App1", "fan-in");
+        auto hg = Manager::createTeam("App1:App2:App3", "App1", FANIN);
 
         if(hg.isValid())
             printf("Correctly created team\n");
@@ -62,7 +61,7 @@ int main(int argc, char** argv){
         
     }
     else {
-        auto hg = Manager::createTeam("App1:App2:App3", 3, "App1", "fan-in");
+        auto hg = Manager::createTeam("App1:App2:App3", "App1", FANIN);
 
         if(hg.isValid())
             printf("Correctly created team\n");

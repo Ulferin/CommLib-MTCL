@@ -18,6 +18,8 @@
  * [x] Broadcast collective 
  * [x] Fan-in/Fan-out
  * [ ] Restituzione gruppo a Manager
+ * [ ] Check funzionamento multiprotocollo
+ * [ ] Implementazione delle collettive con ottimizzazioni protocol-specific
  * 
  */
 
@@ -48,10 +50,9 @@ int main(int argc, char** argv){
 
     // Root
     if(rank == 0) {
-        Manager::listen(listen_str);
 
-        auto hg = Manager::createTeam("App1:App2:App3", 3, "App1", "broadcast");
-        auto hg2 = Manager::createTeam("App1:App2", 2, "App1", "broadcast");
+        auto hg = Manager::createTeam("App1:App2:App3", "App1", BROADCAST);
+        auto hg2 = Manager::createTeam("App1:App2", "App1", BROADCAST);
 
         hg.send((void*)hello.c_str(), hello.length());
         hg2.send((void*)hello.c_str(), hello.length());
@@ -61,11 +62,11 @@ int main(int argc, char** argv){
         hg2.close();
     }
     else {
-		auto hg = Manager::createTeam("App1:App2:App3", 3, "App1", "broadcast");
+		auto hg = Manager::createTeam("App1:App2:App3", "App1", BROADCAST);
 
         HandleGroup hg2;
         if(rank==1)
-            hg2 = Manager::createTeam("App1:App2", 2, "App1", "broadcast");
+            hg2 = Manager::createTeam("App1:App2", "App1", BROADCAST);
         
         char* s = new char[hello.length()+1];
         hg.receive(s, hello.length());
