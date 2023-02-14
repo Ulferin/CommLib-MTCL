@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['manager_67',['Manager',['../classManager.html',1,'']]],
-  ['my_5finfo_68',['my_info',['../structmy__info.html',1,'']]]
+  ['shmbuffer_75',['shmBuffer',['../classshmBuffer.html',1,'']]],
+  ['shmsegment_76',['shmSegment',['../structshmBuffer_1_1shmSegment.html',1,'shmBuffer']]]
 ];
