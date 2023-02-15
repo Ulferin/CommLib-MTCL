@@ -638,34 +638,33 @@ $(function() {
 <div class="line"><a name="l00607"></a><span class="lineno">  607</span>&#160; </div>
 <div class="line"><a name="l00608"></a><span class="lineno">  608</span>&#160;            coll_handles.push_back(handle);</div>
 <div class="line"><a name="l00609"></a><span class="lineno">  609</span>&#160;        }</div>
-<div class="line"><a name="l00610"></a><span class="lineno">  610</span>&#160;        printf(<span class="stringliteral">&quot;Coll_handles size: %ld\n&quot;</span>, coll_handles.size());</div>
-<div class="line"><a name="l00611"></a><span class="lineno">  611</span>&#160;        ctx-&gt;setImplementation(impl, coll_handles);</div>
-<div class="line"><a name="l00612"></a><span class="lineno">  612</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="classHandleGroup.html">HandleGroup</a>(ctx, coll_handles.size(), type, Manager::appName == root);</div>
-<div class="line"><a name="l00613"></a><span class="lineno">  613</span>&#160; </div>
-<div class="line"><a name="l00614"></a><span class="lineno">  614</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00615"></a><span class="lineno">  615</span>&#160; </div>
-<div class="line"><a name="l00616"></a><span class="lineno">  616</span>&#160;    }</div>
+<div class="line"><a name="l00610"></a><span class="lineno">  610</span>&#160;        ctx-&gt;setImplementation(impl, coll_handles);</div>
+<div class="line"><a name="l00611"></a><span class="lineno">  611</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="classHandleGroup.html">HandleGroup</a>(ctx, coll_handles.size(), type, Manager::appName == root);</div>
+<div class="line"><a name="l00612"></a><span class="lineno">  612</span>&#160; </div>
+<div class="line"><a name="l00613"></a><span class="lineno">  613</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00614"></a><span class="lineno">  614</span>&#160; </div>
+<div class="line"><a name="l00615"></a><span class="lineno">  615</span>&#160;    }</div>
+<div class="line"><a name="l00616"></a><span class="lineno">  616</span>&#160; </div>
 <div class="line"><a name="l00617"></a><span class="lineno">  617</span>&#160; </div>
-<div class="line"><a name="l00618"></a><span class="lineno">  618</span>&#160; </div>
-<div class="line"><a name="l00627"></a><span class="lineno"><a class="line" href="classManager.html#a842ea4e15e1f144e25a447b6a9df8d85">  627</a></span>&#160;    <span class="keyword">static</span> <a class="code" href="classHandleUser.html">HandleUser</a> <a class="code" href="classManager.html#a842ea4e15e1f144e25a447b6a9df8d85">connect</a>(std::string s) {</div>
-<div class="line"><a name="l00628"></a><span class="lineno">  628</span>&#160;        <a class="code" href="classHandle.html">Handle</a>* handle = connectHandle(s);</div>
-<div class="line"><a name="l00629"></a><span class="lineno">  629</span>&#160; </div>
-<div class="line"><a name="l00630"></a><span class="lineno">  630</span>&#160;        <span class="comment">// if handle is connected, we perform the handshake</span></div>
-<div class="line"><a name="l00631"></a><span class="lineno">  631</span>&#160;        <span class="keywordflow">if</span>(handle) {</div>
-<div class="line"><a name="l00632"></a><span class="lineno">  632</span>&#160;            <span class="keywordtype">int</span> collective = 0;</div>
-<div class="line"><a name="l00633"></a><span class="lineno">  633</span>&#160;            handle-&gt;<a class="code" href="classHandle.html#aae538673ad7023a3f7c298a7cfd5f513">send</a>(&amp;collective, <span class="keyword">sizeof</span>(<span class="keywordtype">int</span>));</div>
-<div class="line"><a name="l00634"></a><span class="lineno">  634</span>&#160;        }</div>
-<div class="line"><a name="l00635"></a><span class="lineno">  635</span>&#160; </div>
-<div class="line"><a name="l00636"></a><span class="lineno">  636</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="classHandleUser.html">HandleUser</a>(handle, <span class="keyword">true</span>, <span class="keyword">true</span>);</div>
-<div class="line"><a name="l00637"></a><span class="lineno">  637</span>&#160;    };</div>
-<div class="line"><a name="l00638"></a><span class="lineno">  638</span>&#160; </div>
-<div class="line"><a name="l00644"></a><span class="lineno"><a class="line" href="classManager.html#a52731c2088e57556428ec505b44e1839">  644</a></span>&#160;    <span class="keyword">static</span> std::string <a class="code" href="classManager.html#a52731c2088e57556428ec505b44e1839">getTypeOfHandle</a>(<a class="code" href="classHandleUser.html">HandleUser</a>&amp; h){</div>
-<div class="line"><a name="l00645"></a><span class="lineno">  645</span>&#160;        <span class="keywordflow">return</span> h.realHandle-&gt;parent-&gt;instanceName;</div>
-<div class="line"><a name="l00646"></a><span class="lineno">  646</span>&#160;    }</div>
-<div class="line"><a name="l00647"></a><span class="lineno">  647</span>&#160; </div>
-<div class="line"><a name="l00648"></a><span class="lineno">  648</span>&#160;};</div>
-<div class="line"><a name="l00649"></a><span class="lineno">  649</span>&#160; </div>
-<div class="line"><a name="l00650"></a><span class="lineno">  650</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00626"></a><span class="lineno"><a class="line" href="classManager.html#a842ea4e15e1f144e25a447b6a9df8d85">  626</a></span>&#160;    <span class="keyword">static</span> <a class="code" href="classHandleUser.html">HandleUser</a> <a class="code" href="classManager.html#a842ea4e15e1f144e25a447b6a9df8d85">connect</a>(std::string s) {</div>
+<div class="line"><a name="l00627"></a><span class="lineno">  627</span>&#160;        <a class="code" href="classHandle.html">Handle</a>* handle = connectHandle(s);</div>
+<div class="line"><a name="l00628"></a><span class="lineno">  628</span>&#160; </div>
+<div class="line"><a name="l00629"></a><span class="lineno">  629</span>&#160;        <span class="comment">// if handle is connected, we perform the handshake</span></div>
+<div class="line"><a name="l00630"></a><span class="lineno">  630</span>&#160;        <span class="keywordflow">if</span>(handle) {</div>
+<div class="line"><a name="l00631"></a><span class="lineno">  631</span>&#160;            <span class="keywordtype">int</span> collective = 0;</div>
+<div class="line"><a name="l00632"></a><span class="lineno">  632</span>&#160;            handle-&gt;<a class="code" href="classHandle.html#aae538673ad7023a3f7c298a7cfd5f513">send</a>(&amp;collective, <span class="keyword">sizeof</span>(<span class="keywordtype">int</span>));</div>
+<div class="line"><a name="l00633"></a><span class="lineno">  633</span>&#160;        }</div>
+<div class="line"><a name="l00634"></a><span class="lineno">  634</span>&#160; </div>
+<div class="line"><a name="l00635"></a><span class="lineno">  635</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="classHandleUser.html">HandleUser</a>(handle, <span class="keyword">true</span>, <span class="keyword">true</span>);</div>
+<div class="line"><a name="l00636"></a><span class="lineno">  636</span>&#160;    };</div>
+<div class="line"><a name="l00637"></a><span class="lineno">  637</span>&#160; </div>
+<div class="line"><a name="l00643"></a><span class="lineno"><a class="line" href="classManager.html#a52731c2088e57556428ec505b44e1839">  643</a></span>&#160;    <span class="keyword">static</span> std::string <a class="code" href="classManager.html#a52731c2088e57556428ec505b44e1839">getTypeOfHandle</a>(<a class="code" href="classHandleUser.html">HandleUser</a>&amp; h){</div>
+<div class="line"><a name="l00644"></a><span class="lineno">  644</span>&#160;        <span class="keywordflow">return</span> h.realHandle-&gt;parent-&gt;instanceName;</div>
+<div class="line"><a name="l00645"></a><span class="lineno">  645</span>&#160;    }</div>
+<div class="line"><a name="l00646"></a><span class="lineno">  646</span>&#160; </div>
+<div class="line"><a name="l00647"></a><span class="lineno">  647</span>&#160;};</div>
+<div class="line"><a name="l00648"></a><span class="lineno">  648</span>&#160; </div>
+<div class="line"><a name="l00649"></a><span class="lineno">  649</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassConnType_html"><div class="ttname"><a href="classConnType.html">ConnType</a></div><div class="ttdef"><b>Definition:</b> protocolInterface.hpp:10</div></div>
 <div class="ttc" id="aclassConnType_html_a4781ceaf1366e6d080092b60affb0a0e"><div class="ttname"><a href="classConnType.html#a4781ceaf1366e6d080092b60affb0a0e">ConnType::end</a></div><div class="ttdeci">virtual void end()=0</div><div class="ttdoc">Stop listening for new connections and terminate existing Handles.</div></div>
 <div class="ttc" id="aclassHandleGroup_html"><div class="ttname"><a href="classHandleGroup.html">HandleGroup</a></div><div class="ttdef"><b>Definition:</b> handleUser.hpp:35</div></div>
@@ -678,8 +677,8 @@ $(function() {
 <div class="ttc" id="aclassManager_html_a13ef8962565fa814360e541e2aaa0d21"><div class="ttname"><a href="classManager.html#a13ef8962565fa814360e541e2aaa0d21">Manager::getNext</a></div><div class="ttdeci">static HandleUser getNext(std::chrono::microseconds us=std::chrono::hours(87600))</div><div class="ttdoc">Get an handle ready to receive.</div><div class="ttdef"><b>Definition:</b> manager.hpp:345</div></div>
 <div class="ttc" id="aclassManager_html_a2a7189d20e75807bfc390de8fb6b2409"><div class="ttname"><a href="classManager.html#a2a7189d20e75807bfc390de8fb6b2409">Manager::listen</a></div><div class="ttdeci">static int listen(std::string s)</div><div class="ttdoc">Listen on incoming connections.</div><div class="ttdef"><b>Definition:</b> manager.hpp:385</div></div>
 <div class="ttc" id="aclassManager_html_a4ac2bbb9d72ac637066a079976eaf106"><div class="ttname"><a href="classManager.html#a4ac2bbb9d72ac637066a079976eaf106">Manager::finalize</a></div><div class="ttdeci">static void finalize()</div><div class="ttdoc">Finalize the manger closing all the pending open connections.</div><div class="ttdef"><b>Definition:</b> manager.hpp:300</div></div>
-<div class="ttc" id="aclassManager_html_a52731c2088e57556428ec505b44e1839"><div class="ttname"><a href="classManager.html#a52731c2088e57556428ec505b44e1839">Manager::getTypeOfHandle</a></div><div class="ttdeci">static std::string getTypeOfHandle(HandleUser &amp;h)</div><div class="ttdoc">Given an handle return the name of the protocol instance given in phase of registration.</div><div class="ttdef"><b>Definition:</b> manager.hpp:644</div></div>
-<div class="ttc" id="aclassManager_html_a842ea4e15e1f144e25a447b6a9df8d85"><div class="ttname"><a href="classManager.html#a842ea4e15e1f144e25a447b6a9df8d85">Manager::connect</a></div><div class="ttdeci">static HandleUser connect(std::string s)</div><div class="ttdoc">Connect to a peer.</div><div class="ttdef"><b>Definition:</b> manager.hpp:627</div></div>
+<div class="ttc" id="aclassManager_html_a52731c2088e57556428ec505b44e1839"><div class="ttname"><a href="classManager.html#a52731c2088e57556428ec505b44e1839">Manager::getTypeOfHandle</a></div><div class="ttdeci">static std::string getTypeOfHandle(HandleUser &amp;h)</div><div class="ttdoc">Given an handle return the name of the protocol instance given in phase of registration.</div><div class="ttdef"><b>Definition:</b> manager.hpp:643</div></div>
+<div class="ttc" id="aclassManager_html_a842ea4e15e1f144e25a447b6a9df8d85"><div class="ttname"><a href="classManager.html#a842ea4e15e1f144e25a447b6a9df8d85">Manager::connect</a></div><div class="ttdeci">static HandleUser connect(std::string s)</div><div class="ttdoc">Connect to a peer.</div><div class="ttdef"><b>Definition:</b> manager.hpp:626</div></div>
 <div class="ttc" id="aclassManager_html_ae01d0f9607b9f59c4781f0f4f582594c"><div class="ttname"><a href="classManager.html#ae01d0f9607b9f59c4781f0f4f582594c">Manager::init</a></div><div class="ttdeci">static void init(std::string appName, std::string configFile1=&quot;&quot;, std::string configFile2=&quot;&quot;)</div><div class="ttdoc">Initialization of the manager. Required to use the library.</div><div class="ttdef"><b>Definition:</b> manager.hpp:219</div></div>
 <div class="ttc" id="aclassManager_html_af0d2ab1463c5877b990cd7cd3fcb986d"><div class="ttname"><a href="classManager.html#af0d2ab1463c5877b990cd7cd3fcb986d">Manager::registerType</a></div><div class="ttdeci">static void registerType(std::string name)</div><div class="ttdoc">Create an instance of the protocol implementation.</div><div class="ttdef"><b>Definition:</b> manager.hpp:364</div></div>
 </div><!-- fragment --></div><!-- contents -->
