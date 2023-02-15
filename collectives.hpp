@@ -4,12 +4,25 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include "handle.hpp"
+#include "utils.hpp"
 
 #ifdef ENABLE_MPI
 #include <mpi.h>
 #endif
 
-#include "handle.hpp"
+// #define ENABLE_UCX
+#ifdef ENABLE_UCX
+#include <ucc/api/ucc.h>
+
+#define STR(x) #x
+#define UCC_CHECK(_call)                                                \
+    if (UCC_OK != (_call)) {                                            \
+        MTCL_PRINT(100, "[internal]: \t", "UCC fail %s\n", STR(_call)); \
+        exit(1);                                  \
+    }
+#endif
+
 
 enum CollectiveType {
     BROADCAST,
@@ -114,6 +127,265 @@ public:
             h->close(true, true);
     }
 };
+
+#ifdef ENABLE_UCX
+class UCCCollective : public CollectiveImpl {
+
+typedef struct UCC_coll_info {
+    std::vector<Handle*>* handles;      // Vector of handles of participants
+    int rank;                           // Local rank
+    int size;                           // Team size
+    bool root;
+    UCCCollective* coll_obj;
+} UCC_coll_info_t;
+
+protected:
+    int rank, size;
+    bool root;
+    ucc_lib_config_h     lib_config;
+    ucc_context_config_h ctx_config;
+    ucc_team_h           team;
+    ucc_context_h        ctx;
+    ucc_lib_h            lib;
+
+    static ucc_status_t oob_allgather(void *sbuf, void *rbuf, size_t msglen,
+                                  void *coll_info, void **req) {
+        UCC_coll_info_t* info = (UCC_coll_info_t*)coll_info;
+
+        auto handles = info->handles;
+
+        if(info->root) {
+            for(int i = 0; i < info->size-1; i++) {
+                handles->at(i)->send(&info->rank, sizeof(int));
+                int remote_rank;
+                info->coll_obj->receiveFromHandle(handles->at(i), &remote_rank, sizeof(int));
+                info->coll_obj->receiveFromHandle(handles->at(i), (char*)rbuf+(remote_rank*msglen), msglen);
+            }
+
+            memcpy((char*)rbuf+(info->rank*msglen), sbuf, msglen);
+            for(auto& p : *handles) {
+                p->send(rbuf, msglen*(info->size));
+            }
+
+        }
+        else {
+            int root_rank;
+            info->coll_obj->receiveFromHandle(handles->at(0), &root_rank, sizeof(int));
+
+            info->coll_obj->root_rank = root_rank;
+            handles->at(0)->send(&info->rank, sizeof(int));
+            handles->at(0)->send(sbuf, msglen);
+            size_t sz;
+            info->coll_obj->probeHandle(handles->at(0), sz, true);
+            info->coll_obj->receiveFromHandle(handles->at(0), rbuf, sz);
+        }
+
+        return UCC_OK;
+    }
+
+    static ucc_status_t oob_allgather_test(void *req) {
+        return UCC_OK;
+    }
+
+    static ucc_status_t oob_allgather_free(void *req) {
+        return UCC_OK;
+    }
+
+
+    /* Creates UCC team from a group of handles. */
+    static ucc_team_h create_ucc_team(UCC_coll_info_t* info, ucc_context_h ctx) {
+        int rank = info->rank;
+        int size = info->size;
+        ucc_team_h        team;
+        ucc_team_params_t team_params;
+        ucc_status_t      status;
+
+        team_params.mask          = UCC_TEAM_PARAM_FIELD_OOB;
+        team_params.oob.allgather = oob_allgather;
+        team_params.oob.req_test  = oob_allgather_test;
+        team_params.oob.req_free  = oob_allgather_free;
+        team_params.oob.coll_info = (void*)info;
+        team_params.oob.n_oob_eps = size;
+        team_params.oob.oob_ep    = rank;
+
+        UCC_CHECK(ucc_team_create_post(&ctx, 1, &team_params, &team));
+        while (UCC_INPROGRESS == (status = ucc_team_create_test(team))) {
+            UCC_CHECK(ucc_context_progress(ctx));
+        };
+        if (UCC_OK != status) {
+            fprintf(stderr, "failed to create ucc team\n");
+            //TODO: CHECK
+            exit(1);
+        }
+        return team;
+    }
+
+public:
+    int root_rank;
+
+    UCCCollective(std::vector<Handle*> participants, int rank, int size, bool root) : CollectiveImpl(participants), rank(rank), size(size), root(root) {
+        /* === UCC collective operation === */
+        /* Init ucc library */
+        ucc_lib_params_t lib_params = {
+            .mask        = UCC_LIB_PARAM_FIELD_THREAD_MODE,
+            .thread_mode = UCC_THREAD_SINGLE
+        };
+        UCC_CHECK(ucc_lib_config_read(NULL, NULL, &lib_config));
+        UCC_CHECK(ucc_init(&lib_params, lib_config, &lib));
+        ucc_lib_config_release(lib_config);
+
+        if(root) root_rank = rank;
+
+        UCC_coll_info_t* info = new UCC_coll_info_t();
+        info->handles = &participants;
+        info->rank = rank;
+        info->size = size;
+        info->root = root;
+        info->coll_obj = this;
+
+        /* Init ucc context for a specified UCC_TEST_TLS */
+        ucc_context_oob_coll_t oob = {
+            .allgather    = oob_allgather,
+            .req_test     = oob_allgather_test,
+            .req_free     = oob_allgather_free,
+            .coll_info    = (void*)info,
+            .n_oob_eps    = (uint32_t)size, 
+            .oob_ep       = (uint32_t)rank 
+        };
+
+
+        ucc_context_params_t ctx_params = {
+            .mask             = UCC_CONTEXT_PARAM_FIELD_OOB,
+            .oob              = oob
+        };
+
+        UCC_CHECK(ucc_context_config_read(lib, NULL, &ctx_config));
+        UCC_CHECK(ucc_context_create(lib, &ctx_params, ctx_config, &ctx));
+        ucc_context_config_release(ctx_config);
+
+        team = create_ucc_team(info, ctx);
+    }
+
+};
+
+class BroadcastUCC : public UCCCollective {
+
+private:
+    ssize_t last_probe = -1;
+    ucc_coll_req_h req = nullptr;
+
+public:
+    BroadcastUCC(std::vector<Handle*> participants, int rank, int size, bool root) : UCCCollective(participants, rank, size, root) {}
+
+
+    ssize_t probe(size_t& size, const bool blocking=true) {
+        if(last_probe != -1) {
+            size = last_probe;
+            return sizeof(size_t);
+        }
+        
+        ucc_coll_args_t      args;
+        if(req == nullptr) {
+
+            /* BROADCAST HEADER */
+            args.mask              = 0;
+            args.coll_type         = UCC_COLL_TYPE_BCAST;
+            args.src.info.buffer   = &size;
+            args.src.info.count    = 1;
+            args.src.info.datatype = UCC_DT_UINT64;
+            args.src.info.mem_type = UCC_MEMORY_TYPE_HOST;
+            args.root              = root_rank;
+
+            UCC_CHECK(ucc_collective_init(&args, &req, team)); 
+            UCC_CHECK(ucc_collective_post(req));
+        }
+
+        if(blocking) {
+            while (UCC_INPROGRESS == ucc_collective_test(req)) { 
+                UCC_CHECK(ucc_context_progress(ctx));
+            }
+        }
+        else {
+            UCC_CHECK(ucc_context_progress(ctx));
+            if(UCC_INPROGRESS == ucc_collective_test(req)) {
+                errno = EWOULDBLOCK;
+                return -1;
+            }
+        }
+        ucc_collective_finalize(req);
+        last_probe = size;
+        req = nullptr;
+        return sizeof(size_t);
+    }
+
+    ssize_t send(const void* buff, size_t size) {
+        ucc_coll_args_t      args;
+        ucc_coll_req_h       request;
+
+        /* BROADCAST HEADER */
+        args.mask              = 0;
+        args.coll_type         = UCC_COLL_TYPE_BCAST;
+        args.src.info.buffer   = &size;
+        args.src.info.count    = 1;
+        args.src.info.datatype = UCC_DT_UINT64;
+        args.src.info.mem_type = UCC_MEMORY_TYPE_HOST;
+        args.root              = root_rank;
+
+        UCC_CHECK(ucc_collective_init(&args, &request, team)); 
+        UCC_CHECK(ucc_collective_post(request));    
+        while (UCC_INPROGRESS == ucc_collective_test(request)) { 
+            UCC_CHECK(ucc_context_progress(ctx));
+        }
+        ucc_collective_finalize(request);
+        
+        /* BROADCAST DATA */
+        args.src.info.buffer = (void*)buff;
+        args.src.info.count = size;
+        args.src.info.datatype = UCC_DT_UINT8;
+
+        UCC_CHECK(ucc_collective_init(&args, &request, team)); 
+        UCC_CHECK(ucc_collective_post(request));    
+        while (UCC_INPROGRESS == ucc_collective_test(request)) { 
+            UCC_CHECK(ucc_context_progress(ctx));
+        }
+        ucc_collective_finalize(request);
+
+        return size;
+    }
+
+
+    ssize_t receive(void* buff, size_t size) {
+        size_t sz;
+        if(last_probe == -1) probe(sz, true);
+        
+        ucc_coll_args_t      args;
+        ucc_coll_req_h       req;
+
+        /* BROADCAST DATA */
+        args.mask              = 0;
+        args.coll_type         = UCC_COLL_TYPE_BCAST;
+        args.src.info.buffer   = (void*)buff;
+        args.src.info.count    = sz;
+        args.src.info.datatype = UCC_DT_UINT8;
+        args.src.info.mem_type = UCC_MEMORY_TYPE_HOST;
+        args.root              = root_rank;
+
+        UCC_CHECK(ucc_collective_init(&args, &req, team)); 
+        UCC_CHECK(ucc_collective_post(req));    
+        while (UCC_INPROGRESS == ucc_collective_test(req)) { 
+            UCC_CHECK(ucc_context_progress(ctx));
+        }
+        ucc_collective_finalize(req);
+        
+        last_probe = -1;
+
+        return size;
+    }
+
+
+};
+#endif
+
 
 #ifdef ENABLE_MPI
 /**
@@ -240,12 +512,17 @@ class BroadcastMPI : public MPICollective {
 private:
     MPI_Request request_header = MPI_REQUEST_NULL;
     bool probed;
+    ssize_t last_probed = -1;
 
 public:
     BroadcastMPI(std::vector<Handle*> participants, bool root) : MPICollective(participants, root) {}
 
 
     ssize_t probe(size_t& size, const bool blocking=true) {
+        if(last_probed != -1) {
+            size = last_probed;
+            return sizeof(size_t);
+        }
 
         if(request_header == MPI_REQUEST_NULL) {
             MPI_Ibcast(&size, 1, MPI_UNSIGNED_LONG, root_rank, comm, &request_header);
@@ -271,12 +548,8 @@ public:
                 return -1;
             }
         }
-
-        if(MPI_Get_count(&status, MPI_BYTE, &count) != MPI_SUCCESS) {
-            MTCL_ERROR("[internal]:\t", "BroadcastMPI get_count failed\n");
-            return -1;
-        }
-        size = (size_t)count;            
+        request_header = MPI_REQUEST_NULL;
+        last_probed = size;            
 
         return sizeof(size_t);
     }
@@ -295,13 +568,14 @@ public:
 
     ssize_t receive(void* buff, size_t size) {
         size_t sz;
-        if(!probed) probe(sz, true);
+        if(last_probed == -1) probe(sz, true);
         
         if(MPI_Bcast((void*)buff, size, MPI_BYTE, root_rank, comm) != MPI_SUCCESS) {
             errno = ECOMM;
             return -1;
         }
         
+        last_probed = -1;
 
         return size;
     }
@@ -315,6 +589,8 @@ private:
 
 public:
     ssize_t probe(size_t& size, const bool blocking=true) {
+        //TODO: aggiungere check su probed_idx per controllare se è già stata fatta
+        //      una probe in precedenza
         ssize_t res = -1;
         auto iter = participants.begin();
         while(res == -1) {
@@ -462,7 +738,7 @@ public:
     CollectiveContext(int size, bool root, int rank, CollectiveType type) : size(size), root(root), rank(rank), type(type) {}
 
     void setImplementation(ImplementationType impl, std::vector<Handle*> participants) {
-        static const std::map<CollectiveType, std::function<CollectiveImpl*()>> contexts = {
+        const std::map<CollectiveType, std::function<CollectiveImpl*()>> contexts = {
             {BROADCAST,  [&]{
                     CollectiveImpl* coll;
                     switch (impl) {
@@ -478,7 +754,11 @@ public:
                             #endif
                             break;
                         case UCC:
+                            #ifdef ENABLE_UCX
+                            coll = new BroadcastUCC(participants, rank, size, root);
+                            #else
                             coll = nullptr;
+                            #endif
                             break;
                         default:
                             coll = nullptr;

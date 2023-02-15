@@ -51,18 +51,21 @@ int main(int argc, char** argv){
     // Root
     if(rank == 0) {
 
-        auto hg = Manager::createTeam("App1:App2:App3", "App1", BROADCAST);
+        auto hg = Manager::createTeam("App1:App2:App3:App4", "App1", BROADCAST);
         auto hg2 = Manager::createTeam("App1:App2", "App1", BROADCAST);
+        // auto hg = Manager::createTeam("App1:App3:App2", "App1", BROADCAST);
 
         hg.send((void*)hello.c_str(), hello.length());
         hg2.send((void*)hello.c_str(), hello.length());
         hg.send((void*)bye.c_str(), bye.length());
 
+
         hg.close();
         hg2.close();
     }
     else {
-		auto hg = Manager::createTeam("App1:App2:App3", "App1", BROADCAST);
+		// auto hg = Manager::createTeam("App1:App3:App2", "App1", BROADCAST);
+		auto hg = Manager::createTeam("App1:App2:App3:App4", "App1", BROADCAST);
 
         HandleGroup hg2;
         if(rank==1)

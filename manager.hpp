@@ -607,7 +607,6 @@ public:
 
             coll_handles.push_back(handle);
         }
-        printf("Coll_handles size: %ld\n", coll_handles.size());
         ctx->setImplementation(impl, coll_handles);
         return HandleGroup(ctx, coll_handles.size(), type, Manager::appName == root);
 

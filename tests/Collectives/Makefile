@@ -15,6 +15,17 @@ ifdef SINGLE_IO_THREAD
 	CXXFLAGS +=-DSINGLE_IO_THREAD
 endif
 
+
+ifdef ENABLE_COLLECTIVES
+ifndef UCC_HOME
+$(error UCC_HOME env variable not defined!);
+endif
+	CXX 	= mpicxx
+	INCS += -I$(UCC_HOME)/include
+	LIBS += -L${UCC_HOME}/lib -Wl,-rpath,${UCC_HOME}/lib -lucc
+endif
+
+
 ifndef RAPIDJSON_HOME
 $(error RAPIDJSON_HOME env variable not defined!);
 endif
