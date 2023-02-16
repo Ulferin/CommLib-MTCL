@@ -12,8 +12,6 @@
  *  $> ./test_fanin 1 App3
  * 
  * 
- * TODO
- * [ ] check termination of clients while others are still sending
  * 
  * */
 

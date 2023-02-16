@@ -17,13 +17,13 @@
 #include "protocolInterface.hpp"
 #include "protocols/tcp.hpp"
 #include "protocols/shm.hpp"
-#include "collectives.hpp"
 // #define ENABLE_CONFIGFILE
 #ifdef ENABLE_CONFIGFILE
 #include <fstream>
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/istreamwrapper.h>
 #include <rapidjson/document.h>
+#include "collectives/collectiveContext.hpp"
 #endif
 
 #ifdef ENABLE_MPI
@@ -75,7 +75,6 @@ class Manager {
 private:
     Manager() {}
 
-//TODO: sistemare addinQ per SINGLE_IO_THREAD
 #if defined(SINGLE_IO_THREAD)
 	static inline void addinQ(bool b, Handle* h) {
         int collective = 0;
@@ -84,10 +83,26 @@ private:
             size_t size;
             h->probe(size, true);
             h->receive(&collective, sizeof(int));
+
+            // Se collettiva, leggo il teamID e aggiorno il contesto
+            // Questo serve per sincronizzazione del root sulle accept
+            if(collective) {
+                size_t size;
+                h->probe(size, true);
+                char* teamID = new char[size+1];
+                h->receive(teamID, size);
+                teamID[size] = '\0';
+
+                printf("Received connection for team: %s\n", teamID);
+
+                if(groupsReady.count(teamID) == 0)
+                    groupsReady.emplace(teamID, std::vector<Handle*>{});
+
+                groupsReady.at(teamID).push_back(h);
+                delete[] teamID;
+                return;
+            }
         }
-
-        //NOTE: invece che fare notify_one, fa semplicemente push_back sul vettore
-
 
 		handleReady.push(HandleUser(h, true, b));
 	}
@@ -513,7 +528,7 @@ public:
 
 #ifndef ENABLE_CONFIGFILE
         MTCL_ERROR("[Manager]:\t", "Team creation is only available with a configuration file\n");
-        return HandleGroup(nullptr, 0, type, false);
+        return HandleGroup(nullptr);
 #else
 
         // Retrieve team size
@@ -555,39 +570,55 @@ public:
         if(Manager::appName == root) {
             if(ctx == nullptr) {
                 MTCL_ERROR("[Manager]:\t", "Operation type not supported\n");
-                return HandleGroup(nullptr, 0, type, false);
+                return HandleGroup(nullptr);
             }
 
-            //#ifdef SINGLE_IO_THREAD
-            //TODO: codice single_io_thread con chiamata a conn->update come per
-            //      getNext in single_io_thread
-
-            //#else
-
-            // Accetta tante connessioni quanti sono i partecipanti
-            // Qui mi serve recuperare esattamente gli handle che hanno fatto
-            // connect per partecipazione ad una collettiva specifica
-            std::unique_lock lk(group_mutex);
-            group_cond.wait(lk, [&]{
-                return (groupsReady.count(teamID) != 0) && ctx->update(groupsReady.at(teamID).size());
-            });
-            coll_handles = groupsReady.at(teamID);
-            groupsReady.erase(teamID);
-            size--;
-            //#endif
+            // #define SINGLE_IO_THREAD
+            #if defined(SINGLE_IO_THREAD)
+                if ((groupsReady.count(teamID) != 0) && ctx->update(groupsReady.at(teamID).size())) {
+                    coll_handles = groupsReady.at(teamID);
+                    groupsReady.erase(teamID);
+                }
+                else {
+                    //NOTE: Active and indefinite wait for group creation
+                    do { 
+                        for(auto& [prot, conn] : protocolsMap) {
+                            conn->update();
+                        }
+                        if ((groupsReady.count(teamID) != 0) && ctx->update(groupsReady.at(teamID).size())) {
+                            coll_handles = groupsReady.at(teamID);
+                            groupsReady.erase(teamID);
+                            break;
+                        }
+                    } while(true);
+                }
+            #else
+                // Accetta tante connessioni quanti sono i partecipanti
+                // Qui mi serve recuperare esattamente gli handle che hanno fatto
+                // connect per partecipazione ad una collettiva specifica
+                std::unique_lock lk(group_mutex);
+                group_cond.wait(lk, [&]{
+                    return (groupsReady.count(teamID) != 0) && ctx->update(groupsReady.at(teamID).size());
+                });
+                coll_handles = groupsReady.at(teamID);
+                groupsReady.erase(teamID);
+                size--;
+            #endif
         }
         else {
             if(components.count(root) == 0) {
                 MTCL_ERROR("[Manager]:\t", "Requested root node is not in configuration file\n");
-                return HandleGroup(nullptr, {}, type, false);
+                return HandleGroup(nullptr);
             }
 
             // Retrieve root listening addresses and connect to one of them
             auto root_addrs = std::get<2>(components.at(root));
-            MTCL_PRINT(100, "[Manager]:\t", "Root endpoints are: %d\n", root_addrs.size());
 
             Handle* handle;
             for(auto& addr : root_addrs) {
+                //TODO: bisogna fare il detect del protocollo a cui fare la connect
+                //      se i booleani mpi_impl/ucc_impl sono settati, bisogna connettersi
+                //      esattamente a quel protocollo
                 handle = connectHandle(addr);
                 if(handle != nullptr) {
                     MTCL_PRINT(100, "[Manager]:\t", "Connection ok to %s\n", addr.c_str());
@@ -598,7 +629,7 @@ public:
 
             if(handle == nullptr) {
                 MTCL_ERROR("[Manager]:\t", "Could not establish a connection with root node \"%s\"\n", root.c_str());
-                return HandleGroup(nullptr, {}, type, false);
+                return HandleGroup(nullptr);
             }
 
             int collective = 1;
@@ -608,7 +639,7 @@ public:
             coll_handles.push_back(handle);
         }
         ctx->setImplementation(impl, coll_handles);
-        return HandleGroup(ctx, coll_handles.size(), type, Manager::appName == root);
+        return HandleGroup(ctx);
 
 #endif
 

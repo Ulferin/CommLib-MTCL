@@ -1,7 +1,7 @@
 #ifndef HANDLEUSER_HPP
 #define HANDLEUSER_HPP
 
-#include "collectives.hpp"
+#include "collectives/collectiveContext.hpp"
 #include "handle.hpp"
 #include "errno.h"
 
@@ -19,6 +19,7 @@ public:
     }
 
     virtual bool isValid() = 0;
+    virtual ssize_t probe(size_t& size, const bool blocking=true) = 0;
     virtual ssize_t receive(void* buff, size_t size) = 0;
     virtual ssize_t send(const void* buff, size_t size) = 0;
     virtual ssize_t execute(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
@@ -36,27 +37,44 @@ class HandleGroup : public HandleGeneric {
     friend class Manager;
 
 protected:
-    CollectiveContext* ctx;
-    CollectiveType type;
-    bool root, valid;
+    CollectiveContext* ctx = nullptr;
 
 
 public:
     HandleGroup() : HandleGeneric(true) {}
-    HandleGroup(CollectiveContext* ctx, int size, CollectiveType type, bool root) :  HandleGeneric(true),
-        ctx(ctx), type(type), root(root) {
-            valid = (size != 0);
-        }
+    HandleGroup(CollectiveContext* ctx) :  HandleGeneric(true), ctx(ctx) {}
 
     bool isValid() {
-        return valid;
+        return ctx != nullptr;
+    }
+
+    ssize_t probe(size_t& size, const bool blocking=true) {
+        if(!ctx) {
+            MTCL_PRINT(100, "[internal]:\t", "HandleGroup::probe EBADF\n");
+            errno = EBADF; // the "team context" is not valid or closed
+            return -1;
+        }
+
+        return ctx->probe(size, blocking);
     }
 
     ssize_t receive(void* buff, size_t size) {
+        if(!ctx) {
+            MTCL_PRINT(100, "[internal]:\t", "HandleGroup::receive EBADF\n");
+            errno = EBADF; // the "team context" is not valid or closed
+            return -1;
+        }
+
         return ctx->receive(buff, size);
     }
 
     ssize_t send(const void* buff, size_t size) {
+        if(!ctx) {
+            MTCL_PRINT(100, "[internal]:\t", "HandleGroup::send EBADF\n");
+            errno = EBADF; // the "team context" is not valid or closed
+            return -1;
+        }
+
         return ctx->send(buff, size);
     }
 

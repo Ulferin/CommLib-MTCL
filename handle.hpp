@@ -7,7 +7,6 @@
 #include "protocolInterface.hpp"
 
 class Handle {
-    friend class HandleGroup;
     friend class CollectiveImpl;
     friend class HandleUser;
     friend class Manager;

@@ -17,9 +17,9 @@
  * [x] Sincronizzazione su accept da parte del root 
  * [x] Broadcast collective 
  * [x] Fan-in/Fan-out
+ * [x] Implementazione delle collettive con ottimizzazioni protocol-specific
  * [ ] Restituzione gruppo a Manager
  * [ ] Check funzionamento multiprotocollo
- * [ ] Implementazione delle collettive con ottimizzazioni protocol-specific
  * 
  */
 
@@ -39,18 +39,12 @@ int main(int argc, char** argv){
         return 1;
     }
 
-    std::string listen_str{};
-    std::string connect_str{};
-
-    listen_str = {"TCP:0.0.0.0:42000"};
-    connect_str = {"TCP:0.0.0.0:42000"};
 
     int rank = atoi(argv[1]);
 	Manager::init(argv[2], "test_collectives.json");
 
     // Root
     if(rank == 0) {
-
         auto hg = Manager::createTeam("App1:App2:App3:App4", "App1", BROADCAST);
         auto hg2 = Manager::createTeam("App1:App2", "App1", BROADCAST);
         // auto hg = Manager::createTeam("App1:App3:App2", "App1", BROADCAST);
@@ -79,13 +73,16 @@ int main(int argc, char** argv){
         hg.receive(s, bye.length());
         s[bye.length()] = '\0';
         if(std::string(s) == bye)
-            printf("Received bye message\n");
+            printf("Received bye message: %s\n", bye.c_str());
         delete[] s;
 
         if(rank == 1) {
-            char* s2 = new char[hello.length()+1];
-            hg2.receive(s2, hello.length());
-            s2[hello.length()] = '\0';
+            char* s2;
+            size_t sz;
+            hg2.probe(sz, true);
+            s2 = new char[sz+1];
+            hg2.receive(s2, sz);
+            s2[sz] = '\0';
             std::cout << "Received: " << s2 << std::endl;
             delete[] s2;
             hg2.close();

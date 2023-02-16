@@ -3,13 +3,13 @@
         {
             "name" : "App1",
             "host" : "localhost",
-            "protocols" :  ["UCX", "TCP"],
-            "listen-endpoints" : ["UCX:0.0.0.0:43000", "TCP:0.0.0.0:42000"]
+            "protocols" :  ["MPI", "UCX", "TCP"],
+            "listen-endpoints" : ["MPI:0:10", "UCX:0.0.0.0:43000", "TCP:0.0.0.0:42000"]
         },
         {
             "name" : "App2",
             "host" : "localhost",
-            "protocols" : ["UCX", "TCP"]
+            "protocols" : ["MPI", "TCP"]
         },
         {
             "name" : "App3",
