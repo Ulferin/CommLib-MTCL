@@ -89,6 +89,9 @@ ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>send</b> (const vo
 <tr class="memitem:a1da9f64608fde6d33f3d339cff2a2bbb"><td class="memItemLeft" align="right" valign="top"><a id="a1da9f64608fde6d33f3d339cff2a2bbb"></a>
 ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>receive</b> (void *buff, size_t size)</td></tr>
 <tr class="separator:a1da9f64608fde6d33f3d339cff2a2bbb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa5d929ac88c701169e7f9b91c04d0fca"><td class="memItemLeft" align="right" valign="top"><a id="aa5d929ac88c701169e7f9b91c04d0fca"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>close</b> (bool close_wr=true, bool close_rd=true)</td></tr>
+<tr class="separator:aa5d929ac88c701169e7f9b91c04d0fca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a891aa77be680ccbc5673f7551b0cbaf7"><td class="memItemLeft" align="right" valign="top"><a id="a891aa77be680ccbc5673f7551b0cbaf7"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>FanOutGeneric</b> (std::vector&lt; <a class="el" href="classHandle.html">Handle</a> * &gt; participants)</td></tr>
 <tr class="separator:a891aa77be680ccbc5673f7551b0cbaf7"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -96,9 +99,6 @@ ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>receive</b> (void 
 <tr class="memitem:a251d2eadbcb528c38a7017bb4b2c5427 inherit pub_methods_classCollectiveImpl"><td class="memItemLeft" align="right" valign="top"><a id="a251d2eadbcb528c38a7017bb4b2c5427"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>CollectiveImpl</b> (std::vector&lt; <a class="el" href="classHandle.html">Handle</a> * &gt; participants)</td></tr>
 <tr class="separator:a251d2eadbcb528c38a7017bb4b2c5427 inherit pub_methods_classCollectiveImpl"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a632d86d4777f4d79bd2d5a9eff7fa10b inherit pub_methods_classCollectiveImpl"><td class="memItemLeft" align="right" valign="top"><a id="a632d86d4777f4d79bd2d5a9eff7fa10b"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>close</b> ()</td></tr>
-<tr class="separator:a632d86d4777f4d79bd2d5a9eff7fa10b inherit pub_methods_classCollectiveImpl"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
@@ -109,6 +109,9 @@ ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>probeHandle</b> (<
 <tr class="memitem:a412910349dcdb17fdcff38ec4c575a54 inherit pro_methods_classCollectiveImpl"><td class="memItemLeft" align="right" valign="top"><a id="a412910349dcdb17fdcff38ec4c575a54"></a>
 ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>receiveFromHandle</b> (<a class="el" href="classHandle.html">Handle</a> *realHandle, void *buff, size_t size)</td></tr>
 <tr class="separator:a412910349dcdb17fdcff38ec4c575a54 inherit pro_methods_classCollectiveImpl"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a44c96934d8990398281082171c8f2f9a inherit pro_methods_classCollectiveImpl"><td class="memItemLeft" align="right" valign="top"><a id="a44c96934d8990398281082171c8f2f9a"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>flushHandle</b> (<a class="el" href="classHandle.html">Handle</a> *h)</td></tr>
+<tr class="separator:a44c96934d8990398281082171c8f2f9a inherit pro_methods_classCollectiveImpl"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_attribs_classCollectiveImpl"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_classCollectiveImpl')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="classCollectiveImpl.html">CollectiveImpl</a></td></tr>
 <tr class="memitem:a4b99364e3b4f3252d09aba2594da365d inherit pro_attribs_classCollectiveImpl"><td class="memItemLeft" align="right" valign="top"><a id="a4b99364e3b4f3252d09aba2594da365d"></a>
 std::vector&lt; <a class="el" href="classHandle.html">Handle</a> * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>participants</b></td></tr>

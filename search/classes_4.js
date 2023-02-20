@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['manager_71',['Manager',['../classManager.html',1,'']]],
-  ['mpicollective_72',['MPICollective',['../classMPICollective.html',1,'']]],
-  ['my_5finfo_73',['my_info',['../structmy__info.html',1,'']]]
+  ['manager_69',['Manager',['../classManager.html',1,'']]],
+  ['mpicollective_70',['MPICollective',['../classMPICollective.html',1,'']]],
+  ['my_5finfo_71',['my_info',['../structmy__info.html',1,'']]]
 ];

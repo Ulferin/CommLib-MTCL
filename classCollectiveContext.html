@@ -63,12 +63,22 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="classCollectiveContext-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">CollectiveContext Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+<div class="dynheader">
+Inheritance diagram for CollectiveContext:</div>
+<div class="dyncontent">
+ <div class="center">
+  <img src="classCollectiveContext.png" usemap="#CollectiveContext_map" alt=""/>
+  <map id="CollectiveContext_map" name="CollectiveContext_map">
+<area href="classCommunicationHandle.html" alt="CommunicationHandle" shape="rect" coords="0,0,137,24"/>
+  </map>
+</div></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -93,12 +103,34 @@ size_t&#160;</td><td class="memItemRight" valign="bottom"><b>getSize</b> ()</td>
 <tr class="memitem:aebfa1bcd0ffcf7f4e95a9a44246d8f37"><td class="memItemLeft" align="right" valign="top">ssize_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCollectiveContext.html#aebfa1bcd0ffcf7f4e95a9a44246d8f37">probe</a> (size_t &amp;size, const bool blocking=true)</td></tr>
 <tr class="memdesc:aebfa1bcd0ffcf7f4e95a9a44246d8f37"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check for incoming message and write in <b>size</b> the amount of data present in the message.  <a href="classCollectiveContext.html#aebfa1bcd0ffcf7f4e95a9a44246d8f37">More...</a><br /></td></tr>
 <tr class="separator:aebfa1bcd0ffcf7f4e95a9a44246d8f37"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afafd67f2d1302f678743aa2ad22f35f1"><td class="memItemLeft" align="right" valign="top"><a id="afafd67f2d1302f678743aa2ad22f35f1"></a>
-virtual ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>execute</b> (const void *sendbuff, size_t sendsize, void *recvbuff, size_t recvsize)</td></tr>
-<tr class="separator:afafd67f2d1302f678743aa2ad22f35f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af99a5e18fcc556841313b3207f7bb76c"><td class="memItemLeft" align="right" valign="top"><a id="af99a5e18fcc556841313b3207f7bb76c"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>close</b> ()</td></tr>
-<tr class="separator:af99a5e18fcc556841313b3207f7bb76c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a96e4d6f7851eb35347e636189ebc55c4"><td class="memItemLeft" align="right" valign="top"><a id="a96e4d6f7851eb35347e636189ebc55c4"></a>
+ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>execute</b> (const void *sendbuff, size_t sendsize, void *recvbuff, size_t recvsize)</td></tr>
+<tr class="separator:a96e4d6f7851eb35347e636189ebc55c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a68e55fac7611fcb094ca24b874ee6e53"><td class="memItemLeft" align="right" valign="top"><a id="a68e55fac7611fcb094ca24b874ee6e53"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>close</b> (bool close_wr=true, bool close_rd=true)</td></tr>
+<tr class="separator:a68e55fac7611fcb094ca24b874ee6e53"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0bbb642841274f2fa8529f7a1609342d"><td class="memItemLeft" align="right" valign="top"><a id="a0bbb642841274f2fa8529f7a1609342d"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>yield</b> ()</td></tr>
+<tr class="separator:a0bbb642841274f2fa8529f7a1609342d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classCommunicationHandle"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classCommunicationHandle')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classCommunicationHandle.html">CommunicationHandle</a></td></tr>
+<tr class="memitem:aefb30253430e0fc0395e39e1998e2e1e inherit pub_methods_classCommunicationHandle"><td class="memItemLeft" align="right" valign="top"><a id="aefb30253430e0fc0395e39e1998e2e1e"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setName</b> (const std::string &amp;name)</td></tr>
+<tr class="separator:aefb30253430e0fc0395e39e1998e2e1e inherit pub_methods_classCommunicationHandle"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab988a9f0ab946f0c526f722043cae753 inherit pub_methods_classCommunicationHandle"><td class="memItemLeft" align="right" valign="top"><a id="ab988a9f0ab946f0c526f722043cae753"></a>
+const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>getName</b> ()</td></tr>
+<tr class="separator:ab988a9f0ab946f0c526f722043cae753 inherit pub_methods_classCommunicationHandle"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6b2fc0b1e0619b006227d016221287f0 inherit pub_methods_classCommunicationHandle"><td class="memItemLeft" align="right" valign="top"><a id="a6b2fc0b1e0619b006227d016221287f0"></a>
+const bool&#160;</td><td class="memItemRight" valign="bottom"><b>isClosed</b> ()</td></tr>
+<tr class="separator:a6b2fc0b1e0619b006227d016221287f0 inherit pub_methods_classCommunicationHandle"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
+Protected Member Functions</h2></td></tr>
+<tr class="memitem:a12a2eece04b9b7f8c46a33dba4649e38"><td class="memItemLeft" align="right" valign="top"><a id="a12a2eece04b9b7f8c46a33dba4649e38"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>incrementReferenceCounter</b> ()</td></tr>
+<tr class="separator:a12a2eece04b9b7f8c46a33dba4649e38"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a02e37158dcb264429db48d54e23c2977"><td class="memItemLeft" align="right" valign="top"><a id="a02e37158dcb264429db48d54e23c2977"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>decrementReferenceCounter</b> ()</td></tr>
+<tr class="separator:a02e37158dcb264429db48d54e23c2977"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
@@ -126,12 +158,22 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>canReceive</b></td></
 <tr class="memitem:aa04190da788592867d3c85361f095422"><td class="memItemLeft" align="right" valign="top"><a id="aa04190da788592867d3c85361f095422"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>completed</b> = false</td></tr>
 <tr class="separator:aa04190da788592867d3c85361f095422"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a35dd3a283244facf328f2155c9733aee"><td class="memItemLeft" align="right" valign="top"><a id="a35dd3a283244facf328f2155c9733aee"></a>
-std::pair&lt; bool, size_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>probed</b> {false, 0}</td></tr>
-<tr class="separator:a35dd3a283244facf328f2155c9733aee"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4b89ed6fe748f8cf93dcbfecadf98b49"><td class="memItemLeft" align="right" valign="top"><a id="a4b89ed6fe748f8cf93dcbfecadf98b49"></a>
-std::atomic&lt; bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>closed</b> {false}</td></tr>
-<tr class="separator:a4b89ed6fe748f8cf93dcbfecadf98b49"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pro_attribs_classCommunicationHandle"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_classCommunicationHandle')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="classCommunicationHandle.html">CommunicationHandle</a></td></tr>
+<tr class="memitem:ad0f1028c8df213225d362843f4d43eaf inherit pro_attribs_classCommunicationHandle"><td class="memItemLeft" align="right" valign="top"><a id="ad0f1028c8df213225d362843f4d43eaf"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>handleName</b> {&quot;no-name-provided&quot;}</td></tr>
+<tr class="separator:ad0f1028c8df213225d362843f4d43eaf inherit pro_attribs_classCommunicationHandle"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a07c88d1b2ca42a18adb229d0dfc18730 inherit pro_attribs_classCommunicationHandle"><td class="memItemLeft" align="right" valign="top"><a id="a07c88d1b2ca42a18adb229d0dfc18730"></a>
+std::pair&lt; bool, size_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>probed</b> {false,0}</td></tr>
+<tr class="separator:a07c88d1b2ca42a18adb229d0dfc18730 inherit pro_attribs_classCommunicationHandle"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af27ffc77507825317b87231f94b4edcd inherit pro_attribs_classCommunicationHandle"><td class="memItemLeft" align="right" valign="top"><a id="af27ffc77507825317b87231f94b4edcd"></a>
+std::atomic&lt; bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>closed_rd</b> = false</td></tr>
+<tr class="separator:af27ffc77507825317b87231f94b4edcd inherit pro_attribs_classCommunicationHandle"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a015548a38885108c7770db9030ff8e91 inherit pro_attribs_classCommunicationHandle"><td class="memItemLeft" align="right" valign="top"><a id="a015548a38885108c7770db9030ff8e91"></a>
+std::atomic&lt; bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>closed_wr</b> = false</td></tr>
+<tr class="separator:a015548a38885108c7770db9030ff8e91 inherit pro_attribs_classCommunicationHandle"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a18275bdd41bf7c6075a81af7d8eb0194 inherit pro_attribs_classCommunicationHandle"><td class="memItemLeft" align="right" valign="top"><a id="a18275bdd41bf7c6075a81af7d8eb0194"></a>
+std::atomic&lt; int &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>counter</b> = 0</td></tr>
+<tr class="separator:a18275bdd41bf7c6075a81af7d8eb0194 inherit pro_attribs_classCommunicationHandle"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a id="aebfa1bcd0ffcf7f4e95a9a44246d8f37"></a>
@@ -163,7 +205,7 @@ std::atomic&lt; bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
@@ -177,6 +219,8 @@ std::atomic&lt; bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ssize_t <code>sizeof(size_t)</code> upon success. If <code>-1</code> is returned, the error can be checked via <b>errno</b>. </dd></dl>
+
+<p>Implements <a class="el" href="classCommunicationHandle.html#a90f9b76556254ee26b4eaf57e216349f">CommunicationHandle</a>.</p>
 
 </div>
 </div>
@@ -209,7 +253,7 @@ std::atomic&lt; bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
@@ -223,6 +267,8 @@ std::atomic&lt; bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ssize_t if successful, returns the amount of data written in the buffer. Otherwise, -1 is return and <b>errno</b> is set. </dd></dl>
+
+<p>Implements <a class="el" href="classCommunicationHandle.html#a8d978b07b48a5e86c65a502cdd739d42">CommunicationHandle</a>.</p>
 
 </div>
 </div>
@@ -255,7 +301,7 @@ std::atomic&lt; bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
@@ -269,6 +315,8 @@ std::atomic&lt; bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ssize_t if successful, returns <b>size</b>. Otherwise, -1 is returned and <b>errno</b> is set. </dd></dl>
+
+<p>Implements <a class="el" href="classCommunicationHandle.html#a8fb025ad7663cc51002f7bc411f03920">CommunicationHandle</a>.</p>
 
 </div>
 </div>
