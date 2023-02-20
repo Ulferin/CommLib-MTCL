@@ -148,6 +148,10 @@ public:
         team = create_ucc_team(info, ctx);
     }
 
+    void close(bool close_wr=true, bool close_rd=true) {
+        return;
+    }
+
 };
 
 

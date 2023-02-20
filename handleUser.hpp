@@ -5,105 +5,16 @@
 #include "handle.hpp"
 #include "errno.h"
 
-class HandleGeneric {
-
-protected:
-    bool collective;
-
-public:
-    HandleGeneric() {}
-    HandleGeneric(bool collective) : collective(collective) {}
-
-    virtual bool isCollective() {
-        return collective;
-    }
-
-    virtual bool isValid() = 0;
-    virtual ssize_t probe(size_t& size, const bool blocking=true) = 0;
-    virtual ssize_t receive(void* buff, size_t size) = 0;
-    virtual ssize_t send(const void* buff, size_t size) = 0;
-    virtual ssize_t execute(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
-        errno = EINVAL;
-        return -1;
-    }
-    virtual size_t size() {
-        return 1;
-    }
-    virtual void close() = 0;
-
-};
-
-class HandleGroup : public HandleGeneric {
-    friend class Manager;
-
-protected:
-    CollectiveContext* ctx = nullptr;
-
-
-public:
-    HandleGroup() : HandleGeneric(true) {}
-    HandleGroup(CollectiveContext* ctx) :  HandleGeneric(true), ctx(ctx) {}
-
-    bool isValid() {
-        return ctx != nullptr;
-    }
-
-    ssize_t probe(size_t& size, const bool blocking=true) {
-        if(!ctx) {
-            MTCL_PRINT(100, "[internal]:\t", "HandleGroup::probe EBADF\n");
-            errno = EBADF; // the "team context" is not valid or closed
-            return -1;
-        }
-
-        return ctx->probe(size, blocking);
-    }
-
-    ssize_t receive(void* buff, size_t size) {
-        if(!ctx) {
-            MTCL_PRINT(100, "[internal]:\t", "HandleGroup::receive EBADF\n");
-            errno = EBADF; // the "team context" is not valid or closed
-            return -1;
-        }
-
-        return ctx->receive(buff, size);
-    }
-
-    ssize_t send(const void* buff, size_t size) {
-        if(!ctx) {
-            MTCL_PRINT(100, "[internal]:\t", "HandleGroup::send EBADF\n");
-            errno = EBADF; // the "team context" is not valid or closed
-            return -1;
-        }
-
-        return ctx->send(buff, size);
-    }
-
-    ssize_t execute(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize){
-        return ctx->execute(sendbuff, sendsize, recvbuff, recvsize);
-    }
-
-    size_t size() {
-        return ctx->getSize();
-    }
-
-    void close() {
-        ctx->close();
-        delete ctx;
-    }
-
-};
-
-
-class HandleUser : public HandleGeneric {
+class HandleUser {
     friend class ConnType;
     friend class Manager;
-    Handle * realHandle;
+    CommunicationHandle* realHandle;
     bool isReadable    = false;
     bool newConnection = true;
 public:
     HandleUser() : HandleUser(nullptr, false, false) {}
-    HandleUser(Handle* h, bool r, bool n): HandleGeneric(false),
-		realHandle(h), isReadable(r), newConnection(n) {
+    HandleUser(CommunicationHandle* h, bool r, bool n): realHandle(h),
+            isReadable(r), newConnection(n) {
 		if (h) h->incrementReferenceCounter();
     }
 
@@ -190,7 +101,10 @@ public:
 				realHandle->close(true, true);
 				return 0;
 			}
-			case -1: {				
+			case -1: {	
+                if (errno==EINVAL) {
+                    return -1;
+                }			
 				if (errno==ECONNRESET) {
 					realHandle->close(true, true);
 					return 0;

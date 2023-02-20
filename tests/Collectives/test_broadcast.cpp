@@ -1,31 +1,23 @@
 /*
  *
- * Simple collectives test to check if functionalities are working as intended
- * and to keep track of features yet to be implemented
+ * Simple broadcast test with two different groups
  *
  * 
  * Compile with:
- *  $> RAPIDJSON_HOME="/rapidjson/install/path" make clean test_broadcast
+ *  $> TPROTOCOL=UCX UCX_HOME=<ucx_install_path> UCC_HOME="/home/federico/install" RAPIDJSON_HOME=<rapidjson_install_path> make clean test_broadcast
  * 
  * Execution:
  *  $> ./test_broadcast 0 App1
  *  $> ./test_broadcast 1 App2
  *  $> ./test_broadcast 2 App3 
+ *  $> ./test_broadcast 2 App4
  * 
- * 
- * [x] Definizione interfaccia gruppo
- * [x] Sincronizzazione su accept da parte del root 
- * [x] Broadcast collective 
- * [x] Fan-in/Fan-out
- * [x] Implementazione delle collettive con ottimizzazioni protocol-specific
- * [ ] Restituzione gruppo a Manager
- * [ ] Check funzionamento multiprotocollo
  * 
  */
 
 
 #include <iostream>
-#include "../mtcl.hpp"
+#include "../../mtcl.hpp"
 
 #define MAX_MESSAGE_SIZE 100
 
@@ -47,7 +39,6 @@ int main(int argc, char** argv){
     if(rank == 0) {
         auto hg = Manager::createTeam("App1:App2:App3:App4", "App1", BROADCAST);
         auto hg2 = Manager::createTeam("App1:App2", "App1", BROADCAST);
-        // auto hg = Manager::createTeam("App1:App3:App2", "App1", BROADCAST);
 
         hg.send((void*)hello.c_str(), hello.length());
         hg2.send((void*)hello.c_str(), hello.length());
@@ -58,10 +49,9 @@ int main(int argc, char** argv){
         hg2.close();
     }
     else {
-		// auto hg = Manager::createTeam("App1:App3:App2", "App1", BROADCAST);
 		auto hg = Manager::createTeam("App1:App2:App3:App4", "App1", BROADCAST);
 
-        HandleGroup hg2;
+        HandleUser hg2;
         if(rank==1)
             hg2 = Manager::createTeam("App1:App2", "App1", BROADCAST);
         

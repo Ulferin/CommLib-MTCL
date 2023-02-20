@@ -93,7 +93,7 @@ private:
                 h->receive(teamID, size);
                 teamID[size] = '\0';
 
-                printf("Received connection for team: %s\n", teamID);
+                MTCL_PRINT(100, "[Manager]: \t", "Manager::addinQ received connection for team: %s\n", teamID);
 
                 if(groupsReady.count(teamID) == 0)
                     groupsReady.emplace(teamID, std::vector<Handle*>{});
@@ -134,7 +134,7 @@ private:
                 h->receive(teamID, size);
                 teamID[size] = '\0';
 
-                printf("Received connection for team: %s\n", teamID);
+                MTCL_PRINT(100, "[Manager]: \t", "Manager::addinQ received connection for team: %s\n", teamID);
 
                 std::unique_lock lk(group_mutex);
                 if(groupsReady.count(teamID) == 0)
@@ -523,12 +523,12 @@ public:
             App2 --> |App1 e App3
             App3 --> |App1 e App2
     */
-    static HandleGroup createTeam(std::string participants, std::string root, CollectiveType type) {
+    static HandleUser createTeam(std::string participants, std::string root, CollectiveType type) {
 
 
 #ifndef ENABLE_CONFIGFILE
         MTCL_ERROR("[Manager]:\t", "Team creation is only available with a configuration file\n");
-        return HandleGroup(nullptr);
+        return HandleUser();
 #else
 
         // Retrieve team size
@@ -555,7 +555,7 @@ public:
 
             size++;
         }
-        printf("Initializing collective with size: %d - AppName: %s - rank: %d - mpi: %d - ucc: %d\n", size, Manager::appName.c_str(), rank, mpi_impl, ucc_impl);
+        MTCL_PRINT(100, "[Manager]: \t", "Manager::createTeam initializing collective with size: %d - AppName: %s - rank: %d - mpi: %d - ucc: %d\n", size, Manager::appName.c_str(), rank, mpi_impl, ucc_impl);
 
         std::string teamID{participants + root + std::to_string(type)};
 
@@ -570,7 +570,7 @@ public:
         if(Manager::appName == root) {
             if(ctx == nullptr) {
                 MTCL_ERROR("[Manager]:\t", "Operation type not supported\n");
-                return HandleGroup(nullptr);
+                return HandleUser();
             }
 
             // #define SINGLE_IO_THREAD
@@ -608,7 +608,7 @@ public:
         else {
             if(components.count(root) == 0) {
                 MTCL_ERROR("[Manager]:\t", "Requested root node is not in configuration file\n");
-                return HandleGroup(nullptr);
+                return HandleUser();
             }
 
             // Retrieve root listening addresses and connect to one of them
@@ -629,7 +629,7 @@ public:
 
             if(handle == nullptr) {
                 MTCL_ERROR("[Manager]:\t", "Could not establish a connection with root node \"%s\"\n", root.c_str());
-                return HandleGroup(nullptr);
+                return HandleUser();
             }
 
             int collective = 1;
@@ -639,7 +639,7 @@ public:
             coll_handles.push_back(handle);
         }
         ctx->setImplementation(impl, coll_handles);
-        return HandleGroup(ctx);
+        return HandleUser(ctx, true, true);
 
 #endif
 
@@ -672,7 +672,8 @@ public:
      * Example. If TCP implementation was registered as Manager::registerType<ConnTcp>("EX"), this function on handles produced by that kind of protocol instance will return "EX".
     */
     static std::string getTypeOfHandle(HandleUser& h){
-        return h.realHandle->parent->instanceName;
+        auto realHandle = (Handle*)h.realHandle;
+        return realHandle->parent->instanceName;
     }
 
 };

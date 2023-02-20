@@ -15,16 +15,6 @@ ifdef SINGLE_IO_THREAD
 	CXXFLAGS +=-DSINGLE_IO_THREAD
 endif
 
-
-ifdef ENABLE_COLLECTIVES
-ifndef UCC_HOME
-$(error UCC_HOME env variable not defined!);
-endif
-	INCS += -I$(UCC_HOME)/include
-	LIBS += -L${UCC_HOME}/lib -Wl,-rpath,${UCC_HOME}/lib -lucc
-endif
-
-
 ifndef RAPIDJSON_HOME
 $(error RAPIDJSON_HOME env variable not defined!);
 endif
@@ -53,12 +43,15 @@ ifeq ($(findstring TCP, $(TPROTOCOL)),TCP)
 endif
 
 ifeq ($(findstring UCX, $(TPROTOCOL)),UCX)
+ifndef UCC_HOME
+$(error UCC_HOME env variable not defined!);
+endif
 	CXXFLAGS += -DENABLE_UCX
 ifndef UCX_HOME
 $(error UCX_HOME env variable not defined!);
 endif
-	INCS += -I$(UCX_HOME)/include
-	LIBS += -L$(UCX_HOME)/lib -Wl,-rpath,${UCX_HOME}/lib -lucp -luct -lucs -lucm
+	INCS += -I$(UCX_HOME)/include -I$(UCC_HOME)/include
+	LIBS += -L$(UCX_HOME)/lib -Wl,-rpath,${UCX_HOME}/lib -lucp -luct -lucs -lucm -L${UCC_HOME}/lib -Wl,-rpath,${UCC_HOME}/lib -lucc
 endif
 
 CXXFLAGS         += -Wall

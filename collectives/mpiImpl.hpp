@@ -60,6 +60,10 @@ public:
 
         //TODO: close delle connessioni???
     }
+
+    void close(bool close_wr=true, bool close_rd=true) {
+        return;
+    }
 };
 
 
@@ -82,14 +86,14 @@ public:
         int flag{0};
         if(blocking) {
             if(MPI_Wait(&request_header, &status) != MPI_SUCCESS) {
-                MTCL_ERROR("[internal]:\t", "BroadcastMPI wait failed\n");
+                MTCL_ERROR("[internal]:\t", "BroadcastMPI::probe wait failed\n");
                 errno=EBADF;
                 return -1;
             }
         }
         else {
             if(MPI_Test(&request_header, &flag, &status) != MPI_SUCCESS) {
-                MTCL_ERROR("[internal]:\t", "BroadcastMPI test failed\n");
+                MTCL_ERROR("[internal]:\t", "BroadcastMPI::probe test failed\n");
                 return -1;
             }
 

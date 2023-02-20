@@ -6,6 +6,7 @@
 #include <vector>
 #include "../utils.hpp"
 #include "collectiveImpl.hpp"
+#include "../handle.hpp"
 
 #ifdef ENABLE_MPI
 #include "mpiImpl.hpp"
@@ -23,7 +24,7 @@ enum CollectiveType {
 };
 
 
-class CollectiveContext {
+class CollectiveContext : public CommunicationHandle {
 protected:
     int size;
     bool root;
@@ -33,8 +34,14 @@ protected:
     bool canSend, canReceive;
     bool completed = false;
 
-    std::pair<bool, size_t> probed{false, 0};
-    std::atomic<bool> closed{false};
+
+    void incrementReferenceCounter() {counter++;}
+    void decrementReferenceCounter() {
+        counter--;
+        if (counter == 0 && closed_wr && closed_rd){
+            delete this;
+        }
+    }
 
 public:
     CollectiveContext(int size, bool root, int rank, CollectiveType type,
@@ -74,8 +81,11 @@ public:
 
         if (auto found = contexts.find(type); found != contexts.end()) {
             coll = found->second();
+            if(!coll)
+                MTCL_PRINT(100, "[internal]: \t", "CollectiveContext::setImplementation implementation type not enabled\n");
+
         } else {
-            MTCL_PRINT(100, "[internal]: \t", "CollectiveContext::setImplementation error\n");
+            MTCL_PRINT(100, "[internal]: \t", "CollectiveContext::setImplementation implementation type not found\n");
             coll = nullptr;
         }
     }
@@ -108,25 +118,11 @@ public:
      */
     ssize_t receive(void* buff, size_t size) {
         if(!canReceive) {
-            MTCL_PRINT(100, "[internal]:\t", "Invalid operation for the collective\n");
+            MTCL_PRINT(100, "[internal]:\t", "CollectiveContext::receive invalid operation for the collective\n");
             return -1;
         }
 
-        size_t sz;
-        if(!probed.first) {
-            ssize_t r;
-            if((r = probe(sz, true)) <= 0) return r;
-        }
-        else if(closed) return 0;
-
-        if((sz = probed.second) > size) {
-            MTCL_ERROR("[internal]:\t", "HandleGroup::receive ENOMEM, receiving less data\n");
-			errno=ENOMEM;
-			return -1;
-        }
-
-        probed = {false, 0};
-        return coll->receive(buff, std::min(sz,size));
+        return coll->receive(buff, size);
     }
     
     /**
@@ -139,7 +135,7 @@ public:
      */
     ssize_t send(const void* buff, size_t size) {
         if(!canSend) {
-            MTCL_PRINT(100, "[internal]:\t", "Invalid operation for the collective\n");
+            MTCL_PRINT(100, "[internal]:\t", "CollectiveContext::send invalid operation for the collective\n");
             return -1;
         }
 
@@ -160,57 +156,26 @@ public:
      */
 	ssize_t probe(size_t& size, const bool blocking=true) {
         if(!canReceive) {
-            MTCL_PRINT(100, "[internal]:\t", "Invalid operation for the collective\n");
+            MTCL_PRINT(100, "[internal]:\t", "CollectiveContext::probe invalid operation for the collective\n");
             errno = EINVAL;
             return -1;
         }
 
-        // Previously probed, we retrieve the last result
-        if(probed.first) {
-            size = probed.second;
-            return (size ? sizeof(size_t) : 0);
-        }
-
-        if(closed) return 0;
-
-        ssize_t r;
-
-        // Probe failure
-        if((r = coll->probe(size, blocking)) <= 0) {
-            switch (r) {
-            case 0: {
-                coll->close();
-                return 0;
-            }
-            case -1: {
-                if(errno == ECONNRESET) {
-                    coll->close();
-                    return 0;
-                }
-                if(errno == EWOULDBLOCK || errno == EAGAIN) {
-                    errno = EWOULDBLOCK;
-                    return -1;
-                }
-            }}
-        }
-
-        // Success
-        probed = {true, size};
-        if(size == 0) { // EOS
-            // NOTE: chiudiamo tutta la collettiva???
-            // coll->close();
-            return 0;
-        }
-
-        return r;
+        return coll->probe(size, blocking);
     }
 
-    virtual ssize_t execute(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
+    ssize_t execute(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
         return 0;
     }
 
-    virtual void close() {
-        coll->close();
+    void close(bool close_wr=true, bool close_rd=true) {
+        closed_rd = closed_rd || close_rd;
+        coll->close(close_wr && !closed_wr, close_rd);
+        closed_wr = closed_wr || close_wr;
+    }
+
+    void yield() {
+
     }
 
     virtual ~CollectiveContext() {delete coll;};
