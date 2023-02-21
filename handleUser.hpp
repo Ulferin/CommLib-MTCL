@@ -155,8 +155,16 @@ public:
 		return realHandle->receive(buff, std::min(sz,size));
     }
 
+    ssize_t execute(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
+        return realHandle->execute(sendbuff, sendsize, recvbuff, recvsize);
+    }
+
     void close(){
         if (realHandle) realHandle->close(true, false);
+    }
+
+    int size() {
+        return realHandle->getSize();
     }
 
 	std::pair<bool, bool> isClosed(){

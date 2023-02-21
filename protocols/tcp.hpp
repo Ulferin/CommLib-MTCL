@@ -330,10 +330,10 @@ public:
                     }
 
                     REMOVE_CODE_IF(ulock.lock());
-                    FD_SET(connfd, &set);
-                    if(connfd > fdmax) {
-						fdmax = connfd;
-					}
+                    // FD_SET(connfd, &set);
+                    // if(connfd > fdmax) {
+					// 	fdmax = connfd;
+					// }
                     connections[connfd] = new HandleTCP(this, connfd);
 					addinQ(true, connections[connfd]);
 					REMOVE_CODE_IF(ulock.unlock());                    

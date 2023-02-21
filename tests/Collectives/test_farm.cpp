@@ -6,9 +6,9 @@
  * 
  *       ___________________________P2P handle_____________________________________
  *      |                                                                          |
- *      v                    | -> Worker (App2) -> |                               |
- * Emitter (App1) --FanIN--> |                     | --FanOUT--> Collector (App4) --
- *                           | -> Worker (App3) -> |                         
+ *      v                     | -> Worker (App2) -> |                              |
+ * Emitter (App1) --FanOUT--> |                     | --FanIN--> Collector (App4) --
+ *                            | -> Worker (App3) -> |                         
  *      
  *
  * Compile with:

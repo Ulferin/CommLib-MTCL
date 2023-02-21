@@ -261,4 +261,117 @@ public:
 
 };
 
+class GatherUCC : public UCCCollective {
+
+private:
+    ssize_t last_probe = -1;
+    ucc_coll_req_h req = nullptr;
+
+public:
+    GatherUCC(std::vector<Handle*> participants, int rank, int size, bool root) : UCCCollective(participants, rank, size, root) {}
+
+
+    ssize_t probe(size_t& size, const bool blocking=true) {
+        ucc_coll_args_t      args;
+        if(req == nullptr) {
+
+            /* BROADCAST HEADER */
+            args.mask              = 0;
+            args.coll_type         = UCC_COLL_TYPE_BCAST;
+            args.src.info.buffer   = &size;
+            args.src.info.count    = 1;
+            args.src.info.datatype = UCC_DT_UINT64;
+            args.src.info.mem_type = UCC_MEMORY_TYPE_HOST;
+            args.root              = root_rank;
+
+            UCC_CHECK(ucc_collective_init(&args, &req, team)); 
+            UCC_CHECK(ucc_collective_post(req));
+        }
+
+        if(blocking) {
+            while (UCC_INPROGRESS == ucc_collective_test(req)) { 
+                UCC_CHECK(ucc_context_progress(ctx));
+            }
+        }
+        else {
+            UCC_CHECK(ucc_context_progress(ctx));
+            if(UCC_INPROGRESS == ucc_collective_test(req)) {
+                errno = EWOULDBLOCK;
+                return -1;
+            }
+        }
+        ucc_collective_finalize(req);
+        last_probe = size;
+        req = nullptr;
+        return sizeof(size_t);
+    }
+
+    ssize_t send(const void* buff, size_t size) {
+        ucc_coll_args_t      args;
+        ucc_coll_req_h       request;
+
+        /* BROADCAST HEADER */
+        args.mask              = 0;
+        args.coll_type         = UCC_COLL_TYPE_BCAST;
+        args.src.info.buffer   = &size;
+        args.src.info.count    = 1;
+        args.src.info.datatype = UCC_DT_UINT64;
+        args.src.info.mem_type = UCC_MEMORY_TYPE_HOST;
+        args.root              = root_rank;
+
+        UCC_CHECK(ucc_collective_init(&args, &request, team)); 
+        UCC_CHECK(ucc_collective_post(request));    
+        while (UCC_INPROGRESS == ucc_collective_test(request)) { 
+            UCC_CHECK(ucc_context_progress(ctx));
+        }
+        ucc_collective_finalize(request);
+
+        return size;
+    }
+
+
+    ssize_t receive(void* buff, size_t size) {        
+        return -1;
+    }
+
+    ssize_t execute(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
+        ucc_coll_args_t      args;
+        ucc_coll_req_h       req;
+
+        size_t sz;
+        if(root) {
+            if(last_probe == -1) this->probe(sz, true);
+            last_probe = -1;
+        }
+        else {
+            this->send(nullptr, sendsize);
+        }
+
+        /* BROADCAST DATA */
+        args.mask              = 0;
+        args.coll_type         = UCC_COLL_TYPE_GATHER;
+        args.src.info.buffer   = (void*)sendbuff;
+        args.src.info.count    = sendsize;
+        args.src.info.datatype = UCC_DT_UINT8;
+        args.src.info.mem_type = UCC_MEMORY_TYPE_HOST;
+        if(root) {
+            args.dst.info.buffer   = (void*)recvbuff;
+            args.dst.info.count    = recvsize;
+            args.dst.info.datatype = UCC_DT_UINT8;
+            args.dst.info.mem_type = UCC_MEMORY_TYPE_HOST;
+        }
+        args.root              = root_rank;
+
+        UCC_CHECK(ucc_collective_init(&args, &req, team)); 
+        UCC_CHECK(ucc_collective_post(req));    
+        while (UCC_INPROGRESS == ucc_collective_test(req)) { 
+            UCC_CHECK(ucc_context_progress(ctx));
+        }
+        ucc_collective_finalize(req);
+
+        return sizeof(size_t);
+    }
+
+};
+
 #endif //UCCCOLLIMPL_HPP

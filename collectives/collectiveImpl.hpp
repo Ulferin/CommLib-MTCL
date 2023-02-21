@@ -42,7 +42,7 @@ protected:
     // virtual bool canSend() = 0;
     // virtual bool canReceive() = 0;
 
-    protected:
+protected:
     ssize_t probeHandle(Handle* realHandle, size_t& size, const bool blocking=true) {
 		if (realHandle->probed.first) { // previously probed, return 0 if EOS received
 			size=realHandle->probed.second;
@@ -144,6 +144,10 @@ public:
     virtual ssize_t send(const void* buff, size_t size) = 0;
     virtual ssize_t receive(void* buff, size_t size) = 0;
     virtual void close(bool close_wr=true, bool close_rd=true) = 0;
+
+    virtual ssize_t execute(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
+        return -1;
+    }
 
     virtual ~CollectiveImpl() {}
 };
@@ -353,6 +357,70 @@ public:
 
 };
 
-//TODO gathergeneric
+
+class GatherGeneric : public CollectiveImpl {
+private:
+    size_t current = 0;
+    bool root;
+    int rank;
+    bool allReady;
+public:
+    GatherGeneric(std::vector<Handle*> participants, bool root, int rank) :
+        CollectiveImpl(participants), root(root), rank(rank) {}
+
+    ssize_t probe(size_t& size, const bool blocking=true) {
+        allReady = true;
+        size_t s;
+        ssize_t res = -1;
+        for(auto& h : participants) {
+            if((res = probeHandle(h, s, blocking)) < 0)
+                return res;
+            
+            if(res == 0 && s == 0) {
+                participants.pop_back();
+            }
+            allReady = allReady && (res > 0);
+        }
+        return allReady ? sizeof(size_t) : -1;
+    }
+
+    // Qui il buffer deve essere grande quanto (participants.size()+1)*size
+    ssize_t receive(void* buff, size_t size) {
+        for(auto& h : participants) {
+            size_t sz;
+            int remote_rank;
+            probeHandle(h, sz, true);
+            receiveFromHandle(h, &remote_rank, sz);
+            probeHandle(h, sz, true);
+            receiveFromHandle(h, (char*)buff+(remote_rank*size), size);
+        }
+        return 0;
+    }
+
+    ssize_t send(const void* buff, size_t size) {
+        for(auto& h : participants) {
+            h->send(&rank, sizeof(int));
+            h->send(buff, size);
+        }
+        
+        return 0;
+    }
+
+    ssize_t execute(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
+        if(root) {
+            memcpy((char*)recvbuff+(rank*sendsize), sendbuff, sendsize);
+            return this->receive(recvbuff, recvsize);
+        }
+        else {
+            return this->send(sendbuff, sendsize);
+        }
+    }
+
+    void close(bool close_wr=true, bool close_rd=true) {
+        return;
+    }
+    
+    ~GatherGeneric () {}
+};
 
 #endif //COLLECTIVEIMPL_HPP

@@ -75,7 +75,28 @@ public:
             },
             {FANIN,  [&]{return new FanInGeneric(participants);}},
             {FANOUT, [&]{return new FanOutGeneric(participants);}},
-            {GATHER,  [&]{return nullptr;}}
+            {GATHER,  [&]{
+                    CollectiveImpl* coll = nullptr;
+                    switch (impl) {
+                        case GENERIC:
+                            coll = new GatherGeneric(participants, root, rank);
+                            break;
+                        case MPI:
+                            #ifdef ENABLE_MPI
+                            coll = new GatherMPI(participants, root);
+                            #endif
+                            break;
+                        case UCC:
+                            #ifdef ENABLE_UCX
+                            coll = new GatherUCC(participants, rank, size, root);
+                            #endif
+                            break;
+                        default:
+                            coll = nullptr;
+                            break;
+                    }
+                    return coll;
+                }}
 
         };
 
@@ -88,10 +109,6 @@ public:
             MTCL_PRINT(100, "[internal]: \t", "CollectiveContext::setImplementation implementation type not found\n");
             coll = nullptr;
         }
-    }
-
-    size_t getSize() {
-        return size;
     }
 
     /**
@@ -119,6 +136,7 @@ public:
     ssize_t receive(void* buff, size_t size) {
         if(!canReceive) {
             MTCL_PRINT(100, "[internal]:\t", "CollectiveContext::receive invalid operation for the collective\n");
+            errno = EINVAL;
             return -1;
         }
 
@@ -136,6 +154,7 @@ public:
     ssize_t send(const void* buff, size_t size) {
         if(!canSend) {
             MTCL_PRINT(100, "[internal]:\t", "CollectiveContext::send invalid operation for the collective\n");
+            errno = EINVAL;
             return -1;
         }
 
@@ -165,13 +184,17 @@ public:
     }
 
     ssize_t execute(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
-        return 0;
+        return coll->execute(sendbuff, sendsize, recvbuff, recvsize);
     }
 
     void close(bool close_wr=true, bool close_rd=true) {
         closed_rd = closed_rd || close_rd;
         coll->close(close_wr && !closed_wr, close_rd);
         closed_wr = closed_wr || close_wr;
+    }
+
+    int getSize() {
+        return size;
     }
 
     void yield() {
@@ -188,7 +211,7 @@ CollectiveContext *createContext(CollectiveType type, int size, bool root, int r
         {BROADCAST,  [&]{return new CollectiveContext(size, root, rank, type, root, !root);}},
         {FANIN,  [&]{return new CollectiveContext(size, root, rank, type, !root, root);}},
         {FANOUT,  [&]{return new CollectiveContext(size, root, rank, type, root, !root);}},
-        {GATHER,  [&]{return nullptr;}}
+        {GATHER,  [&]{return new CollectiveContext(size, root, rank, type, false, false);}}
 
     };
 

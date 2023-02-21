@@ -64,6 +64,13 @@ public:
     virtual void yield() = 0;
     virtual void close(bool close_wr=true, bool close_rd=true) = 0;
 
+
+    virtual ssize_t execute(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    virtual int getSize() {return 1;}
     void setName(const std::string &name) { handleName = name; }
 	const std::string& getName() { return handleName; }
 

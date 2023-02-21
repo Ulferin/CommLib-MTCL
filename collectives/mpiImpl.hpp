@@ -70,8 +70,6 @@ public:
 class BroadcastMPI : public MPICollective {
 private:
     MPI_Request request_header = MPI_REQUEST_NULL;
-    bool probed;
-    ssize_t last_probed = -1;
 
 public:
     BroadcastMPI(std::vector<Handle*> participants, bool root) : MPICollective(participants, root) {}
@@ -126,6 +124,69 @@ public:
         }
         
         return size;
+    }
+};
+
+
+class GatherMPI : public MPICollective {
+private:
+    MPI_Request request_header = MPI_REQUEST_NULL;
+
+public:
+    GatherMPI(std::vector<Handle*> participants, bool root) : MPICollective(participants, root) {}
+
+
+    ssize_t probe(size_t& size, const bool blocking=true) {
+        if(request_header == MPI_REQUEST_NULL) {
+            MPI_Ibcast(&size, 1, MPI_UNSIGNED_LONG, root_rank, comm, &request_header);
+            //TODO: Check errori
+        }
+        MPI_Status status;
+        int flag{0};
+        if(blocking) {
+            if(MPI_Wait(&request_header, &status) != MPI_SUCCESS) {
+                MTCL_ERROR("[internal]:\t", "BroadcastMPI::probe wait failed\n");
+                errno=EBADF;
+                return -1;
+            }
+        }
+        else {
+            if(MPI_Test(&request_header, &flag, &status) != MPI_SUCCESS) {
+                MTCL_ERROR("[internal]:\t", "BroadcastMPI::probe test failed\n");
+                return -1;
+            }
+
+            if(!flag) {
+                errno = EWOULDBLOCK;
+                return -1;
+            }
+        }
+        request_header = MPI_REQUEST_NULL;
+
+        return sizeof(size_t);
+    }
+
+    ssize_t send(const void* buff, size_t size) {
+        MPI_Status status;
+        if(MPI_Ibcast(&size, 1, MPI_UNSIGNED_LONG, root_rank, comm, &request_header) != MPI_SUCCESS) {
+            errno = ECOMM;
+            return -1;
+        }
+        MPI_Wait(&request_header, &status);
+
+        return sizeof(size_t);
+    }
+
+    ssize_t receive(void* buff, size_t size) {
+        return -1;
+    }
+
+    ssize_t execute(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
+        if(MPI_Gather(sendbuff, sendsize, MPI_BYTE, recvbuff, recvsize, MPI_BYTE, root_rank, comm) != MPI_SUCCESS) {
+            errno = ECOMM;
+            return -1;
+        }
+        return sizeof(size_t);
     }
 };
 
