@@ -78,8 +78,9 @@ Inheritance diagram for UCCCollective:</div>
  <div class="center">
   <img src="classUCCCollective.png" usemap="#UCCCollective_map" alt=""/>
   <map id="UCCCollective_map" name="UCCCollective_map">
-<area href="classCollectiveImpl.html" title="Interface for transport-specific network functionalities for collective operations...." alt="CollectiveImpl" shape="rect" coords="0,0,95,24"/>
+<area href="classCollectiveImpl.html" title="Interface for transport-specific network functionalities for collective operations...." alt="CollectiveImpl" shape="rect" coords="52,0,147,24"/>
 <area href="classBroadcastUCC.html" alt="BroadcastUCC" shape="rect" coords="0,112,95,136"/>
+<area href="classGatherUCC.html" alt="GatherUCC" shape="rect" coords="105,112,200,136"/>
   </map>
 </div></div>
 <table class="memberdecls">
@@ -104,6 +105,9 @@ virtual ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>send</b> (
 <tr class="memitem:a0dd32803c9fe2c8779c134d4ad4deb14 inherit pub_methods_classCollectiveImpl"><td class="memItemLeft" align="right" valign="top"><a id="a0dd32803c9fe2c8779c134d4ad4deb14"></a>
 virtual ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>receive</b> (void *buff, size_t size)=0</td></tr>
 <tr class="separator:a0dd32803c9fe2c8779c134d4ad4deb14 inherit pub_methods_classCollectiveImpl"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab3628c84fdfda6a28e57a0e489670d9d inherit pub_methods_classCollectiveImpl"><td class="memItemLeft" align="right" valign="top"><a id="ab3628c84fdfda6a28e57a0e489670d9d"></a>
+virtual ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>execute</b> (const void *sendbuff, size_t sendsize, void *recvbuff, size_t recvsize)</td></tr>
+<tr class="separator:ab3628c84fdfda6a28e57a0e489670d9d inherit pub_methods_classCollectiveImpl"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
