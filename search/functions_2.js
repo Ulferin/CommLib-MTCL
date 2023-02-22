@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['finalize_83',['finalize',['../classManager.html#a4ac2bbb9d72ac637066a079976eaf106',1,'Manager']]]
+  ['finalize_81',['finalize',['../classManager.html#a4ac2bbb9d72ac637066a079976eaf106',1,'Manager']]]
 ];
