@@ -158,8 +158,9 @@ public:
 class BroadcastUCC : public UCCCollective {
 
 private:
-    ssize_t last_probe = -1;
+    size_t last_probe;
     ucc_coll_req_h req = nullptr;
+    bool closing = false;
 
 public:
     BroadcastUCC(std::vector<Handle*> participants, int rank, int size, bool root) : UCCCollective(participants, rank, size, root) {}
@@ -172,7 +173,7 @@ public:
             /* BROADCAST HEADER */
             args.mask              = 0;
             args.coll_type         = UCC_COLL_TYPE_BCAST;
-            args.src.info.buffer   = &size;
+            args.src.info.buffer   = &last_probe;
             args.src.info.count    = 1;
             args.src.info.datatype = UCC_DT_UINT64;
             args.src.info.mem_type = UCC_MEMORY_TYPE_HOST;
@@ -194,8 +195,12 @@ public:
                 return -1;
             }
         }
+
+        if(last_probe == 0) closing = true;
+
         ucc_collective_finalize(req);
         req = nullptr;
+        size = last_probe;
         return sizeof(size_t);
     }
 
@@ -256,6 +261,44 @@ public:
         ucc_collective_finalize(req);
         
         return size;
+    }
+
+    void close(bool close_wr=true, bool close_rd=true) {
+        // Non-root process must wait for the root process to terminate before
+        // it can issue a close operation.
+        if(!root && !closing) {
+            MTCL_ERROR("[internal]:\t", "Non-root process trying to close with active root process. Aborting.\n");
+            errno = EINVAL;
+            return;
+        }
+
+        // Root process can issue the close to all its non-root processes. At
+        // finalize it will flush the EOS messages coming from non-root proc.
+        if(root) {
+            size_t EOS = 0;
+            ucc_coll_args_t      args;
+
+            /* BROADCAST EOS */
+            args.mask              = 0;
+            args.coll_type         = UCC_COLL_TYPE_BCAST;
+            args.src.info.buffer   = &EOS;
+            args.src.info.count    = 1;
+            args.src.info.datatype = UCC_DT_UINT64;
+            args.src.info.mem_type = UCC_MEMORY_TYPE_HOST;
+            args.root              = root_rank;
+
+            UCC_CHECK(ucc_collective_init(&args, &req, team)); 
+            UCC_CHECK(ucc_collective_post(req));   
+
+            return;
+        }
+    }
+
+    void finalize() {
+        while (UCC_INPROGRESS == ucc_collective_test(req)) { 
+            UCC_CHECK(ucc_context_progress(ctx));
+        }
+        ucc_collective_finalize(req);
     }
 
 

@@ -69,20 +69,18 @@ int main(int argc, char** argv){
         hg.close();
 
         int res = 0;
-        while(res != expected) {
+        ssize_t r;
+        do {
             auto h = Manager::getNext();
             auto name = h.getName();
-            ssize_t r = h.receive(&res, sizeof(int));
-            if(r == 0) {
-                printf("receive returned: %ld - errno: %d\n", r, errno);
-                break;
-            }
-            printf("Received update from Collector. Current value is: %d\n", res);
-        }
+            r = h.receive(&res, sizeof(int));
+            if(r!=0)
+                printf("Received update from Collector. Current value is: %d\n", res);
+        }while(r > 0);
+        fbk.close();
 
         printf("Total is: %d, expected was: %d\n", res, expected);
 
-        fbk.close();
     }
     // Worker
     else if(rank == 1){
@@ -118,13 +116,15 @@ int main(int argc, char** argv){
         printf("Stream len is %d\n", streamlen);
 
         auto hg_fanin = Manager::createTeam("App2:App3:App4", "App4", FANIN);
+        hg_fanin.yield();
 
         int partial = 0;
 
         ssize_t r;
         do {
             int el = 0;
-            r = hg_fanin.receive(&el, sizeof(int));
+            auto hg = Manager::getNext();
+            r = hg.receive(&el, sizeof(int));
             if(r <= 0) {
                 printf("fanin closed\n");
                 break;

@@ -70,6 +70,8 @@ public:
 class BroadcastMPI : public MPICollective {
 private:
     MPI_Request request_header = MPI_REQUEST_NULL;
+    size_t probe_sz;
+    bool closing = false;
 
 public:
     BroadcastMPI(std::vector<Handle*> participants, bool root) : MPICollective(participants, root) {}
@@ -77,8 +79,11 @@ public:
 
     ssize_t probe(size_t& size, const bool blocking=true) {
         if(request_header == MPI_REQUEST_NULL) {
-            MPI_Ibcast(&size, 1, MPI_UNSIGNED_LONG, root_rank, comm, &request_header);
-            //TODO: Check errori
+            if(MPI_Ibcast(&probe_sz, 1, MPI_UNSIGNED_LONG, root_rank, comm, &request_header) != MPI_SUCCESS) {
+                MTCL_ERROR("[internal]:\t", "BroadcastMPI::probe Ibcast failed\n");
+                errno=EBADF;
+                return -1;
+            }   
         }
         MPI_Status status;
         int flag{0};
@@ -100,7 +105,11 @@ public:
                 return -1;
             }
         }
+
+        // EOS
+        if(probe_sz == 0) closing = true;
         request_header = MPI_REQUEST_NULL;
+        size = probe_sz;
 
         return sizeof(size_t);
     }
@@ -124,6 +133,29 @@ public:
         }
         
         return size;
+    }
+
+    void close(bool close_wr=true, bool close_rd=true) {
+        // Non-root process must wait for the root process to terminate before
+        // it can issue a close operation.
+        if(!root && !closing) {
+            MTCL_ERROR("[internal]:\t", "Non-root process trying to close with active root process. Aborting.\n");
+            errno = EINVAL;
+            return;
+        }
+
+        // Root process can issue the close to all its non-root processes. At
+        // finalize it will flush the EOS messages coming from non-root proc.
+        if(root) {
+            size_t EOS = 0;
+            MPI_Ibcast(&EOS, 1, MPI_UNSIGNED_LONG, root_rank, comm, &request_header);
+            return;
+        }
+    }
+
+    void finalize() {
+        MPI_Status status;
+        MPI_Wait(&request_header, &status);
     }
 };
 

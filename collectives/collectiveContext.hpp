@@ -25,6 +25,8 @@ enum CollectiveType {
 
 
 class CollectiveContext : public CommunicationHandle {
+    friend class Manager;
+
 protected:
     int size;
     bool root;
@@ -36,12 +38,7 @@ protected:
 
 
     void incrementReferenceCounter() {counter++;}
-    void decrementReferenceCounter() {
-        counter--;
-        if (counter == 0 && closed_wr && closed_rd){
-            delete this;
-        }
-    }
+    void decrementReferenceCounter() {counter--;}
 
 public:
     CollectiveContext(int size, bool root, int rank, CollectiveType type,
@@ -54,7 +51,7 @@ public:
                     CollectiveImpl* coll = nullptr;
                     switch (impl) {
                         case GENERIC:
-                            coll = new BroadcastGeneric(participants);
+                            coll = new BroadcastGeneric(participants, root);
                             break;
                         case MPI:
                             #ifdef ENABLE_MPI
@@ -73,8 +70,8 @@ public:
                     return coll;
                 }
             },
-            {FANIN,  [&]{return new FanInGeneric(participants);}},
-            {FANOUT, [&]{return new FanOutGeneric(participants);}},
+            {FANIN,  [&]{return new FanInGeneric(participants, root);}},
+            {FANOUT, [&]{return new FanOutGeneric(participants, root);}},
             {GATHER,  [&]{
                     CollectiveImpl* coll = nullptr;
                     switch (impl) {
@@ -197,9 +194,11 @@ public:
         return size;
     }
 
-    void yield() {
-
+    void finalize() {
+        coll->finalize();
     }
+
+    void yield();
 
     virtual ~CollectiveContext() {delete coll;};
 };

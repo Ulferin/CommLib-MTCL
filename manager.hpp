@@ -49,10 +49,12 @@ int  mtcl_verbose = -1;
 */
 class Manager {
     friend class ConnType;
+    friend class CollectiveContext;
    
     inline static std::map<std::string, std::shared_ptr<ConnType>> protocolsMap;    
 	inline static std::queue<HandleUser> handleReady;
     inline static std::map<std::string, std::vector<Handle*>> groupsReady;
+    inline static std::map<CollectiveContext*, bool> contexts;
     inline static std::set<std::string> listening_endps;
     
     inline static std::string appName;
@@ -69,6 +71,7 @@ class Manager {
 
     inline static std::mutex mutex;
     inline static std::mutex group_mutex;
+    inline static std::mutex ctx_mutex;
     inline static std::condition_variable condv;
     inline static std::condition_variable group_cond;
 
@@ -109,23 +112,19 @@ private:
 #else	
     static inline void addinQ(bool b, Handle* h) {
 
-        // new connection, read handle type (p2p=0, collective=1)
-        //
-        // Con mappa del contesto riesco a separare due 
-        // Se l'handle è associato alla collettiva manda ulteriori
-        // dati con "participants:root:type"
-        // Con quella stringa possiamo associare uno ed un solo contesto a tutti
-        // gli handle della stessa collettiva in modo da aggiornare stato della
-        // collettiva da qui in avanti
         int collective = 0;
 
         // Ad ogni nuova connessione controllo se l'handle è riferito a collettiva
         if(b) {
+            // new connection, read handle type (p2p=0, collective=1)
             size_t size;
             h->probe(size, true);
             h->receive(&collective, sizeof(int));
         
-            // Se collettiva, leggo il teamID e aggiorno il contesto
+            // Se collettiva, handle manda ulteriori dati con string teamID.
+            // Con teamID possiamo associare uno ed un solo contesto a tutti
+            // gli handle della stessa collettiva in modo da aggiornare stato della
+            // collettiva da qui in avanti
             // Questo serve per sincronizzazione del root sulle accept
             if(collective) {
                 size_t size;
@@ -153,6 +152,46 @@ private:
     }
 #endif
 	
+    static ssize_t poll(CollectiveContext* realHandle, size_t& size) {
+		if (realHandle->probed.first) { // previously probed, return 0 if EOS received
+			size=realHandle->probed.second;
+			return (size?sizeof(size_t):0);
+		}
+        
+		if (realHandle->closed_rd) return 0;
+
+		// reading the header to get the size of the message
+		ssize_t r;
+		if ((r=realHandle->probe(size, false))<=0) {
+			switch(r) {
+			case 0: {
+				realHandle->close(true, true);
+				return 0;
+			}
+			case -1: {	
+                if (errno==EINVAL) {
+                    return -1;
+                }			
+				if (errno==ECONNRESET) {
+					realHandle->close(true, true);
+					return 0;
+				}
+				if (errno==EWOULDBLOCK || errno==EAGAIN) {
+					errno = EWOULDBLOCK;
+					return -1;
+				}
+			}}
+			return r;
+		}
+		realHandle->probed={true,size};
+		if (size==0) { // EOS received
+			realHandle->close(false, true);
+			return 0;
+		}
+		return r;		
+    }
+
+
     static void getReadyBackend() {
         while(!end){
             for(auto& [prot, conn] : protocolsMap) {
@@ -161,11 +200,21 @@ private:
 			if constexpr (IO_THREAD_POLL_TIMEOUT)
 				std::this_thread::sleep_for(std::chrono::microseconds(IO_THREAD_POLL_TIMEOUT));
 
-
-            // for(HandleGroup hg : groups) {
-            //     bool ready = hg->update;
-            //     if(ready) addinQ(hg,....);
-            // }
+            {
+                std::unique_lock lk(ctx_mutex);
+                for(auto& [ctx, toManage] : contexts) {
+                    if(toManage) {
+                        size_t sz;
+                        ssize_t res = poll(ctx, sz);
+                        if(res >= 0) {
+                            toManage = false;
+                            std::unique_lock readylk(mutex);
+                            handleReady.push(HandleUser(ctx, true, false));
+                            condv.notify_one();
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -219,6 +268,19 @@ private:
         }
     }
 #endif
+
+
+    static void releaseTeam(CollectiveContext* ctx) {
+        /*
+         * [ ] versione SINGLE_IO_THREAD e multi-threaded
+         *
+         */
+        std::unique_lock lk(ctx_mutex);
+        auto it = contexts.find(ctx);
+        if (it != contexts.end())
+            it->second = true;
+    }
+
 
 public:
 
@@ -319,6 +381,11 @@ public:
         for (auto [_,v]: protocolsMap) {
             v->end();
         }
+
+        for(auto& [ctx, _] : contexts) {
+            ctx->finalize();
+            delete ctx;
+        }
     }
 
     /**
@@ -344,6 +411,18 @@ public:
 			for(auto& [prot, conn] : protocolsMap) {
 				conn->update();
 			}
+
+            for(auto& [ctx, toManage] : contexts) {
+                if(toManage) {
+                    size_t sz;
+                    ssize_t res = poll(ctx, sz);
+                    if(res >= 0) {
+                        toManage = false;
+                        handleReady.push(HandleUser(ctx, true, false));
+                    }
+                }
+            }
+
 			if (!handleReady.empty()) {
 				auto el = std::move(handleReady.front());
 				handleReady.pop();
@@ -567,6 +646,10 @@ public:
         else impl = GENERIC;
 
         auto ctx = createContext(type, size, Manager::appName == root, rank);
+        {
+            std::unique_lock lk(ctx_mutex);
+            contexts.emplace(ctx, false);
+        }
         if(Manager::appName == root) {
             if(ctx == nullptr) {
                 MTCL_ERROR("[Manager]:\t", "Operation type not supported\n");
@@ -677,5 +760,11 @@ public:
     }
 
 };
+
+void CollectiveContext::yield() {
+    if (!closed_rd && canReceive) {
+        Manager::releaseTeam(this);
+    }
+}
 
 #endif

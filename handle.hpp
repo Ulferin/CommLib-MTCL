@@ -8,6 +8,7 @@
 
 class CommunicationHandle {
     friend class HandleUser;
+    friend class Manager;
 
 protected:
 	std::string handleName{"no-name-provided"};

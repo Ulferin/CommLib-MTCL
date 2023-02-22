@@ -108,36 +108,9 @@ protected:
 		return realHandle->receive(buff, std::min(sz,size));
     }
 
-    void flushHandle(Handle* h) {
-        // Send EOS if not already sent
-        if(!h->closed_wr)
-            h->close(true, false);
-
-        // If EOS is still not received we wait for it, discarding pending messages
-        if(!h->closed_rd) {
-            size_t sz = 1;
-            while(true) {
-                if(h->probe(sz) == -1) {
-                    MTCL_PRINT(100, "[internal]:\t", "CollectiveImpl::flushHandle probe error\n");
-                    return;
-                }
-                if(sz == 0) break;
-                char* buff = new char[sz];
-                if(h->receive(buff, sz) == -1) {
-                    MTCL_PRINT(100, "[internal]:\t", "CollectiveImpl::flushHandle receive error\n");
-                    return;
-                }
-                delete[] buff;
-            }
-        }
-
-        // Finally closing the handle
-        h->close(false, true);
-    }
-
 public:
     CollectiveImpl(std::vector<Handle*> participants) : participants(participants) {
-        for(auto& h : participants) h->incrementReferenceCounter();
+        // for(auto& h : participants) h->incrementReferenceCounter();
     }
 
     virtual ssize_t probe(size_t& size, const bool blocking=true) = 0;
@@ -148,6 +121,8 @@ public:
     virtual ssize_t execute(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
         return -1;
     }
+
+    virtual void finalize() {return;}
 
     virtual ~CollectiveImpl() {}
 };
@@ -161,20 +136,16 @@ public:
  * 
  */
 class BroadcastGeneric : public CollectiveImpl {
+protected:
+    bool root;
+    
+public:
     ssize_t probe(size_t& size, const bool blocking=true) {
-        // Broadcast for non-root should always have 1 handle
-        ssize_t res = -1;
-        if(participants.size() == 1) {
-            auto h = participants.at(0);
-            res = h->probe(size, blocking);
-            if(res == 0 && size == 0) {
-                h->close(true, true);
-                participants.pop_back();
-            }
-        }
-        else {
-            MTCL_ERROR("[internal]:\t", "BroadcastGeneric::probe expected size 1 in non root process - size: %ld\n", participants.size());
-            return -1;
+        auto h = participants.at(0);
+        ssize_t res = h->probe(size, blocking);
+        if(res > 0 && size == 0) {
+            h->close(true, true);
+            participants.pop_back();
         }
 
         return res;
@@ -182,7 +153,6 @@ class BroadcastGeneric : public CollectiveImpl {
     }
 
     ssize_t send(const void* buff, size_t size) {
-        // TODO: aggiungere detect EOS per chiudere tutto se uno dei partecipanti fa close
         for(auto& h : participants) {
             if(h->send(buff, size) < 0) {
                 errno = ECONNRESET;
@@ -194,31 +164,31 @@ class BroadcastGeneric : public CollectiveImpl {
     }
 
     ssize_t receive(void* buff, size_t size) {
-        // Broadcast for non-root should always have 1 handle
-        ssize_t res = -1;
-        if(participants.size() == 1) {
-            auto h = participants.at(0);
-            res = h->receive(buff, size);
-            if(res == 0) {
-                participants.pop_back();
-            }
-        }
-        else {
-            MTCL_ERROR("[internal]:\t", "BroadcastGeneric::receive expected size 1 in non root process - size: %ld\n", participants.size());
-            return -1;
-        }
+        auto h = participants.at(0);
+        ssize_t res = h->receive(buff, size);
 
         return res;
     }
 
     void close(bool close_wr=true, bool close_rd=true) {
-        for(auto& h : participants) {
-            flushHandle(h);
+        // Non-root process must wait for the root process to terminate before
+        // it can issue a close operation.
+        if(!root && !participants.empty()) {
+            MTCL_ERROR("[internal]:\t", "BroadcastGeneric::close non-root process trying to close with active root process. Aborting.\n");
+            errno = EINVAL;
+            return;
+        }
+
+        // Root process can issue the close to all its non-root processes. At
+        // finalize it will flush the EOS messages coming from non-root proc.
+        if(root) {
+            for(auto& h : participants) h->close(true, false);
+            return;
         }
     }
 
 public:
-    BroadcastGeneric(std::vector<Handle*> participants) : CollectiveImpl(participants) {}
+    BroadcastGeneric(std::vector<Handle*> participants, bool root) : CollectiveImpl(participants), root(root) {}
 
 };
 
@@ -226,6 +196,7 @@ public:
 class FanInGeneric : public CollectiveImpl {
 private:
     ssize_t probed_idx = -1;
+    bool root;
 
 public:
     ssize_t probe(size_t& size, const bool blocking=true) {
@@ -292,15 +263,25 @@ public:
     }
 
     void close(bool close_wr=true, bool close_rd=true) {
-        // If non-root is closing, we flush by sending EOS and waiting EOS from
-        // root. Root's EOS will arrive when its next probe catch our EOS.
-        // If root is closing, we don't care anymore about messages, but we have
-        // to flush them anyway. We send EOS and receive EOS to each participant.
-        for(auto& h : participants) flushHandle(h);
+        // Non-root process can send EOS to root and go on. At finalize it should
+        // anyway flush messages coming from the root until the EOS is received.
+        if(!root) {
+            auto h = participants.at(0);
+            h->close(true, false);
+            return;
+        }
+
+        // Root process has to wait that all the non-root processes have sent
+        // their EOS before terminating.
+        if(root && !participants.empty()) {
+            MTCL_ERROR("[internal]:\t", "FanInGeneric::close root process trying to close with active non-root process. Aborting.\n");
+            errno = EINVAL;
+            return;
+        }
     }
 
 public:
-    FanInGeneric(std::vector<Handle*> participants) : CollectiveImpl(participants) {}
+    FanInGeneric(std::vector<Handle*> participants, bool root) : CollectiveImpl(participants), root(root) {}
 
 };
 
@@ -308,6 +289,7 @@ public:
 class FanOutGeneric : public CollectiveImpl {
 private:
     size_t current = 0;
+    bool root;
 
 public:
     ssize_t probe(size_t& size, const bool blocking=true) {
@@ -347,13 +329,24 @@ public:
     }
 
     void close(bool close_wr=true, bool close_rd=true) {
-        if(participants.empty()) return;
-        
-        for(auto& h : participants) flushHandle(h);
+        // Non-root process must wait for the root process to terminate before
+        // it can issue a close operation.
+        if(!root && !participants.empty()) {
+            MTCL_ERROR("[internal]:\t", "FanOutGeneric::close non-root process trying to close with active root process. Aborting.\n");
+            errno = EINVAL;
+            return;
+        }
+
+        // Root process can issue the close to all its non-root processes. At
+        // finalize it will flush the EOS messages coming from non-root proc.
+        if(root) {
+            for(auto& h : participants) h->close(true, false);
+            return;
+        }
     }
 
 public:
-    FanOutGeneric(std::vector<Handle*> participants) : CollectiveImpl(participants) {}
+    FanOutGeneric(std::vector<Handle*> participants, bool root) : CollectiveImpl(participants), root(root) {}
 
 };
 
