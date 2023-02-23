@@ -356,11 +356,12 @@ private:
     size_t current = 0;
     bool root;
     int rank;
-    bool allReady;
+    bool allReady{true}, closing{false};
 public:
     GatherGeneric(std::vector<Handle*> participants, bool root, int rank) :
         CollectiveImpl(participants), root(root), rank(rank) {}
 
+    // Usata solo dal Manager per fare polling
     ssize_t probe(size_t& size, const bool blocking=true) {
         allReady = true;
         size_t s;
@@ -370,10 +371,17 @@ public:
                 return res;
             
             if(res == 0 && s == 0) {
+                h->close(true, false);
+                closing = true;
                 participants.pop_back();
             }
             allReady = allReady && (res > 0);
         }
+
+        if(!allReady) {
+            errno = EWOULDBLOCK;
+        }
+
         return allReady ? sizeof(size_t) : -1;
     }
 
@@ -382,27 +390,35 @@ public:
         for(auto& h : participants) {
             size_t sz;
             int remote_rank;
-            probeHandle(h, sz, true);
+            // Probe rank/check EOS
+            if(probeHandle(h, sz, true) == 0) return 0;
             receiveFromHandle(h, &remote_rank, sz);
+            // Probe data
             probeHandle(h, sz, true);
             receiveFromHandle(h, (char*)buff+(remote_rank*size), size);
         }
-        return 0;
+        return sizeof(size_t);
     }
 
     ssize_t send(const void* buff, size_t size) {
+        // Qui c'è solo l'handle del root
         for(auto& h : participants) {
             h->send(&rank, sizeof(int));
             h->send(buff, size);
         }
         
-        return 0;
+        return sizeof(size_t);
     }
 
     ssize_t execute(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
         if(root) {
-            memcpy((char*)recvbuff+(rank*sendsize), sendbuff, sendsize);
-            return this->receive(recvbuff, recvsize);
+            // Nel caso in cui l'EOS sia stato preso dal Manager
+            if(closing)
+                return 0;
+            else {
+                memcpy((char*)recvbuff+(rank*sendsize), sendbuff, sendsize);
+                return this->receive(recvbuff, recvsize);
+            }
         }
         else {
             return this->send(sendbuff, sendsize);
@@ -410,6 +426,18 @@ public:
     }
 
     void close(bool close_wr=true, bool close_rd=true) {
+        // - Tutti i non-root devono fare close "simultaneamente", quindi non deve
+        // esserci qualcuno che fa send a tempo X se un altro ha fatto close a tempo X
+        if(root && !closing) {
+            MTCL_ERROR("[internal]:\t", "GatherGeneric::close root process trying to close with active non-root process. Aborting.\n");
+            errno = EINVAL;
+            return;
+        }
+        
+        for(auto& h : participants) {
+            h->close(true, false);
+        }
+                
         return;
     }
     

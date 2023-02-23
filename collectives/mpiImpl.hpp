@@ -16,6 +16,9 @@ protected:
     int root_rank, local_rank;
     MPI_Comm comm;
 
+    MPI_Request request_header = MPI_REQUEST_NULL;
+    bool closing = false;
+    ssize_t last_probe = -1;
     int* ranks;
 
 public:
@@ -61,17 +64,11 @@ public:
         //TODO: close delle connessioni???
     }
 
-    void close(bool close_wr=true, bool close_rd=true) {
-        return;
-    }
 };
 
 
 class BroadcastMPI : public MPICollective {
 private:
-    MPI_Request request_header = MPI_REQUEST_NULL;
-    size_t probe_sz;
-    bool closing = false;
 
 public:
     BroadcastMPI(std::vector<Handle*> participants, bool root) : MPICollective(participants, root) {}
@@ -79,7 +76,7 @@ public:
 
     ssize_t probe(size_t& size, const bool blocking=true) {
         if(request_header == MPI_REQUEST_NULL) {
-            if(MPI_Ibcast(&probe_sz, 1, MPI_UNSIGNED_LONG, root_rank, comm, &request_header) != MPI_SUCCESS) {
+            if(MPI_Ibcast(&last_probe, 1, MPI_UNSIGNED_LONG, root_rank, comm, &request_header) != MPI_SUCCESS) {
                 MTCL_ERROR("[internal]:\t", "BroadcastMPI::probe Ibcast failed\n");
                 errno=EBADF;
                 return -1;
@@ -107,9 +104,9 @@ public:
         }
 
         // EOS
-        if(probe_sz == 0) closing = true;
+        if(last_probe == 0) closing = true;
         request_header = MPI_REQUEST_NULL;
-        size = probe_sz;
+        size = last_probe;
 
         return sizeof(size_t);
     }
@@ -149,29 +146,49 @@ public:
         if(root) {
             size_t EOS = 0;
             MPI_Ibcast(&EOS, 1, MPI_UNSIGNED_LONG, root_rank, comm, &request_header);
-            return;
         }
+        
+        return;
     }
 
     void finalize() {
-        MPI_Status status;
-        MPI_Wait(&request_header, &status);
+        if(closing) return;
+
+        if(root) {
+            // The user didn't call the close explicitly
+            if(request_header == nullptr) {
+                this->close(true, true);
+            }
+            MPI_Status status;
+            MPI_Wait(&request_header, &status);
+        }
+        else {
+            size_t sz = 1;
+            do {
+                this->probe(sz, true);
+            }while(sz != 0);
+        }
     }
 };
 
 
 class GatherMPI : public MPICollective {
-private:
-    MPI_Request request_header = MPI_REQUEST_NULL;
+    size_t* probe_data;
+    size_t  EOS = 0;
 
 public:
-    GatherMPI(std::vector<Handle*> participants, bool root) : MPICollective(participants, root) {}
+    GatherMPI(std::vector<Handle*> participants, bool root) : MPICollective(participants, root) {
+        probe_data = new size_t[participants.size()+1];
+    }
 
 
     ssize_t probe(size_t& size, const bool blocking=true) {
         if(request_header == MPI_REQUEST_NULL) {
-            MPI_Ibcast(&size, 1, MPI_UNSIGNED_LONG, root_rank, comm, &request_header);
-            //TODO: Check errori
+            if(MPI_Igather(&last_probe, 1, MPI_UNSIGNED_LONG, probe_data, 1, MPI_UNSIGNED_LONG, root_rank, comm, &request_header) != MPI_SUCCESS) {
+                MTCL_ERROR("[internal]:\t", "GatherMPI::probe Ibcast error\n");
+                errno = ECOMM;
+                return -1;
+            }
         }
         MPI_Status status;
         int flag{0};
@@ -193,14 +210,18 @@ public:
                 return -1;
             }
         }
+
+        last_probe = probe_data[(root_rank + 1) % (participants.size() + 1)];
+        if(last_probe == 0) closing = true;
         request_header = MPI_REQUEST_NULL;
+        size = last_probe;
 
         return sizeof(size_t);
     }
 
     ssize_t send(const void* buff, size_t size) {
         MPI_Status status;
-        if(MPI_Ibcast(&size, 1, MPI_UNSIGNED_LONG, root_rank, comm, &request_header) != MPI_SUCCESS) {
+        if(MPI_Igather(&size, 1, MPI_UNSIGNED_LONG, nullptr, 0, MPI_UNSIGNED_LONG, root_rank, comm, &request_header) != MPI_SUCCESS) {
             errno = ECOMM;
             return -1;
         }
@@ -214,11 +235,55 @@ public:
     }
 
     ssize_t execute(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
+        if(root && closing)
+            return 0;
+        if(root) {
+            size_t sz;
+            if(last_probe == -1) this->probe(sz, true);
+            if(closing) return 0;
+            last_probe = -1;
+        }
+        else {
+            this->send(nullptr, sendsize);
+        }
+
         if(MPI_Gather(sendbuff, sendsize, MPI_BYTE, recvbuff, recvsize, MPI_BYTE, root_rank, comm) != MPI_SUCCESS) {
             errno = ECOMM;
             return -1;
         }
         return sizeof(size_t);
+    }
+
+    void close(bool close_wr=true, bool close_rd=true) {
+        if(root && !closing) {
+            MTCL_ERROR("[internal]:\t", "GatherMPI root process trying to close with active non-root process. Aborting.\n");
+            errno = EINVAL;
+            return;
+        }
+
+        if(!root) {
+            size_t EOS = 0;
+            MPI_Igather(&EOS, 1, MPI_UNSIGNED_LONG, nullptr, 0, MPI_UNSIGNED_LONG, root_rank, comm, &request_header);
+        }
+    }
+
+    void finalize() {
+        if(closing) return;
+
+        if(!root) {
+            // The user didn't call the close explicitly
+            if(request_header == nullptr) {
+                this->close(true, true);
+            }
+            MPI_Status status;
+            MPI_Wait(&request_header, &status);
+        }
+        else {
+            size_t sz = 1;
+            do {
+                this->probe(sz, true);
+            }while(sz != 0);
+        }
     }
 };
 

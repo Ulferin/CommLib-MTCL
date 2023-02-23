@@ -271,10 +271,6 @@ private:
 
 
     static void releaseTeam(CollectiveContext* ctx) {
-        /*
-         * [ ] versione SINGLE_IO_THREAD e multi-threaded
-         *
-         */
         std::unique_lock lk(ctx_mutex);
         auto it = contexts.find(ctx);
         if (it != contexts.end())
@@ -377,15 +373,16 @@ public:
     static void finalize() {
 		end = true;
         REMOVE_CODE_IF(t1.join());
+        
+        for(auto& [ctx, _] : contexts) {
+            ctx->finalize();
+            // delete ctx;
+        }
 
         for (auto [_,v]: protocolsMap) {
             v->end();
         }
 
-        for(auto& [ctx, _] : contexts) {
-            ctx->finalize();
-            delete ctx;
-        }
     }
 
     /**

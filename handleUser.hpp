@@ -156,6 +156,7 @@ public:
     }
 
     ssize_t execute(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
+		realHandle->probed={false,0};
         return realHandle->execute(sendbuff, sendsize, recvbuff, recvsize);
     }
 

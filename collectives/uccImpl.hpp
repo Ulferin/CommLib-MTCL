@@ -29,6 +29,9 @@ protected:
     ucc_team_h           team;
     ucc_context_h        ctx;
     ucc_lib_h            lib;
+    ucc_coll_req_h req = nullptr;
+    ssize_t last_probe = -1;
+    bool closing = false;
 
     static ucc_status_t oob_allgather(void *sbuf, void *rbuf, size_t msglen,
                                   void *coll_info, void **req) {
@@ -148,19 +151,10 @@ public:
         team = create_ucc_team(info, ctx);
     }
 
-    void close(bool close_wr=true, bool close_rd=true) {
-        return;
-    }
-
 };
 
 
 class BroadcastUCC : public UCCCollective {
-
-private:
-    size_t last_probe;
-    ucc_coll_req_h req = nullptr;
-    bool closing = false;
 
 public:
     BroadcastUCC(std::vector<Handle*> participants, int rank, int size, bool root) : UCCCollective(participants, rank, size, root) {}
@@ -267,7 +261,7 @@ public:
         // Non-root process must wait for the root process to terminate before
         // it can issue a close operation.
         if(!root && !closing) {
-            MTCL_ERROR("[internal]:\t", "Non-root process trying to close with active root process. Aborting.\n");
+            MTCL_ERROR("[internal]:\t", "BroadcastUCC::close non-root process trying to close with active root process. Aborting.\n");
             errno = EINVAL;
             return;
         }
@@ -288,43 +282,64 @@ public:
             args.root              = root_rank;
 
             UCC_CHECK(ucc_collective_init(&args, &req, team)); 
-            UCC_CHECK(ucc_collective_post(req));   
-
-            return;
+            UCC_CHECK(ucc_collective_post(req));
         }
+
+        return;
     }
 
     void finalize() {
-        while (UCC_INPROGRESS == ucc_collective_test(req)) { 
-            UCC_CHECK(ucc_context_progress(ctx));
+        // closing = true means we already completed the termination process
+        // for this process
+        if(closing) return;
+
+        if(root) {
+            // The user didn't call the close explicitly
+            if(req == nullptr) {
+                this->close(true, true);
+            }
+            while (UCC_INPROGRESS == ucc_collective_test(req)) { 
+                UCC_CHECK(ucc_context_progress(ctx));
+            }
+            ucc_collective_finalize(req);
         }
-        ucc_collective_finalize(req);
+        else {
+            size_t sz = 1;
+            do {
+                this->probe(sz, true);
+            }while(sz != 0);
+        }
     }
 
 
 };
 
 class GatherUCC : public UCCCollective {
-
-private:
-    ssize_t last_probe = -1;
-    ucc_coll_req_h req = nullptr;
+    ucc_coll_args_t      close_args;
+    size_t* probe_data;
+    size_t EOS = 0;
 
 public:
-    GatherUCC(std::vector<Handle*> participants, int rank, int size, bool root) : UCCCollective(participants, rank, size, root) {}
-
+    GatherUCC(std::vector<Handle*> participants, int rank, int size, bool root) : UCCCollective(participants, rank, size, root) {
+                probe_data = new size_t[participants.size()+1];
+    }
 
     ssize_t probe(size_t& size, const bool blocking=true) {
         ucc_coll_args_t      args;
         if(req == nullptr) {
-
             /* BROADCAST HEADER */
             args.mask              = 0;
-            args.coll_type         = UCC_COLL_TYPE_BCAST;
-            args.src.info.buffer   = &size;
+            args.coll_type         = UCC_COLL_TYPE_GATHER;
+            args.src.info.buffer   = &last_probe;
             args.src.info.count    = 1;
             args.src.info.datatype = UCC_DT_UINT64;
             args.src.info.mem_type = UCC_MEMORY_TYPE_HOST;
+            if(root) {
+                args.dst.info.buffer   = probe_data;
+                args.dst.info.count    = 1;
+                args.dst.info.datatype = UCC_DT_UINT64;
+                args.dst.info.mem_type = UCC_MEMORY_TYPE_HOST;
+            }
             args.root              = root_rank;
 
             UCC_CHECK(ucc_collective_init(&args, &req, team)); 
@@ -344,18 +359,23 @@ public:
             }
         }
         ucc_collective_finalize(req);
-        last_probe = size;
+
+        last_probe = probe_data[(root_rank + 1) % this->size];
+        if(last_probe == 0) closing=true;
+        size = last_probe;
         req = nullptr;
+
         return sizeof(size_t);
     }
 
     ssize_t send(const void* buff, size_t size) {
-        ucc_coll_args_t      args;
-        ucc_coll_req_h       request;
+        ucc_coll_args_t args;
+        ucc_coll_req_h  request;
+        ucc_status_t    status;
 
         /* BROADCAST HEADER */
         args.mask              = 0;
-        args.coll_type         = UCC_COLL_TYPE_BCAST;
+        args.coll_type         = UCC_COLL_TYPE_GATHER;
         args.src.info.buffer   = &size;
         args.src.info.count    = 1;
         args.src.info.datatype = UCC_DT_UINT64;
@@ -364,7 +384,7 @@ public:
 
         UCC_CHECK(ucc_collective_init(&args, &request, team)); 
         UCC_CHECK(ucc_collective_post(request));    
-        while (UCC_INPROGRESS == ucc_collective_test(request)) { 
+        while (UCC_INPROGRESS == (status = ucc_collective_test(request))) { 
             UCC_CHECK(ucc_context_progress(ctx));
         }
         ucc_collective_finalize(request);
@@ -378,19 +398,22 @@ public:
     }
 
     ssize_t execute(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
-        ucc_coll_args_t      args;
-        ucc_coll_req_h       req;
+        if(root && closing)
+            return 0;
+        
+        ucc_coll_args_t args;
+        ucc_coll_req_h  request;
 
-        size_t sz;
         if(root) {
+            size_t sz;
             if(last_probe == -1) this->probe(sz, true);
+            if(closing) return 0;
             last_probe = -1;
         }
         else {
             this->send(nullptr, sendsize);
         }
 
-        /* BROADCAST DATA */
         args.mask              = 0;
         args.coll_type         = UCC_COLL_TYPE_GATHER;
         args.src.info.buffer   = (void*)sendbuff;
@@ -405,14 +428,66 @@ public:
         }
         args.root              = root_rank;
 
-        UCC_CHECK(ucc_collective_init(&args, &req, team)); 
-        UCC_CHECK(ucc_collective_post(req));    
-        while (UCC_INPROGRESS == ucc_collective_test(req)) { 
+        UCC_CHECK(ucc_collective_init(&args, &request, team)); 
+        UCC_CHECK(ucc_collective_post(request));    
+        while (UCC_INPROGRESS == ucc_collective_test(request)) { 
             UCC_CHECK(ucc_context_progress(ctx));
         }
-        ucc_collective_finalize(req);
+        ucc_collective_finalize(request);
 
         return sizeof(size_t);
+    }
+
+    void close(bool close_wr=true, bool close_rd=true) {
+        if(root && !closing) {
+            MTCL_ERROR("[internal]:\t", "GatherUCC: root process trying to close with active non-root process. Aborting.\n");
+            errno = EINVAL;
+            return;
+        }
+
+        // Root process can issue the close to all its non-root processes. At
+        // finalize it will flush the EOS messages coming from non-root proc.
+        if(!root) {
+
+            /* BROADCAST EOS */
+            close_args.mask              = 0;
+            close_args.coll_type         = UCC_COLL_TYPE_GATHER;
+            close_args.src.info.buffer   = &EOS;
+            close_args.src.info.count    = 1;
+            close_args.src.info.datatype = UCC_DT_UINT64;
+            close_args.src.info.mem_type = UCC_MEMORY_TYPE_HOST;
+            close_args.root              = root_rank;
+
+            UCC_CHECK(ucc_collective_init(&close_args, &req, team)); 
+            UCC_CHECK(ucc_collective_post(req));  
+
+            return;
+        }
+    }
+
+    void finalize() {
+        // closing = true means we already completed the termination process
+        // for this process
+        if(closing) return;
+
+        if(!root) {
+            // The user didn't call the close explicitly
+            if(req == nullptr) {
+                this->close(true, true);
+            }
+            while (UCC_INPROGRESS == ucc_collective_test(req)) { 
+                UCC_CHECK(ucc_context_progress(ctx));
+            }
+            ucc_collective_finalize(req);
+        }
+        else {
+            size_t sz = 1;
+            do {
+                this->probe(sz, true);
+            }while(!closing);
+        }
+
+        delete[] probe_data;
     }
 
 };
