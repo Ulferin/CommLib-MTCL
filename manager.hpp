@@ -238,8 +238,10 @@ private:
         rapidjson::IStreamWrapper isw { ifs };
         rapidjson::Document doc;
         doc.ParseStream( isw );
-
-        assert(doc.IsObject());
+        if(doc.HasParseError()) {
+            MTCL_ERROR("[internal]:\t", "Manager::parseConfig JSON syntax error in file %s\n", f.c_str());
+            exit(1);
+        }
 
         if (doc.HasMember("pools") && doc["pools"].IsArray()){
             // architecture 
@@ -337,7 +339,7 @@ public:
         // if the current appname is not found in configuration file, abort the execution.
         if (components.find(appName) == components.end()){
             MTCL_ERROR("[Manager]", "Component %s not found in configuration file\n", appName.c_str());
-            abort();
+            exit(1);
         }
 
         // set the pool name if in the host definition
@@ -376,7 +378,7 @@ public:
         
         for(auto& [ctx, _] : contexts) {
             ctx->finalize();
-            // delete ctx;
+            delete ctx;
         }
 
         for (auto [_,v]: protocolsMap) {
@@ -603,7 +605,7 @@ public:
 
 
 #ifndef ENABLE_CONFIGFILE
-        MTCL_ERROR("[Manager]:\t", "Team creation is only available with a configuration file\n");
+        MTCL_ERROR("[Manager]:\t", "Manager::createTeam team creation is only available with a configuration file\n");
         return HandleUser();
 #else
 
@@ -613,13 +615,23 @@ public:
         std::string line;
         int rank = 0;
         bool mpi_impl = true, ucc_impl = true;
+        bool root_ok = false;
+
         while(std::getline(is, line, ':')) {
             if(Manager::appName == line) {
                 rank=size;
             }
+            if(root == line) root_ok=true;
 
             bool mpi = false;
             bool ucc = false;
+            printf("count: %d - line: %s\n", components.count(line), line.c_str());
+            if(components.count(line) == 0) {
+                MTCL_ERROR("[internal]:\t", "Manager::createTeam missing \"%s\" in configuration file\n", line.c_str());
+                //NOTE: resituiamo HandleUser invalido oppure terminiamo?
+                exit(1);
+            }
+
             auto protocols = std::get<1>(components[line]);
             for (auto &prot : protocols) {
                 mpi |= prot == "MPI";
@@ -631,6 +643,17 @@ public:
 
             size++;
         }
+
+        if(std::get<2>(components[root]).size() == 0) {
+            MTCL_ERROR("[internal]:\t", "Manager::createTeam root App [\"%s\"] has no listening endpoints\n", root.c_str());
+            exit(1);
+        }
+
+        if(!root_ok) {
+            MTCL_ERROR("[internal]:\t", "Manager::createTeam missing root App [\"%s\"] in participants string\n", root.c_str());
+            exit(1);
+        }
+
         MTCL_PRINT(100, "[Manager]: \t", "Manager::createTeam initializing collective with size: %d - AppName: %s - rank: %d - mpi: %d - ucc: %d\n", size, Manager::appName.c_str(), rank, mpi_impl, ucc_impl);
 
         std::string teamID{participants + root + std::to_string(type)};
@@ -694,7 +717,7 @@ public:
             // Retrieve root listening addresses and connect to one of them
             auto root_addrs = std::get<2>(components.at(root));
 
-            Handle* handle;
+            Handle* handle = nullptr;
             for(auto& addr : root_addrs) {
                 //TODO: bisogna fare il detect del protocollo a cui fare la connect
                 //      se i booleani mpi_impl/ucc_impl sono settati, bisogna connettersi
@@ -718,7 +741,9 @@ public:
 
             coll_handles.push_back(handle);
         }
-        ctx->setImplementation(impl, coll_handles);
+        if(!ctx->setImplementation(impl, coll_handles)) {
+            return HandleUser();
+        }
         return HandleUser(ctx, true, true);
 
 #endif

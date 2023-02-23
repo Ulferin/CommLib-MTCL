@@ -45,7 +45,7 @@ public:
             bool canSend=false, bool canReceive=false) : size(size), root(root),
                 rank(rank), type(type), canSend(canSend), canReceive(canReceive) {}
 
-    void setImplementation(ImplementationType impl, std::vector<Handle*> participants) {
+    bool setImplementation(ImplementationType impl, std::vector<Handle*> participants) {
         const std::map<CollectiveType, std::function<CollectiveImpl*()>> contexts = {
             {BROADCAST,  [&]{
                     CollectiveImpl* coll = nullptr;
@@ -99,13 +99,16 @@ public:
 
         if (auto found = contexts.find(type); found != contexts.end()) {
             coll = found->second();
-            if(!coll)
-                MTCL_PRINT(100, "[internal]: \t", "CollectiveContext::setImplementation implementation type not enabled\n");
+            if(!coll) 
+                MTCL_ERROR("[internal]: \t", "CollectiveContext::setImplementation implementation type not enabled\n");
 
         } else {
-            MTCL_PRINT(100, "[internal]: \t", "CollectiveContext::setImplementation implementation type not found\n");
+            MTCL_ERROR("[internal]: \t", "CollectiveContext::setImplementation implementation type not found\n");
             coll = nullptr;
         }
+
+        // true if coll != nullptr
+        return coll;
     }
 
     /**

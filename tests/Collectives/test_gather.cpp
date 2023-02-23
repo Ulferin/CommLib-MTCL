@@ -38,6 +38,7 @@ int main(int argc, char** argv){
     if(rank == 0) buff = new char[hg.size()*data.length()];
 
     hg.execute(data.c_str(), data.length(), buff, data.length());
+    if(rank != 0) hg.close();
 
     // Root
     if(rank == 0) {
@@ -46,7 +47,7 @@ int main(int argc, char** argv){
             printf("buff[%d] = %s\n", i, res.c_str());
         }
     }
-    hg.close();
+    // hg.close();
 
     Manager::finalize();
 
