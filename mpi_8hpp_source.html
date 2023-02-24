@@ -179,7 +179,7 @@ $(function() {
 <div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;    }</div>
 <div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160; </div>
 <div class="line"><a name="l00110"></a><span class="lineno"><a class="line" href="classHandleMPI.html#aaf262a6da4ccf2ca57ca37191837a63d">  110</a></span>&#160;    ssize_t <a class="code" href="classHandleMPI.html#aaf262a6da4ccf2ca57ca37191837a63d">probe</a>(<span class="keywordtype">size_t</span>&amp; size, <span class="keyword">const</span> <span class="keywordtype">bool</span> blocking=<span class="keyword">true</span>){</div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;        <span class="keywordtype">int</span> f;</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;        <span class="keywordtype">int</span> f = 0;</div>
 <div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;        <span class="keywordflow">if</span> (!blocking){</div>
 <div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;            <span class="keywordflow">if</span> (MPI_Iprobe(this-&gt;rank, this-&gt;tag, MPI_COMM_WORLD,&amp;f, MPI_STATUS_IGNORE) != MPI_SUCCESS){</div>
 <div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;                MTCL_MPI_PRINT(100, <span class="stringliteral">&quot;HandleMPI::probe MPI_Iprobe ERROR\n&quot;</span>);</div>
