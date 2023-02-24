@@ -38,12 +38,21 @@ protected:
 
 
     void incrementReferenceCounter() {counter++;}
-    void decrementReferenceCounter() {counter--;}
+    void decrementReferenceCounter() {
+        counter--;
+        if (counter == 0 && closed_wr && closed_rd){
+            delete this;
+        }
+    }
 
 public:
     CollectiveContext(int size, bool root, int rank, CollectiveType type,
             bool canSend=false, bool canReceive=false) : size(size), root(root),
-                rank(rank), type(type), canSend(canSend), canReceive(canReceive) {}
+                rank(rank), type(type), canSend(canSend), canReceive(canReceive) {
+                    closed_rd = !canReceive;
+                    closed_wr = !canSend;
+                    counter = 1;
+    }
 
     bool setImplementation(ImplementationType impl, std::vector<Handle*> participants) {
         const std::map<CollectiveType, std::function<CollectiveImpl*()>> contexts = {

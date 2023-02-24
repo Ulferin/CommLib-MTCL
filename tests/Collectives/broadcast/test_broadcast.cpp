@@ -4,7 +4,7 @@
  *
  * 
  * Compile with:
- *  $> TPROTOCOL=UCX UCX_HOME=<ucx_install_path> UCC_HOME="/home/federico/install" RAPIDJSON_HOME=<rapidjson_install_path> make clean test_broadcast
+ *  $> RAPIDJSON_HOME=<rapidjson_install_path> make -f ../Makefile clean test_broadcast
  * 
  * Execution:
  *  $> ./test_broadcast 0 App1
@@ -17,7 +17,7 @@
 
 
 #include <iostream>
-#include "../../mtcl.hpp"
+#include "../../../mtcl.hpp"
 
 #define MAX_MESSAGE_SIZE 100
 
@@ -31,9 +31,16 @@ int main(int argc, char** argv){
         return 1;
     }
 
+    std::string config{"tcp_config.json"};
+#ifdef ENABLE_MPI
+    config = {"mpi_config.json"};
+#endif
+#ifdef ENABLE_UCX
+    config = {"ucx_config.json"};
+#endif
 
     int rank = atoi(argv[1]);
-	Manager::init(argv[2], "test_collectives.json");
+	Manager::init(argv[2], config);
 
     // Root
     if(rank == 0) {

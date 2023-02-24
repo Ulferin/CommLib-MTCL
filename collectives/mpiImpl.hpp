@@ -15,7 +15,8 @@ protected:
     bool root;
     int root_rank, local_rank;
     MPI_Comm comm;
-
+    MPI_Group group;
+    
     MPI_Request request_header = MPI_REQUEST_NULL;
     bool closing = false;
     ssize_t last_probe = -1;
@@ -56,11 +57,12 @@ public:
             root_rank = ranks[0];
         }
 
-        MPI_Group group, group_world;
+        MPI_Group group_world;
         MPI_Comm_group(MPI_COMM_WORLD, &group_world);
         MPI_Group_incl(group_world, coll_size, ranks, &group);
         MPI_Comm_create_group(MPI_COMM_WORLD, group, 0, &comm);
 
+        delete[] ranks;
         //TODO: close delle connessioni???
     }
 
@@ -168,6 +170,9 @@ public:
                 this->probe(sz, true);
             }while(sz != 0);
         }
+
+        MPI_Group_free(&group);
+        MPI_Comm_free(&comm);
     }
 };
 
@@ -284,6 +289,10 @@ public:
                 this->probe(sz, true);
             }while(sz != 0);
         }
+
+        delete[] probe_data;
+        MPI_Group_free(&group);
+        MPI_Comm_free(&comm);
     }
 };
 

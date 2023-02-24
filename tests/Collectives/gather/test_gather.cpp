@@ -4,7 +4,7 @@
  *
  *
  * Compile with:
- *  $> RAPIDJSON_HOME="/rapidjson/install/path" make clean test_gather
+ *  $> RAPIDJSON_HOME="/rapidjson/install/path" make -f ../Makefile clean test_gather
  * 
  * Execution:
  *  $> ./test_gather 0 App1
@@ -12,11 +12,14 @@
  *  $> ./test_gather 2 App3
  *  $> ./test_gather 3 App4
  * 
+ * Execution with MPI:
+ *  $> mpirun -n 1 ./test_gather 0 App1 : -n 1 ./test_gather 1 App2 : -n 1 ./test_gather 2 App3 : -n 1 ./test_gather 3 App4
+ * 
  * */
 
 #include <iostream>
 #include <string>
-#include "../../mtcl.hpp"
+#include "../../../mtcl.hpp"
 
 int main(int argc, char** argv){
 
@@ -26,7 +29,17 @@ int main(int argc, char** argv){
     }
 
     int rank = atoi(argv[1]);
-	Manager::init(argv[2], "test_gather.json");
+
+    std::string config{"tcp_config.json"};
+#ifdef ENABLE_MPI
+    config = {"mpi_config.json"};
+#endif
+#ifdef ENABLE_UCX
+    config = {"ucx_config.json"};
+#endif
+
+    printf("Running with config file: %s\n", config.c_str());
+	Manager::init(argv[2], config);
 
     auto hg = Manager::createTeam("App1:App2:App3:App4", "App1", GATHER);
     if(hg.isValid()) printf("Created team with size: %d\n", hg.size());
@@ -46,8 +59,13 @@ int main(int argc, char** argv){
             std::string res(buff+(i*data.length()), data.length());
             printf("buff[%d] = %s\n", i, res.c_str());
         }
+        // while(true) {
+        //     ssize_t res = hg.execute(data.c_str(), data.length(), buff, data.length());
+        //     if(res == 0) break;
+        // }
+        // hg.close();
+        delete[] buff;
     }
-    // hg.close();
 
     Manager::finalize();
 

@@ -375,10 +375,14 @@ public:
     static void finalize() {
 		end = true;
         REMOVE_CODE_IF(t1.join());
-        
+
+        // while(!handleReady.empty()) handleReady.pop();
+
         for(auto& [ctx, _] : contexts) {
             ctx->finalize();
-            delete ctx;
+            if(ctx->counter == 1)
+                delete ctx;
+            else ctx->counter--;
         }
 
         for (auto [_,v]: protocolsMap) {
@@ -625,7 +629,6 @@ public:
 
             bool mpi = false;
             bool ucc = false;
-            printf("count: %d - line: %s\n", components.count(line), line.c_str());
             if(components.count(line) == 0) {
                 MTCL_ERROR("[internal]:\t", "Manager::createTeam missing \"%s\" in configuration file\n", line.c_str());
                 //NOTE: resituiamo HandleUser invalido oppure terminiamo?

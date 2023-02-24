@@ -391,7 +391,10 @@ public:
             size_t sz;
             int remote_rank;
             // Probe rank/check EOS
-            if(probeHandle(h, sz, true) == 0) return 0;
+            if(probeHandle(h, sz, true) == 0) {
+                closing = true;
+                return 0;
+            }
             receiveFromHandle(h, &remote_rank, sz);
             // Probe data
             probeHandle(h, sz, true);

@@ -108,7 +108,7 @@ public:
     }
 
     ssize_t probe(size_t& size, const bool blocking=true){
-        int f;
+        int f = 0;
         if (!blocking){
             if (MPI_Iprobe(this->rank, this->tag, MPI_COMM_WORLD,&f, MPI_STATUS_IGNORE) != MPI_SUCCESS){
                 MTCL_MPI_PRINT(100, "HandleMPI::probe MPI_Iprobe ERROR\n");
