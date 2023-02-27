@@ -100,10 +100,10 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:a4105a0a028d2b64c1a78759fec042164"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConnTcp.html#a4105a0a028d2b64c1a78759fec042164">notify_yield</a> (<a class="el" href="classHandle.html">Handle</a> *h) override</td></tr>
 <tr class="memdesc:a4105a0a028d2b64c1a78759fec042164"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manage the notification of an <a class="el" href="classHandle.html">Handle</a> object <b>h</b> issuing a yield operation. After this method is complete, the ownership of <b>h</b> is transferred back to the parent <a class="el" href="classConnType.html">ConnType</a>.  <a href="classConnTcp.html#a4105a0a028d2b64c1a78759fec042164">More...</a><br /></td></tr>
 <tr class="separator:a4105a0a028d2b64c1a78759fec042164"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a20d0571ae4673f70372ef24b9b29332f"><td class="memItemLeft" align="right" valign="top"><a id="a20d0571ae4673f70372ef24b9b29332f"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConnTcp.html#a20d0571ae4673f70372ef24b9b29332f">end</a> ()</td></tr>
-<tr class="memdesc:a20d0571ae4673f70372ef24b9b29332f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stop listening for new connections and terminate existing <a class="el" href="classHandle.html">Handle</a><em>s</em>. <br /></td></tr>
-<tr class="separator:a20d0571ae4673f70372ef24b9b29332f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a60265fe07fe059acfb764237c52b9446"><td class="memItemLeft" align="right" valign="top"><a id="a60265fe07fe059acfb764237c52b9446"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConnTcp.html#a60265fe07fe059acfb764237c52b9446">end</a> (bool blockflag=false)</td></tr>
+<tr class="memdesc:a60265fe07fe059acfb764237c52b9446"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stop listening for new connections and terminate existing <a class="el" href="classHandle.html">Handle</a><em>s</em>. <br /></td></tr>
+<tr class="separator:a60265fe07fe059acfb764237c52b9446"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1d47fdf61350d8f86b281a0641531ba5"><td class="memItemLeft" align="right" valign="top"><a id="a1d47fdf61350d8f86b281a0641531ba5"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>isSet</b> (int fd)</td></tr>
 <tr class="separator:a1d47fdf61350d8f86b281a0641531ba5"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -142,9 +142,9 @@ std::function&lt; void(bool, <a class="el" href="classHandle.html">Handle</a> *)
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
 <tr class="inherit_header pro_static_methods_classConnType"><td colspan="2" onclick="javascript:toggleInherit('pro_static_methods_classConnType')"><img src="closed.png" alt="-"/>&#160;Static Protected Member Functions inherited from <a class="el" href="classConnType.html">ConnType</a></td></tr>
-<tr class="memitem:ad7f87c6b2d304447363c99d356d4d970 inherit pro_static_methods_classConnType"><td class="memItemLeft" align="right" valign="top"><a id="ad7f87c6b2d304447363c99d356d4d970"></a>
-static void&#160;</td><td class="memItemRight" valign="bottom"><b>setAsClosed</b> (<a class="el" href="classHandle.html">Handle</a> *h)</td></tr>
-<tr class="separator:ad7f87c6b2d304447363c99d356d4d970 inherit pro_static_methods_classConnType"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0af55fae3ae286b5f5f60ae3484176cf inherit pro_static_methods_classConnType"><td class="memItemLeft" align="right" valign="top"><a id="a0af55fae3ae286b5f5f60ae3484176cf"></a>
+static void&#160;</td><td class="memItemRight" valign="bottom"><b>setAsClosed</b> (<a class="el" href="classHandle.html">Handle</a> *h, bool blockflag)</td></tr>
+<tr class="separator:a0af55fae3ae286b5f5f60ae3484176cf inherit pro_static_methods_classConnType"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a id="a5f8a1eade7b8db288ff7ef77f0c86022"></a>

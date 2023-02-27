@@ -242,8 +242,8 @@ $(function() {
 <div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;        <span class="keywordflow">return</span> size;</div>
 <div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;    }</div>
 <div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160; </div>
-<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classManager.html#a4ac2bbb9d72ac637066a079976eaf106">finalize</a>() {</div>
-<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;        coll-&gt;finalize();</div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classManager.html#a33e1eb5d1e2cf4d4d1b23361d30743e7">finalize</a>(<span class="keywordtype">bool</span> blockflag) {</div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;        coll-&gt;finalize(blockflag);</div>
 <div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;    }</div>
 <div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160; </div>
 <div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;    <span class="keywordtype">void</span> yield();</div>
@@ -280,13 +280,13 @@ $(function() {
 <div class="ttc" id="aclassCollectiveContext_html_af657b32cb887f7d5d548597e76ce735e"><div class="ttname"><a href="classCollectiveContext.html#af657b32cb887f7d5d548597e76ce735e">CollectiveContext::receive</a></div><div class="ttdeci">ssize_t receive(void *buff, size_t size)</div><div class="ttdoc">Receives at most size data into buff based on the semantics of the collective.</div><div class="ttdef"><b>Definition:</b> collectiveContext.hpp:145</div></div>
 <div class="ttc" id="aclassCollectiveImpl_html"><div class="ttname"><a href="classCollectiveImpl.html">CollectiveImpl</a></div><div class="ttdoc">Interface for transport-specific network functionalities for collective operations....</div><div class="ttdef"><b>Definition:</b> collectiveImpl.hpp:38</div></div>
 <div class="ttc" id="aclassCommunicationHandle_html"><div class="ttname"><a href="classCommunicationHandle.html">CommunicationHandle</a></div><div class="ttdef"><b>Definition:</b> handle.hpp:9</div></div>
-<div class="ttc" id="aclassFanInGeneric_html"><div class="ttname"><a href="classFanInGeneric.html">FanInGeneric</a></div><div class="ttdef"><b>Definition:</b> collectiveImpl.hpp:196</div></div>
-<div class="ttc" id="aclassFanOutGeneric_html"><div class="ttname"><a href="classFanOutGeneric.html">FanOutGeneric</a></div><div class="ttdef"><b>Definition:</b> collectiveImpl.hpp:289</div></div>
-<div class="ttc" id="aclassGatherGeneric_html"><div class="ttname"><a href="classGatherGeneric.html">GatherGeneric</a></div><div class="ttdef"><b>Definition:</b> collectiveImpl.hpp:354</div></div>
+<div class="ttc" id="aclassFanInGeneric_html"><div class="ttname"><a href="classFanInGeneric.html">FanInGeneric</a></div><div class="ttdef"><b>Definition:</b> collectiveImpl.hpp:198</div></div>
+<div class="ttc" id="aclassFanOutGeneric_html"><div class="ttname"><a href="classFanOutGeneric.html">FanOutGeneric</a></div><div class="ttdef"><b>Definition:</b> collectiveImpl.hpp:293</div></div>
+<div class="ttc" id="aclassGatherGeneric_html"><div class="ttname"><a href="classGatherGeneric.html">GatherGeneric</a></div><div class="ttdef"><b>Definition:</b> collectiveImpl.hpp:361</div></div>
 <div class="ttc" id="aclassGatherMPI_html"><div class="ttname"><a href="classGatherMPI.html">GatherMPI</a></div><div class="ttdef"><b>Definition:</b> mpiImpl.hpp:180</div></div>
 <div class="ttc" id="aclassGatherUCC_html"><div class="ttname"><a href="classGatherUCC.html">GatherUCC</a></div><div class="ttdef"><b>Definition:</b> uccImpl.hpp:317</div></div>
 <div class="ttc" id="aclassManager_html"><div class="ttname"><a href="classManager.html">Manager</a></div><div class="ttdef"><b>Definition:</b> manager.hpp:50</div></div>
-<div class="ttc" id="aclassManager_html_a4ac2bbb9d72ac637066a079976eaf106"><div class="ttname"><a href="classManager.html#a4ac2bbb9d72ac637066a079976eaf106">Manager::finalize</a></div><div class="ttdeci">static void finalize()</div><div class="ttdoc">Finalize the manger closing all the pending open connections.</div><div class="ttdef"><b>Definition:</b> manager.hpp:375</div></div>
+<div class="ttc" id="aclassManager_html_a33e1eb5d1e2cf4d4d1b23361d30743e7"><div class="ttname"><a href="classManager.html#a33e1eb5d1e2cf4d4d1b23361d30743e7">Manager::finalize</a></div><div class="ttdeci">static void finalize(bool blockflag=false)</div><div class="ttdoc">Finalize the manger closing all the pending open connections.</div><div class="ttdef"><b>Definition:</b> manager.hpp:381</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

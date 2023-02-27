@@ -107,16 +107,16 @@ virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hr
 <tr class="memitem:a33ffcb5c5ead496305f167496896d677"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConnType.html#a33ffcb5c5ead496305f167496896d677">notify_close</a> (<a class="el" href="classHandle.html">Handle</a> *h, bool shut_wr=true, bool shut_rd=true)=0</td></tr>
 <tr class="memdesc:a33ffcb5c5ead496305f167496896d677"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manage the notification of an <a class="el" href="classHandle.html">Handle</a> object <b>h</b> issuing a close operation. The <a class="el" href="classHandle.html">Handle</a> is invalidated and should not be managed anymore.  <a href="classConnType.html#a33ffcb5c5ead496305f167496896d677">More...</a><br /></td></tr>
 <tr class="separator:a33ffcb5c5ead496305f167496896d677"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4781ceaf1366e6d080092b60affb0a0e"><td class="memItemLeft" align="right" valign="top"><a id="a4781ceaf1366e6d080092b60affb0a0e"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConnType.html#a4781ceaf1366e6d080092b60affb0a0e">end</a> ()=0</td></tr>
-<tr class="memdesc:a4781ceaf1366e6d080092b60affb0a0e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stop listening for new connections and terminate existing <a class="el" href="classHandle.html">Handle</a><em>s</em>. <br /></td></tr>
-<tr class="separator:a4781ceaf1366e6d080092b60affb0a0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab4d02890e5d4f6744fa4e5162c128c8f"><td class="memItemLeft" align="right" valign="top"><a id="ab4d02890e5d4f6744fa4e5162c128c8f"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConnType.html#ab4d02890e5d4f6744fa4e5162c128c8f">end</a> (bool blockflag=false)=0</td></tr>
+<tr class="memdesc:ab4d02890e5d4f6744fa4e5162c128c8f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stop listening for new connections and terminate existing <a class="el" href="classHandle.html">Handle</a><em>s</em>. <br /></td></tr>
+<tr class="separator:ab4d02890e5d4f6744fa4e5162c128c8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-static-methods"></a>
 Static Protected Member Functions</h2></td></tr>
-<tr class="memitem:ad7f87c6b2d304447363c99d356d4d970"><td class="memItemLeft" align="right" valign="top"><a id="ad7f87c6b2d304447363c99d356d4d970"></a>
-static void&#160;</td><td class="memItemRight" valign="bottom"><b>setAsClosed</b> (<a class="el" href="classHandle.html">Handle</a> *h)</td></tr>
-<tr class="separator:ad7f87c6b2d304447363c99d356d4d970"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0af55fae3ae286b5f5f60ae3484176cf"><td class="memItemLeft" align="right" valign="top"><a id="a0af55fae3ae286b5f5f60ae3484176cf"></a>
+static void&#160;</td><td class="memItemRight" valign="bottom"><b>setAsClosed</b> (<a class="el" href="classHandle.html">Handle</a> *h, bool blockflag)</td></tr>
+<tr class="separator:a0af55fae3ae286b5f5f60ae3484176cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>

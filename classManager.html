@@ -74,12 +74,12 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:ae01d0f9607b9f59c4781f0f4f582594c"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classManager.html#ae01d0f9607b9f59c4781f0f4f582594c">init</a> (std::string appName, std::string configFile1=&quot;&quot;, std::string configFile2=&quot;&quot;)</td></tr>
-<tr class="memdesc:ae01d0f9607b9f59c4781f0f4f582594c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialization of the manager. Required to use the library.  <a href="classManager.html#ae01d0f9607b9f59c4781f0f4f582594c">More...</a><br /></td></tr>
-<tr class="separator:ae01d0f9607b9f59c4781f0f4f582594c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4ac2bbb9d72ac637066a079976eaf106"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classManager.html#a4ac2bbb9d72ac637066a079976eaf106">finalize</a> ()</td></tr>
-<tr class="memdesc:a4ac2bbb9d72ac637066a079976eaf106"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finalize the manger closing all the pending open connections.  <a href="classManager.html#a4ac2bbb9d72ac637066a079976eaf106">More...</a><br /></td></tr>
-<tr class="separator:a4ac2bbb9d72ac637066a079976eaf106"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a35322a2d7f2bcaf5eef57daf0ea6c3aa"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classManager.html#a35322a2d7f2bcaf5eef57daf0ea6c3aa">init</a> (std::string appName, std::string configFile1=&quot;&quot;, std::string configFile2=&quot;&quot;)</td></tr>
+<tr class="memdesc:a35322a2d7f2bcaf5eef57daf0ea6c3aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialization of the manager. Required to use the library.  <a href="classManager.html#a35322a2d7f2bcaf5eef57daf0ea6c3aa">More...</a><br /></td></tr>
+<tr class="separator:a35322a2d7f2bcaf5eef57daf0ea6c3aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a33e1eb5d1e2cf4d4d1b23361d30743e7"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classManager.html#a33e1eb5d1e2cf4d4d1b23361d30743e7">finalize</a> (bool blockflag=false)</td></tr>
+<tr class="memdesc:a33e1eb5d1e2cf4d4d1b23361d30743e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finalize the manger closing all the pending open connections.  <a href="classManager.html#a33e1eb5d1e2cf4d4d1b23361d30743e7">More...</a><br /></td></tr>
+<tr class="separator:a33e1eb5d1e2cf4d4d1b23361d30743e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a13ef8962565fa814360e541e2aaa0d21"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classHandleUser.html">HandleUser</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classManager.html#a13ef8962565fa814360e541e2aaa0d21">getNext</a> (std::chrono::microseconds us=std::chrono::hours(87600))</td></tr>
 <tr class="memdesc:a13ef8962565fa814360e541e2aaa0d21"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get an handle ready to receive.  <a href="classManager.html#a13ef8962565fa814360e541e2aaa0d21">More...</a><br /></td></tr>
 <tr class="separator:a13ef8962565fa814360e541e2aaa0d21"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -150,8 +150,8 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>CollectiveContext</b
 
 </div>
 </div>
-<a id="a4ac2bbb9d72ac637066a079976eaf106"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4ac2bbb9d72ac637066a079976eaf106">&#9670;&nbsp;</a></span>finalize()</h2>
+<a id="a33e1eb5d1e2cf4d4d1b23361d30743e7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a33e1eb5d1e2cf4d4d1b23361d30743e7">&#9670;&nbsp;</a></span>finalize()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -162,7 +162,8 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>CollectiveContext</b
         <tr>
           <td class="memname">static void Manager::finalize </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>blockflag</em> = <code>false</code></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -174,7 +175,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>CollectiveContext</b
 </div><div class="memdoc">
 
 <p>Finalize the manger closing all the pending open connections. </p>
-<p>From this point on, no more interaction with the library and the manager should be done. Ideally this call must be invoked just before closing the application (return statement of the main function). Internally it stops the polling thread started at the initialization and call the end method of each registered protocols. </p>
+<p>From this point on, no more interactions with the library and the manager should be done. Ideally this call must be invoked just before closing the application (return statement of the main function). Internally it stops the polling thread started at the initialization and calls the end method of each registered protocols. </p>
 
 </div>
 </div>
@@ -236,8 +237,8 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>CollectiveContext</b
 
 </div>
 </div>
-<a id="ae01d0f9607b9f59c4781f0f4f582594c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae01d0f9607b9f59c4781f0f4f582594c">&#9670;&nbsp;</a></span>init()</h2>
+<a id="a35322a2d7f2bcaf5eef57daf0ea6c3aa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a35322a2d7f2bcaf5eef57daf0ea6c3aa">&#9670;&nbsp;</a></span>init()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -246,7 +247,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>CollectiveContext</b
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void Manager::init </td>
+          <td class="memname">static int Manager::init </td>
           <td>(</td>
           <td class="paramtype">std::string&#160;</td>
           <td class="paramname"><em>appName</em>, </td>
