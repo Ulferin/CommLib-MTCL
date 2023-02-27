@@ -44,33 +44,61 @@ int main(int argc, char** argv){
             printf("Correctly created team\n");
 
         char* s = new char[hello.length()+1];
-        hg.receive(s, hello.length());
+        if (hg.receive(s, hello.length()) != (ssize_t)hello.length()) {
+			abort();
+		}
         s[hello.length()] = '\0';
         std::cout << "Received: " << s << std::endl;
         delete[] s;
-
+		
         s = new char[bye.length()+1];
-        hg.receive(s, bye.length());
+        if (hg.receive(s, bye.length()) != (ssize_t)bye.length()) {
+			abort();
+		}
         s[bye.length()] = '\0';
         printf("Received bye: %s\n", s);
         delete[] s;
-
         hg.close();
-        
+
+
+#if 1
+		// anche cosi' bomba perche' la finalize rifa' la probe e legge quello che c'e' dopo
+		// questo e' comunque un errore, la finalize dovrebbe accorgersi che la probe e' stata
+		// gia' fatta
+		size_t sz = 0;
+		if (hg.probe(sz) == -1) {
+			fprintf(stderr, "ERROR IN PROBE\n");
+			abort();
+		}
+		fprintf(stderr, "PROBED SIZE= %ld\n", sz);
+#endif
+		
     }
     else {
         auto hg = Manager::createTeam("App1:App2:App3", "App1", FANIN);
 
-        if(hg.isValid())
+        if(hg.isValid()) {
             printf("Correctly created team\n");
-
-        if(std::string{argv[2]} == "App2") hg.send((void*)hello.c_str(), hello.length());
-        if(std::string{argv[2]} == "App3") hg.send((void*)bye.c_str(), bye.length());
-
-        hg.close();
+			if(std::string{argv[2]} == "App2") {
+				hg.send((void*)hello.c_str(), hello.length());
+				//hg.close();
+			}
+			if(std::string{argv[2]} == "App3") {
+				if (hg.send((void*)bye.c_str(), bye.length()) != (ssize_t)bye.length()) {
+					fprintf(stderr, "ERRORE1\n");
+					abort();
+				}
+				//sleep(1);
+				if (hg.send((void*)bye.c_str(), bye.length()) != (ssize_t)bye.length()) {
+					fprintf(stderr, "ERRORE\n");
+					abort();
+				}
+				//hg.close();
+			}					   			
+		}
     }
 
-    Manager::finalize();
+    Manager::finalize(true);
 
     return 0;
 }

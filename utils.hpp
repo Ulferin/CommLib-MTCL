@@ -87,4 +87,26 @@ std::string getPoolFromHost(const std::string& host){
     return host.substr(0, pos);
 }
 
+#if defined(__i386__) || defined(__x86_64__)
+#define PAUSE()  __asm__ __volatile__ ("rep; nop" ::: "memory")
+#endif // __i386
+
+#if defined (__riscv)
+#define PAUSE()  /* ?? */
+#endif  // __riscv
+
+#if defined(__powerpc__) || defined(__ppc__)
+// yield   ==   or 27, 27, 27
+#define PAUSE()  asm volatile ("or 27,27,27" ::: "memory");
+#endif // __powerpc
+
+#if defined(__arm__) || defined(__aarch64__)
+#define PAUSE()  asm volatile("yield" ::: "memory")
+#endif //__arm
+
+static __always_inline void cpu_relax(void) {
+	PAUSE();
+}
+
+
 #endif

@@ -705,10 +705,10 @@ public:
         return;
     }
 
-    void end() {
+    void end(bool blockflag=false) {
         auto modified_connections = connections;
         for(auto& [_, handlePair] : modified_connections)
-                setAsClosed(handlePair.first);
+			setAsClosed(handlePair.first, blockflag);
         
         ucp_worker_release_address(ucp_worker, local_addr);
         // ucp_worker_destroy(ucp_worker);

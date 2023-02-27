@@ -24,7 +24,7 @@
 #include "mtcl.hpp"
 
 const int     NROUND = 100;
-const int          N = 23;
+const int          N = 24;
 const size_t minsize = 16;              // bytes
 const size_t maxsize = (1<<N);
 
@@ -45,9 +45,6 @@ void Server(const char serveraddr[]) {
 	assert(buff);
 
 	auto handle=Manager::getNext(); 
-
-	//fprintf(stderr, "STARTING\n");
-	
 	for(size_t size=minsize; size<=maxsize; size *= 2) {
 		for(int i=0;i<NROUND;++i) {
 			size_t r;
@@ -113,7 +110,7 @@ void Client(const char serveraddr[]) {
 			}			
 			auto end = std::chrono::system_clock::now();
 			assert(r==size);
-			CHECK(for(size_t j=0;j<size;++j) { if (i==j) assert(buff2[j]=='b'); else assert(buff2[j]=='a');})
+			CHECK(for(size_t j=0;j<size;++j) { if (i==j) { if (buff2[j]!='b') abort();} else { if (buff2[j]!='a') abort();}})
 			V[i] = std::chrono::duration_cast<std::chrono::microseconds>(end-start);
 		}
 		double sum{0.0};

@@ -8,6 +8,8 @@
 
 class CommunicationHandle {
     friend class HandleUser;
+	friend class FanInGeneric;
+	friend class FanOutGeneric;
     friend class Manager;
 
 protected:
@@ -137,28 +139,37 @@ public:
 };
 
 
-void ConnType::setAsClosed(Handle* h){
+void ConnType::setAsClosed(Handle* h, bool blockflag){
     // Send EOS if not already sent
-    if(!h->closed_wr)
+    if(!h->closed_wr) {
         h->close(true, false);
-
-    // If EOS is still not received we wait for it, discarding pending messages
-    if(!h->closed_rd) {
-        size_t sz = 1;
-        while(true) {
-            if(h->probe(sz) == -1) {
-                MTCL_PRINT(100, "[internal]:\t", "ConnType::setAsClosed probe error\n");
-                return;
-            }
-            if(sz == 0) break;
-            char* buff = new char[sz];
-            if(h->receive(buff, sz) == -1) {
-                MTCL_PRINT(100, "[internal]:\t", "ConnType::setAsClosed receive error\n");
-                return;
-            }
-            delete[] buff;
-        }
-    }
+	}
+	
+	if (blockflag) {
+		// If EOS is still not received we wait for it, discarding pending messages
+		if(!h->closed_rd) {
+			size_t sz = 1;
+			while(true) {
+				if (h->probed.first) {
+					sz = h->probed.second;
+				} else {
+					if(h->probe(sz) == -1) {
+						MTCL_PRINT(100, "[internal]:\t", "ConnType::setAsClosed probe error\n");
+						return;
+					}
+				}
+				if(sz == 0) break;
+				MTCL_ERROR("[internal]:\t", "Spurious message received of size %ld on handle with name %s!\n", sz, h->getName().c_str());
+				char* buff = new char[sz];
+				if(h->receive(buff, sz) == -1) {
+					MTCL_PRINT(100, "[internal]:\t", "ConnType::setAsClosed receive error\n");
+					return;
+				}
+				h->probed={false,0};
+				delete[] buff;
+			}
+		}
+	}
 
     // Finally closing the handle
     h->close(false, true);

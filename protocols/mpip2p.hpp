@@ -348,11 +348,11 @@ public:
         */
     }
 
-    void end() {
+    void end(bool blockflag=false) {
         auto modified_connections = connections;
         for(auto& [handle, to_manage] : modified_connections)
             if(to_manage)
-                setAsClosed(handle);
+                setAsClosed(handle, true);
 
         finalized = true;
         if(listening) {

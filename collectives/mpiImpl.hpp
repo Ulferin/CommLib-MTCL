@@ -153,7 +153,7 @@ public:
         return;
     }
 
-    void finalize() {
+    void finalize(bool) {
         if(closing) return;
 
         if(root) {
@@ -272,7 +272,7 @@ public:
         }
     }
 
-    void finalize() {
+    void finalize(bool) {
         if(closing) return;
 
         if(!root) {

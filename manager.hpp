@@ -228,19 +228,19 @@ private:
         return output;
     }
     
-    static void parseConfig(std::string& f){
+    static int parseConfig(std::string& f){
         std::ifstream ifs(f);
         if ( !ifs.is_open() ) {
 			MTCL_ERROR("[Manager]:\t", "parseConfig: cannot open file %s for reading, skip it\n",
 					   f.c_str());
-            return;
+            return -1;
         }
         rapidjson::IStreamWrapper isw { ifs };
         rapidjson::Document doc;
         doc.ParseStream( isw );
         if(doc.HasParseError()) {
             MTCL_ERROR("[internal]:\t", "Manager::parseConfig JSON syntax error in file %s\n", f.c_str());
-            exit(1);
+			return -1;
         }
 
         if (doc.HasMember("pools") && doc["pools"].IsArray()){
@@ -268,6 +268,7 @@ private:
                 } else
 					  MTCL_ERROR("[Manager]:\t", "parseConfig: an object in components is not well defined. Skipping it.\n");
         }
+		return 0;
     }
 #endif
 
@@ -291,7 +292,7 @@ public:
      * @param configFile (Optional) Path of the configuration file for the application. It can be a unique configuration file containing both architecture information and application specific information (deployment included).
      * @param configFile2 (Optional) Additional configuration file in the case architecture information and application information are splitted in two separate files. 
     */
-    static void init(std::string appName, std::string configFile1 = "", std::string configFile2 = "") {
+    static int init(std::string appName, std::string configFile1 = "", std::string configFile2 = "") {
 		std::signal(SIGPIPE, SIG_IGN);
 
 		char *level;
@@ -314,6 +315,7 @@ public:
 
 		// default transports protocol
         registerType<ConnTcp>("TCP");
+
 		registerType<ConnSHM>("SHM");
 
 #ifdef ENABLE_MPI
@@ -333,13 +335,13 @@ public:
 #endif
 
 #ifdef ENABLE_CONFIGFILE
-        if (!configFile1.empty()) parseConfig(configFile1);
-        if (!configFile2.empty()) parseConfig(configFile2);
+        if (!configFile1.empty()) if (parseConfig(configFile1)<0) return -1;
+        if (!configFile2.empty()) if (parseConfig(configFile2)<0) return -1;
 
         // if the current appname is not found in configuration file, abort the execution.
-        if (components.find(appName) == components.end()){
+        if (components.find(appName) == components.end()){			
             MTCL_ERROR("[Manager]", "Component %s not found in configuration file\n", appName.c_str());
-            exit(1);
+            return -1;
         }
 
         // set the pool name if in the host definition
@@ -364,29 +366,33 @@ public:
         REMOVE_CODE_IF(t1 = std::thread([&](){Manager::getReadyBackend();}));
 
         initialized = true;
+		return 0;
     }
 
     /**
      * \brief Finalize the manger closing all the pending open connections.
      * 
-     * From this point on, no more interaction with the library and the manager should be done. Ideally this call must be invoked just before closing the application (return statement of the main function).
-     * Internally it stops the polling thread started at the initialization and call the end method of each registered protocols.
-    */
-    static void finalize() {
+     * From this point on, no more interactions with the library and the manager should be done. 
+	 * Ideally this call must be invoked just before closing the application (return statement of 
+	 * the main function).
+     * Internally it stops the polling thread started at the initialization and calls the end 
+	 * method of each registered protocols.
+	 */
+    static void finalize(bool blockflag=false) {
 		end = true;
         REMOVE_CODE_IF(t1.join());
 
-        // while(!handleReady.empty()) handleReady.pop();
+        //while(!handleReady.empty()) handleReady.pop();
 
         for(auto& [ctx, _] : contexts) {
-            ctx->finalize();
+            ctx->finalize(blockflag);
             if(ctx->counter == 1)
                 delete ctx;
             else ctx->counter--;
         }
 
         for (auto [_,v]: protocolsMap) {
-            v->end();
+            v->end(blockflag);
         }
 
     }
@@ -631,8 +637,7 @@ public:
             bool ucc = false;
             if(components.count(line) == 0) {
                 MTCL_ERROR("[internal]:\t", "Manager::createTeam missing \"%s\" in configuration file\n", line.c_str());
-                //NOTE: resituiamo HandleUser invalido oppure terminiamo?
-                exit(1);
+				return HandleUser();
             }
 
             auto protocols = std::get<1>(components[line]);
@@ -649,12 +654,12 @@ public:
 
         if(std::get<2>(components[root]).size() == 0) {
             MTCL_ERROR("[internal]:\t", "Manager::createTeam root App [\"%s\"] has no listening endpoints\n", root.c_str());
-            exit(1);
+			return HandleUser();
         }
 
         if(!root_ok) {
             MTCL_ERROR("[internal]:\t", "Manager::createTeam missing root App [\"%s\"] in participants string\n", root.c_str());
-            exit(1);
+			return HandleUser();
         }
 
         MTCL_PRINT(100, "[Manager]: \t", "Manager::createTeam initializing collective with size: %d - AppName: %s - rank: %d - mpi: %d - ucc: %d\n", size, Manager::appName.c_str(), rank, mpi_impl, ucc_impl);
@@ -669,10 +674,6 @@ public:
         else impl = GENERIC;
 
         auto ctx = createContext(type, size, Manager::appName == root, rank);
-        {
-            std::unique_lock lk(ctx_mutex);
-            contexts.emplace(ctx, false);
-        }
         if(Manager::appName == root) {
             if(ctx == nullptr) {
                 MTCL_ERROR("[Manager]:\t", "Operation type not supported\n");
@@ -680,7 +681,7 @@ public:
             }
 
             // #define SINGLE_IO_THREAD
-            #if defined(SINGLE_IO_THREAD)
+#if defined(SINGLE_IO_THREAD)
                 if ((groupsReady.count(teamID) != 0) && ctx->update(groupsReady.at(teamID).size())) {
                     coll_handles = groupsReady.at(teamID);
                     groupsReady.erase(teamID);
@@ -698,7 +699,7 @@ public:
                         }
                     } while(true);
                 }
-            #else
+#else
                 // Accetta tante connessioni quanti sono i partecipanti
                 // Qui mi serve recuperare esattamente gli handle che hanno fatto
                 // connect per partecipazione ad una collettiva specifica
@@ -707,9 +708,14 @@ public:
                     return (groupsReady.count(teamID) != 0) && ctx->update(groupsReady.at(teamID).size());
                 });
                 coll_handles = groupsReady.at(teamID);
+
+				for(auto h : coll_handles) {
+					h->setName(teamID+"-"+Manager::appName);
+				}
+				
                 groupsReady.erase(teamID);
                 size--;
-            #endif
+#endif
         }
         else {
             if(components.count(root) == 0) {
@@ -737,16 +743,22 @@ public:
                 MTCL_ERROR("[Manager]:\t", "Could not establish a connection with root node \"%s\"\n", root.c_str());
                 return HandleUser();
             }
-
+			
             int collective = 1;
             handle->send(&collective, sizeof(int));
             handle->send(teamID.c_str(), teamID.length());
+
+			handle->setName(teamID+"-"+Manager::appName);
 
             coll_handles.push_back(handle);
         }
         if(!ctx->setImplementation(impl, coll_handles)) {
             return HandleUser();
         }
+		{
+			std::unique_lock lk(ctx_mutex);
+			contexts.emplace(ctx, false);
+		}
         return HandleUser(ctx, true, true);
 
 #endif

@@ -201,10 +201,10 @@ public:
 			connections[handle] = true;
     }
 
-    void end() {
+    void end(bool blockflag=false) {
         auto modified_connections = connections;
         for(auto& [handle, _] : modified_connections) {
-			setAsClosed(handle);
+			setAsClosed(handle, blockflag);
 		}
 		connbuff.close(true);
     }

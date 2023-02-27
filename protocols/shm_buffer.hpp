@@ -32,25 +32,6 @@ protected:
 	std::atomic<bool> opened{false};
 
     std::mutex mutex;
-	
-	void* createSegment(const std::string& name, size_t size) {
-		int fd = shm_open(name.c_str(), O_CREAT|O_RDWR|O_EXCL, S_IRUSR|S_IWUSR);
-		if (fd == -1) return nullptr;
-		if (ftruncate(fd, size) == -1) return nullptr;
-		void *ptr = (shmSegment*)mmap(NULL, size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
-		::close(fd);
-		if (ptr == MAP_FAILED) return nullptr;
-		return ptr;
-	}
-	void* openSegment(const std::string& name, size_t size) {
-		int fd = shm_open(name.c_str(), O_RDWR, S_IRUSR|S_IWUSR);
-		if (fd == -1) return nullptr;
-
-		void *ptr = (shmSegment*)mmap(NULL, size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
-		::close(fd);
-		if (ptr == MAP_FAILED) return nullptr;
-		return ptr;
-	}
 
 	int createBuffer(const std::string& name, bool force=false) {
 		int flags = O_CREAT|O_RDWR|O_EXCL;
@@ -65,6 +46,9 @@ protected:
 			return -1;
 		}
 		int rc;
+		if ((rc=posix_madvise(shmp, sizeof(shmSegment), POSIX_MADV_SEQUENTIAL))==-1) {
+			MTCL_SHM_PRINT(100, "shmBuffer::createBuffer, ERROR madvise errno=%d\n", rc);
+		}
 		if ((rc=pthread_spin_init(&shmp->spinlock, PTHREAD_PROCESS_SHARED)) != 0) {
 			MTCL_SHM_PRINT(100, "shmBuffer::createBuffer, ERROR pthread_spin_init errno=%d\n", rc);
 			return -1;
@@ -110,6 +94,10 @@ public:
 		shmp = (shmSegment*)mmap(NULL, sizeof(shmSegment), PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
 		if (shmp == MAP_FAILED) return -1;
 		::close(fd);
+		int rc;
+		if ((rc=posix_madvise(shmp, sizeof(shmSegment), POSIX_MADV_SEQUENTIAL))==-1) {
+			MTCL_SHM_PRINT(100, "shmBuffer::open, ERROR madvise errno=%d\n", rc);
+		}
 		segmentname=name;
 		opened = true;		
 		return 0;
@@ -140,19 +128,20 @@ public:
 				pthread_spin_lock(&shmp->spinlock);
 				if (shmp->guard==0) break;
 				pthread_spin_unlock(&shmp->spinlock);
-				// cpu_relax()? sched_yield()? it depends ...
+				cpu_relax();
 			} while(1);
 			shmp->data.size=sz;
 			shmp->guard=(void*)data;
 			pthread_spin_unlock(&shmp->spinlock);
 			return 0;
 		}
+		posix_madvise((void*)data, sz, POSIX_MADV_SEQUENTIAL);
 		for (size_t size = sz, s=0, p=0; size>0; size-=s, p+=s) {
 			do {
 				pthread_spin_lock(&shmp->spinlock);
 				if (shmp->guard==0) break;
 				pthread_spin_unlock(&shmp->spinlock);
-				// cpu_relax()?
+				cpu_relax();
 			} while(1);
 			shmp->data.size=sz;
 			s = std::min(size, (size_t)SHM_SMALL_MSG_SIZE);
@@ -160,7 +149,7 @@ public:
 			shmp->guard = (void*)data;
 			pthread_spin_unlock(&shmp->spinlock);
 		}
-
+		posix_madvise((void*)data, sz, POSIX_MADV_NORMAL);
 		return sz;
 	}
 	// retrieves a message from the buffer, it blocks if the buffer is empty	
@@ -178,7 +167,7 @@ public:
 				break;
 			}
 			pthread_spin_unlock(&shmp->spinlock);
-			// cpu_relax()?
+			cpu_relax();
 		} while(true);				
 
 		size_t size = shmp->data.size;
@@ -187,6 +176,7 @@ public:
 			pthread_spin_unlock(&shmp->spinlock);
 			return 0;
 		}
+		posix_madvise(data, sz, POSIX_MADV_SEQUENTIAL);
 		int nmsgs = std::ceil((float)size / SHM_SMALL_MSG_SIZE);
 		for (size_t sz=size, s=0, p=0; nmsgs; sz-=s, p+=s) {
 			s = std::min(sz, (size_t)SHM_SMALL_MSG_SIZE);
@@ -198,10 +188,10 @@ public:
 				pthread_spin_lock(&shmp->spinlock);
 				if (shmp->guard!=0) break;
 				pthread_spin_unlock(&shmp->spinlock);
-				// cpu_relax()?
+				cpu_relax();
 			} while(true);
 		}
-
+		posix_madvise(data, sz, POSIX_MADV_NORMAL);
 		return size;
 	}
 	// retrieves the size of the message in the buffer without removing the message
@@ -218,7 +208,7 @@ public:
 				break;
 			}
 			pthread_spin_unlock(&shmp->spinlock);
-			// cpu_relax()?
+			cpu_relax();
 		} while(true);				
 		size_t size = shmp->data.size;
 		pthread_spin_unlock(&shmp->spinlock);
@@ -245,6 +235,7 @@ public:
 			pthread_spin_unlock(&shmp->spinlock);
 			return 0;
 		}
+		posix_madvise(data, sz, POSIX_MADV_SEQUENTIAL);
 		int nmsgs = std::ceil((float)size / SHM_SMALL_MSG_SIZE);
 		for (size_t sz=size, s=0, p=0; nmsgs; sz-=s, p+=s) {
 			s = std::min(sz, (size_t)SHM_SMALL_MSG_SIZE);
@@ -256,9 +247,10 @@ public:
 				pthread_spin_lock(&shmp->spinlock);
 				if (shmp->guard!=0) break;
 				pthread_spin_unlock(&shmp->spinlock);
-				// cpu_relax()?
+				cpu_relax();
 			} while(true);
-		}		
+		}
+		posix_madvise(data, sz, POSIX_MADV_NORMAL);
 		return size;
 	}
 	// retrieves the size of the message in the buffer without removing the message

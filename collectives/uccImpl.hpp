@@ -288,7 +288,7 @@ public:
         return;
     }
 
-    void finalize() {
+    void finalize(bool) {
         // closing = true means we already completed the termination process
         // for this process
         if(closing) return;
@@ -465,7 +465,7 @@ public:
         }
     }
 
-    void finalize() {
+    void finalize(bool) {
         // closing = true means we already completed the termination process
         // for this process
         if(closing) return;

@@ -339,6 +339,10 @@ public:
 					REMOVE_CODE_IF(ulock.unlock());                    
                 } else {
                     REMOVE_CODE_IF(ulock.lock());
+
+					
+					MTCL_TCP_ERROR("update: ready descriptor\n"); // togliere
+					
                     // Updates ready connections and removes from listening
                     FD_CLR(idx, &set);
 
@@ -354,8 +358,9 @@ public:
 						if (ii==-1) fdmax = -1;
 					}
 					auto it = connections.find(idx);
-					if (it != connections.end())
+					if (it != connections.end()) {
 						addinQ(false, (*it).second);
+					}
                     REMOVE_CODE_IF(ulock.unlock());
                 }
 				--nready;
@@ -473,10 +478,10 @@ public:
         }
     }
 
-    void end() {
+    void end(bool blockflag=false) {
         auto modified_connections = connections;
         for(auto& [fd, h] : modified_connections) {
-			setAsClosed(h);
+			setAsClosed(h, blockflag);
 		}
     }
 

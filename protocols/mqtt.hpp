@@ -111,6 +111,7 @@ public:
             receive(&sz, sizeof(size_t));
         }
         else {
+			// check for a message, if there is a message it is read
             bool res = client->try_consume_message(&msg);
             if(!res) {
                 errno = EWOULDBLOCK;
@@ -367,11 +368,11 @@ public:
         it->second = true;
     }
 
-    void end() {
+    void end(bool blockflag=false) {
         auto modified_connections = connections;
         for(auto& [handle, to_manage] : modified_connections)
             if(to_manage)
-                setAsClosed(handle);
+                setAsClosed(handle, blockflag);
 
         delete newConnClient;
     }

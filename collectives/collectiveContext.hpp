@@ -206,8 +206,8 @@ public:
         return size;
     }
 
-    void finalize() {
-        coll->finalize();
+    void finalize(bool blockflag) {
+        coll->finalize(blockflag);
     }
 
     void yield();

@@ -16,7 +16,7 @@ protected:
 
     std::function<void(bool, Handle*)> addinQ;
 
-    static void setAsClosed(Handle* h);
+    static void setAsClosed(Handle* h, bool blockflag);
 
 public:
     ConnType() {};
@@ -81,7 +81,7 @@ public:
      * @brief Stop listening for new connections and terminate existing Handle\a s.
      * 
      */
-    virtual void end() = 0;
+    virtual void end(bool blockflag=false) = 0;
 };
 
 #endif

@@ -122,7 +122,7 @@ public:
         return -1;
     }
 
-    virtual void finalize() {return;}
+    virtual void finalize(bool) {return;}
 
     virtual ~CollectiveImpl() {}
 };
@@ -171,6 +171,7 @@ public:
     }
 
     void close(bool close_wr=true, bool close_rd=true) {
+#if 0
         // Non-root process must wait for the root process to terminate before
         // it can issue a close operation.
         if(!root && !participants.empty()) {
@@ -178,7 +179,8 @@ public:
             errno = EINVAL;
             return;
         }
-
+#endif
+		
         // Root process can issue the close to all its non-root processes. At
         // finalize it will flush the EOS messages coming from non-root proc.
         if(root) {
@@ -221,6 +223,7 @@ public:
             }
             if(res > 0) {
                 probed_idx = iter - participants.begin();
+				h->probed={true, size};
             }
             iter++;
             if(iter == participants.end()) {
@@ -246,7 +249,7 @@ public:
             if((r = h->send(buff, size)) < 0) return r;
         }
 
-        return 0;
+        return size;
     }
 
     ssize_t receive(void* buff, size_t size) {
@@ -270,7 +273,7 @@ public:
             h->close(true, false);
             return;
         }
-
+#if 0
         // Root process has to wait that all the non-root processes have sent
         // their EOS before terminating.
         if(root && !participants.empty()) {
@@ -278,6 +281,7 @@ public:
             errno = EINVAL;
             return;
         }
+#endif		
     }
 
 public:
@@ -305,7 +309,8 @@ public:
             participants.pop_back();
             h->close(true, true);
         }
-
+		if (res > 0) 
+			h->probed={true, size};
         return res;
     }
 
@@ -329,6 +334,7 @@ public:
     }
 
     void close(bool close_wr=true, bool close_rd=true) {
+#if 0
         // Non-root process must wait for the root process to terminate before
         // it can issue a close operation.
         if(!root && !participants.empty()) {
@@ -336,7 +342,8 @@ public:
             errno = EINVAL;
             return;
         }
-
+#endif
+		
         // Root process can issue the close to all its non-root processes. At
         // finalize it will flush the EOS messages coming from non-root proc.
         if(root) {
@@ -429,6 +436,7 @@ public:
     }
 
     void close(bool close_wr=true, bool close_rd=true) {
+#if 0		
         // - Tutti i non-root devono fare close "simultaneamente", quindi non deve
         // esserci qualcuno che fa send a tempo X se un altro ha fatto close a tempo X
         if(root && !closing) {
@@ -436,7 +444,7 @@ public:
             errno = EINVAL;
             return;
         }
-        
+#endif        
         for(auto& h : participants) {
             h->close(true, false);
         }

@@ -356,10 +356,10 @@ public:
         */
     }
 
-    void end() {
+    void end(bool blockflag=false) {
         auto modified_connections = connections;
         for(auto& [_, handlePair] : modified_connections)
-            setAsClosed(handlePair.first);
+            setAsClosed(handlePair.first, true);
         MPI_Finalize();
     }
 };
