@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['manager_74',['Manager',['../classManager.html',1,'']]],
-  ['mpicollective_75',['MPICollective',['../classMPICollective.html',1,'']]]
+  ['manager_75',['Manager',['../classManager.html',1,'']]],
+  ['mpicollective_76',['MPICollective',['../classMPICollective.html',1,'']]]
 ];

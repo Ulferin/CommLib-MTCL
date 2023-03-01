@@ -83,9 +83,9 @@ Inheritance diagram for CollectiveContext:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a5254e796b079aaf9697a0550d55a6d59"><td class="memItemLeft" align="right" valign="top"><a id="a5254e796b079aaf9697a0550d55a6d59"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>CollectiveContext</b> (int size, bool root, int rank, CollectiveType type, bool canSend=false, bool canReceive=false)</td></tr>
-<tr class="separator:a5254e796b079aaf9697a0550d55a6d59"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a94bbf12c9245bde9f7501a996ae71268"><td class="memItemLeft" align="right" valign="top"><a id="a94bbf12c9245bde9f7501a996ae71268"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>CollectiveContext</b> (int size, bool root, int rank, HandleType type, bool canSend=false, bool canReceive=false)</td></tr>
+<tr class="separator:a94bbf12c9245bde9f7501a996ae71268"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2d3f542b5790de6f193b1bb94971ad18"><td class="memItemLeft" align="right" valign="top"><a id="a2d3f542b5790de6f193b1bb94971ad18"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>setImplementation</b> (ImplementationType impl, std::vector&lt; <a class="el" href="classHandle.html">Handle</a> * &gt; participants)</td></tr>
 <tr class="separator:a2d3f542b5790de6f193b1bb94971ad18"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -101,18 +101,21 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>setImplementation</b>
 <tr class="memitem:aebfa1bcd0ffcf7f4e95a9a44246d8f37"><td class="memItemLeft" align="right" valign="top">ssize_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCollectiveContext.html#aebfa1bcd0ffcf7f4e95a9a44246d8f37">probe</a> (size_t &amp;size, const bool blocking=true)</td></tr>
 <tr class="memdesc:aebfa1bcd0ffcf7f4e95a9a44246d8f37"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check for incoming message and write in <b>size</b> the amount of data present in the message.  <a href="classCollectiveContext.html#aebfa1bcd0ffcf7f4e95a9a44246d8f37">More...</a><br /></td></tr>
 <tr class="separator:aebfa1bcd0ffcf7f4e95a9a44246d8f37"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a96e4d6f7851eb35347e636189ebc55c4"><td class="memItemLeft" align="right" valign="top"><a id="a96e4d6f7851eb35347e636189ebc55c4"></a>
-ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>execute</b> (const void *sendbuff, size_t sendsize, void *recvbuff, size_t recvsize)</td></tr>
-<tr class="separator:a96e4d6f7851eb35347e636189ebc55c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aae5d843516a25cc3bcc2b8cd39fe5b38"><td class="memItemLeft" align="right" valign="top"><a id="aae5d843516a25cc3bcc2b8cd39fe5b38"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>peek</b> ()</td></tr>
+<tr class="separator:aae5d843516a25cc3bcc2b8cd39fe5b38"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaeefa57a225626545d490dc00ed5657b"><td class="memItemLeft" align="right" valign="top"><a id="aaeefa57a225626545d490dc00ed5657b"></a>
+ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>sendrecv</b> (const void *sendbuff, size_t sendsize, void *recvbuff, size_t recvsize)</td></tr>
+<tr class="separator:aaeefa57a225626545d490dc00ed5657b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a68e55fac7611fcb094ca24b874ee6e53"><td class="memItemLeft" align="right" valign="top"><a id="a68e55fac7611fcb094ca24b874ee6e53"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>close</b> (bool close_wr=true, bool close_rd=true)</td></tr>
 <tr class="separator:a68e55fac7611fcb094ca24b874ee6e53"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7a0fa9be58a32a8434bc886bde747af8"><td class="memItemLeft" align="right" valign="top"><a id="a7a0fa9be58a32a8434bc886bde747af8"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>getSize</b> ()</td></tr>
 <tr class="separator:a7a0fa9be58a32a8434bc886bde747af8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a18c99f952d544f6629934f76e0290d40"><td class="memItemLeft" align="right" valign="top"><a id="a18c99f952d544f6629934f76e0290d40"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>finalize</b> (bool blockflag)</td></tr>
-<tr class="separator:a18c99f952d544f6629934f76e0290d40"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af41ff06205f880f066475d6f408aa517"><td class="memItemLeft" align="right" valign="top"><a id="af41ff06205f880f066475d6f408aa517"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>finalize</b> (bool blockflag, std::string name=&quot;&quot;)</td></tr>
+<tr class="separator:af41ff06205f880f066475d6f408aa517"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0bbb642841274f2fa8529f7a1609342d"><td class="memItemLeft" align="right" valign="top"><a id="a0bbb642841274f2fa8529f7a1609342d"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>yield</b> ()</td></tr>
 <tr class="separator:a0bbb642841274f2fa8529f7a1609342d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -123,6 +126,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>setName</b> (const st
 <tr class="memitem:ab988a9f0ab946f0c526f722043cae753 inherit pub_methods_classCommunicationHandle"><td class="memItemLeft" align="right" valign="top"><a id="ab988a9f0ab946f0c526f722043cae753"></a>
 const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>getName</b> ()</td></tr>
 <tr class="separator:ab988a9f0ab946f0c526f722043cae753 inherit pub_methods_classCommunicationHandle"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2abda938b2da17f9bc72db87b39796fc inherit pub_methods_classCommunicationHandle"><td class="memItemLeft" align="right" valign="top"><a id="a2abda938b2da17f9bc72db87b39796fc"></a>
+HandleType&#160;</td><td class="memItemRight" valign="bottom"><b>getType</b> ()</td></tr>
+<tr class="separator:a2abda938b2da17f9bc72db87b39796fc inherit pub_methods_classCommunicationHandle"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6b2fc0b1e0619b006227d016221287f0 inherit pub_methods_classCommunicationHandle"><td class="memItemLeft" align="right" valign="top"><a id="a6b2fc0b1e0619b006227d016221287f0"></a>
 const bool&#160;</td><td class="memItemRight" valign="bottom"><b>isClosed</b> ()</td></tr>
 <tr class="separator:a6b2fc0b1e0619b006227d016221287f0 inherit pub_methods_classCommunicationHandle"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -150,9 +156,6 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>rank</b></td></tr>
 <tr class="memitem:a77bea562de31d69f2b02a0c540f322a6"><td class="memItemLeft" align="right" valign="top"><a id="a77bea562de31d69f2b02a0c540f322a6"></a>
 <a class="el" href="classCollectiveImpl.html">CollectiveImpl</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>coll</b></td></tr>
 <tr class="separator:a77bea562de31d69f2b02a0c540f322a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6618e383a3fec085ee72196309ce19ce"><td class="memItemLeft" align="right" valign="top"><a id="a6618e383a3fec085ee72196309ce19ce"></a>
-CollectiveType&#160;</td><td class="memItemRight" valign="bottom"><b>type</b></td></tr>
-<tr class="separator:a6618e383a3fec085ee72196309ce19ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2af37b9957b91c0cfa2ef805b93202d3"><td class="memItemLeft" align="right" valign="top"><a id="a2af37b9957b91c0cfa2ef805b93202d3"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>canSend</b></td></tr>
 <tr class="separator:a2af37b9957b91c0cfa2ef805b93202d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -178,6 +181,9 @@ std::atomic&lt; bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>
 <tr class="memitem:a18275bdd41bf7c6075a81af7d8eb0194 inherit pro_attribs_classCommunicationHandle"><td class="memItemLeft" align="right" valign="top"><a id="a18275bdd41bf7c6075a81af7d8eb0194"></a>
 std::atomic&lt; int &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>counter</b> = 0</td></tr>
 <tr class="separator:a18275bdd41bf7c6075a81af7d8eb0194 inherit pro_attribs_classCommunicationHandle"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7dddc1764646346d20d521acb9a00d7b inherit pro_attribs_classCommunicationHandle"><td class="memItemLeft" align="right" valign="top"><a id="a7dddc1764646346d20d521acb9a00d7b"></a>
+HandleType&#160;</td><td class="memItemRight" valign="bottom"><b>type</b> = P2P</td></tr>
+<tr class="separator:a7dddc1764646346d20d521acb9a00d7b inherit pro_attribs_classCommunicationHandle"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>

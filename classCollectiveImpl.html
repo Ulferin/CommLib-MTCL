@@ -99,6 +99,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a251d2eadbcb528c38a7017bb4b2c5427"><td class="memItemLeft" align="right" valign="top"><a id="a251d2eadbcb528c38a7017bb4b2c5427"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>CollectiveImpl</b> (std::vector&lt; <a class="el" href="classHandle.html">Handle</a> * &gt; participants)</td></tr>
 <tr class="separator:a251d2eadbcb528c38a7017bb4b2c5427"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a924823bdda5e300f2e8c09dc6ef4de04"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCollectiveImpl.html#a924823bdda5e300f2e8c09dc6ef4de04">peek</a> ()</td></tr>
+<tr class="memdesc:a924823bdda5e300f2e8c09dc6ef4de04"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if any of the participants has something ready to be read.  <a href="classCollectiveImpl.html#a924823bdda5e300f2e8c09dc6ef4de04">More...</a><br /></td></tr>
+<tr class="separator:a924823bdda5e300f2e8c09dc6ef4de04"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab6b9ae5fa0887cdb69ac9ed97f590e83"><td class="memItemLeft" align="right" valign="top"><a id="ab6b9ae5fa0887cdb69ac9ed97f590e83"></a>
 virtual ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>probe</b> (size_t &amp;size, const bool blocking=true)=0</td></tr>
 <tr class="separator:ab6b9ae5fa0887cdb69ac9ed97f590e83"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -111,12 +114,12 @@ virtual ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>receive</b
 <tr class="memitem:a54b9e5513bce4deea44092edb2a7bfeb"><td class="memItemLeft" align="right" valign="top"><a id="a54b9e5513bce4deea44092edb2a7bfeb"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>close</b> (bool close_wr=true, bool close_rd=true)=0</td></tr>
 <tr class="separator:a54b9e5513bce4deea44092edb2a7bfeb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab3628c84fdfda6a28e57a0e489670d9d"><td class="memItemLeft" align="right" valign="top"><a id="ab3628c84fdfda6a28e57a0e489670d9d"></a>
-virtual ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>execute</b> (const void *sendbuff, size_t sendsize, void *recvbuff, size_t recvsize)</td></tr>
-<tr class="separator:ab3628c84fdfda6a28e57a0e489670d9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac912f74b54251c2184f32f23f54a262b"><td class="memItemLeft" align="right" valign="top"><a id="ac912f74b54251c2184f32f23f54a262b"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>finalize</b> (bool)</td></tr>
-<tr class="separator:ac912f74b54251c2184f32f23f54a262b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afb434de0caef8566f540742794f0ecb3"><td class="memItemLeft" align="right" valign="top"><a id="afb434de0caef8566f540742794f0ecb3"></a>
+virtual ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>sendrecv</b> (const void *sendbuff, size_t sendsize, void *recvbuff, size_t recvsize)</td></tr>
+<tr class="separator:afb434de0caef8566f540742794f0ecb3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aee8a425378723bf895f7bd33cdba0dff"><td class="memItemLeft" align="right" valign="top"><a id="aee8a425378723bf895f7bd33cdba0dff"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>finalize</b> (bool, std::string name=&quot;&quot;)</td></tr>
+<tr class="separator:aee8a425378723bf895f7bd33cdba0dff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
@@ -135,7 +138,38 @@ std::vector&lt; <a class="el" href="classHandle.html">Handle</a> * &gt;&#160;</t
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Interface for transport-specific network functionalities for collective operations. Subclasses specify different behaviors depending on the specific transport used to implement the collective operations and on the specific type of collective. </p>
-</div><hr/>The documentation for this class was generated from the following file:<ul>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a924823bdda5e300f2e8c09dc6ef4de04"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a924823bdda5e300f2e8c09dc6ef4de04">&#9670;&nbsp;</a></span>peek()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual bool CollectiveImpl::peek </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Checks if any of the participants has something ready to be read. </p>
+<dl class="section return"><dt>Returns</dt><dd>true, if at least one participant has something to read. False otherwise </dd></dl>
+
+<p>Reimplemented in <a class="el" href="classUCCCollective.html#ab978b8dd968e610c6f42eaf0dc185af6">UCCCollective</a>, and <a class="el" href="classMPICollective.html#aa327bfd77949bdc736be151c8e749db5">MPICollective</a>.</p>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
 <li>collectives/<a class="el" href="collectiveImpl_8hpp_source.html">collectiveImpl.hpp</a></li>
 </ul>
 </div><!-- contents -->
