@@ -137,7 +137,6 @@ protected:
 
 public:
     std::atomic<bool> already_closed {false};
-    std::atomic<bool> eos_received {false};
     ucp_ep_h endpoint;
     ucp_worker_h ucp_worker;
 
@@ -227,13 +226,14 @@ public:
             return -1;
 
         size = be64toh(sz);
-        if(size == 0) {
-            MTCL_UCX_PRINT(100, "EOS received by internal probe\n");
-            eos_received = true;
-        }
-
         last_probe = size;
         return sizeof(size_t);
+    }
+
+    bool peek() {
+        size_t sz;
+        ssize_t res = this->probe(sz, false);
+        return res > 0;
     }
 
     ~HandleUCX() {
@@ -640,6 +640,11 @@ public:
         prog = ucp_worker_progress(ucp_worker);
         (void)prog;
 
+        // The polling mechanism provided by ucp_stream_worker_poll does not
+        // return twice the same endpoint if no NEW network events are detected.
+        // This means, with repeated polling if some network event is detected
+        // but not managed by the user (by a receive/probe) the endpoint will
+        // not be displayed again even if data are ready to be read
         ucp_stream_poll_ep_t* ready_eps = new ucp_stream_poll_ep_t[max_eps];
         size = ucp_stream_worker_poll(ucp_worker, ready_eps, max_eps, 0);
         if(size < 0) {

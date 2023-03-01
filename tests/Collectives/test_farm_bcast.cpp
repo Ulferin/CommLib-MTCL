@@ -67,8 +67,10 @@ int main(int argc, char** argv){
         for(int i = 0; i < streamlen; i++) {
             data[i] = i+1;
         }
-        if(hg.send(data, streamlen*sizeof(int)) <= 0)
+        if(hg.sendrecv(data, streamlen*sizeof(int), nullptr, 0) <= 0) {
             printf("Error sending message\n");
+            return 1;
+        }
         hg.close();
 
         int res = 0;
@@ -77,7 +79,7 @@ int main(int argc, char** argv){
             auto h = Manager::getNext();
             auto name = h.getName();
             r = h.receive(&res, sizeof(int));
-            if(r!=0)
+            if(r > 0)
                 printf("Received update from Collector. Current value is: %d\n", res);
         }while(r > 0);
         fbk.close();
@@ -95,15 +97,13 @@ int main(int argc, char** argv){
         printf("Stream len is %d\n", streamlen);
 
         auto hg_gather = Manager::createTeam("App2:App3:App4", "App4", GATHER);
-        // hg_gather.yield();
 
         int partial = 0;
         int gather_data[3];
-        // hg_gather.execute(&rank, sizeof(int), gather_data, sizeof(int));
 
         ssize_t r;
         do {
-            r = hg_gather.execute(&rank, sizeof(int), gather_data, sizeof(int));
+            r = hg_gather.sendrecv(&rank, sizeof(int), gather_data, sizeof(int));
             if(r == 0) {
                 printf("gather closed\n");
                 break;
@@ -129,7 +129,7 @@ int main(int argc, char** argv){
             return 1;
         }
 
-        ssize_t res = hg_bcast.receive(data, streamlen*sizeof(int));
+        ssize_t res = hg_bcast.sendrecv(nullptr, 0, data, streamlen*sizeof(int));
         if(res <= 0) {
             printf("bcast error\n");        
             return 1;
@@ -140,9 +140,9 @@ int main(int argc, char** argv){
             partial += data[i];
             printf("Received el: %d - partial is: %d\n", data[i], partial);
         }
-        // hg_bcast.close();
+        hg_bcast.close();
         
-        hg_gather.execute(&partial, sizeof(int), nullptr, 0);
+        hg_gather.sendrecv(&partial, sizeof(int), nullptr, 0);
         hg_gather.close();
     }
 

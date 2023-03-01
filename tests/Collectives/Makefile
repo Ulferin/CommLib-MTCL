@@ -15,8 +15,10 @@ ifdef SINGLE_IO_THREAD
 	CXXFLAGS +=-DSINGLE_IO_THREAD
 endif
 
+ifdef TPROTOCOL
 ifndef RAPIDJSON_HOME
 $(error RAPIDJSON_HOME env variable not defined!);
+endif
 endif
 
 ifeq ($(findstring MPI,$(TPROTOCOL)),MPI)

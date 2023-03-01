@@ -1,18 +1,6 @@
 #ifndef COLLECTIVEIMPL_HPP
 #define COLLECTIVEIMPL_HPP
 
-/*
- *
- * [ ] flush buffer lettura fino a ricezione EOS
- * [ ] Implementazione Gather
- * [ ] Implementazione ottimizzazioni Gather
- * [ ] Aggiunta metodo execute per tutte le collettive
- * [ ] Distruzione handle interni
- * 
- * 
- * */
-
-
 #include <iostream>
 #include <map>
 #include <vector>
@@ -108,9 +96,27 @@ protected:
 		return realHandle->receive(buff, std::min(sz,size));
     }
 
+
 public:
     CollectiveImpl(std::vector<Handle*> participants) : participants(participants) {
         // for(auto& h : participants) h->incrementReferenceCounter();
+    }
+
+    /**
+     * @brief Checks if any of the participants has something ready to be read.
+     * 
+     * @return true, if at least one participant has something to read. False
+     * otherwise 
+     */
+    virtual bool peek() {
+        //NOTE: the basic implementation returns true as soon as one of the
+        //      participants has something to receive. Some protocols may require
+        //      to override this method in order to correctly "peek" for messages 
+        for(auto& h : participants) {
+            if(h->peek()) return true;
+        }
+
+        return false;
     }
 
     virtual ssize_t probe(size_t& size, const bool blocking=true) = 0;
@@ -118,11 +124,13 @@ public:
     virtual ssize_t receive(void* buff, size_t size) = 0;
     virtual void close(bool close_wr=true, bool close_rd=true) = 0;
 
-    virtual ssize_t execute(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
+    virtual ssize_t sendrecv(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
+        MTCL_PRINT(100, "[internal]:\t", "CollectiveImpl::sendrecv invalid operation for the collective\n");
+        errno = EINVAL;
         return -1;
     }
 
-    virtual void finalize(bool) {return;}
+    virtual void finalize(bool, std::string name="") {return;}
 
     virtual ~CollectiveImpl() {}
 };
@@ -141,15 +149,7 @@ protected:
     
 public:
     ssize_t probe(size_t& size, const bool blocking=true) {
-        auto h = participants.at(0);
-        ssize_t res = h->probe(size, blocking);
-        if(res > 0 && size == 0) {
-            h->close(true, true);
-            participants.pop_back();
-        }
-
-        return res;
-
+        return -1;
     }
 
     ssize_t send(const void* buff, size_t size) {
@@ -165,24 +165,23 @@ public:
 
     ssize_t receive(void* buff, size_t size) {
         auto h = participants.at(0);
-        ssize_t res = h->receive(buff, size);
+        ssize_t res = receiveFromHandle(h, (char*)buff, size);
+        if(res == 0) h->close(true, false);
 
         return res;
     }
 
-    void close(bool close_wr=true, bool close_rd=true) {
-#if 0
-        // Non-root process must wait for the root process to terminate before
-        // it can issue a close operation.
-        if(!root && !participants.empty()) {
-            MTCL_ERROR("[internal]:\t", "BroadcastGeneric::close non-root process trying to close with active root process. Aborting.\n");
-            errno = EINVAL;
-            return;
+    ssize_t sendrecv(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
+        if(root) {
+            return this->send(sendbuff, sendsize);
         }
-#endif
-		
-        // Root process can issue the close to all its non-root processes. At
-        // finalize it will flush the EOS messages coming from non-root proc.
+        else {
+            return this->receive(recvbuff, recvsize);
+        }
+    }
+
+    void close(bool close_wr=true, bool close_rd=true) {
+        // Root process can issue an explicit close to all its non-root processes.
         if(root) {
             for(auto& h : participants) h->close(true, false);
             return;
@@ -201,7 +200,9 @@ private:
     bool root;
 
 public:
+
     ssize_t probe(size_t& size, const bool blocking=true) {
+        
         ssize_t res = -1;
         auto iter = participants.begin();
         while(res == -1 && !participants.empty()) {
@@ -259,6 +260,7 @@ public:
 
         if((r = h->receive(buff, size)) <= 0)
             return -1;
+        h->probed = {false,0};
 
         probed_idx = -1;
 
@@ -266,22 +268,12 @@ public:
     }
 
     void close(bool close_wr=true, bool close_rd=true) {
-        // Non-root process can send EOS to root and go on. At finalize it should
-        // anyway flush messages coming from the root until the EOS is received.
+        // Non-root process can send EOS to root and go on.
         if(!root) {
             auto h = participants.at(0);
             h->close(true, false);
             return;
-        }
-#if 0
-        // Root process has to wait that all the non-root processes have sent
-        // their EOS before terminating.
-        if(root && !participants.empty()) {
-            MTCL_ERROR("[internal]:\t", "FanInGeneric::close root process trying to close with active non-root process. Aborting.\n");
-            errno = EINVAL;
-            return;
-        }
-#endif		
+        }	
     }
 
 public:
@@ -319,7 +311,6 @@ public:
         auto h = participants.at(current);
         
         int res = h->send(buff, size);
-        // if(res < 0) participants.erase(h);
 
         ++current %= count;
 
@@ -329,23 +320,13 @@ public:
     ssize_t receive(void* buff, size_t size) {
         auto h = participants.at(0);
         ssize_t res = h->receive(buff, size);
+        h->probed = {false, 0};
 
         return res;
     }
 
-    void close(bool close_wr=true, bool close_rd=true) {
-#if 0
-        // Non-root process must wait for the root process to terminate before
-        // it can issue a close operation.
-        if(!root && !participants.empty()) {
-            MTCL_ERROR("[internal]:\t", "FanOutGeneric::close non-root process trying to close with active root process. Aborting.\n");
-            errno = EINVAL;
-            return;
-        }
-#endif
-		
-        // Root process can issue the close to all its non-root processes. At
-        // finalize it will flush the EOS messages coming from non-root proc.
+    void close(bool close_wr=true, bool close_rd=true) {		
+        // Root process can issue the close to all its non-root processes.
         if(root) {
             for(auto& h : participants) h->close(true, false);
             return;
@@ -363,50 +344,30 @@ private:
     size_t current = 0;
     bool root;
     int rank;
-    bool allReady{true}, closing{false};
+    bool allReady{true};
 public:
     GatherGeneric(std::vector<Handle*> participants, bool root, int rank) :
         CollectiveImpl(participants), root(root), rank(rank) {}
 
-    // Usata solo dal Manager per fare polling
     ssize_t probe(size_t& size, const bool blocking=true) {
-        allReady = true;
-        size_t s;
-        ssize_t res = -1;
-        for(auto& h : participants) {
-            if((res = probeHandle(h, s, blocking)) < 0)
-                return res;
-            
-            if(res == 0 && s == 0) {
-                h->close(true, false);
-                closing = true;
-                participants.pop_back();
-            }
-            allReady = allReady && (res > 0);
-        }
-
-        if(!allReady) {
-            errno = EWOULDBLOCK;
-        }
-
-        return allReady ? sizeof(size_t) : -1;
+        return -1;
     }
 
     // Qui il buffer deve essere grande quanto (participants.size()+1)*size
     ssize_t receive(void* buff, size_t size) {
         for(auto& h : participants) {
-            size_t sz;
+            ssize_t res;
+
+            // Receive rank
             int remote_rank;
-            // Probe rank/check EOS
-            if(probeHandle(h, sz, true) == 0) {
-                closing = true;
-                return 0;
-            }
-            receiveFromHandle(h, &remote_rank, sz);
-            // Probe data
-            probeHandle(h, sz, true);
-            receiveFromHandle(h, (char*)buff+(remote_rank*size), size);
+            res = receiveFromHandle(h, &remote_rank, sizeof(int));
+            if(res <= 0) return res;
+
+            // Receive data
+            res = receiveFromHandle(h, (char*)buff+(remote_rank*size), size);
+            if(res <= 0) return res;
         }
+
         return sizeof(size_t);
     }
 
@@ -420,35 +381,21 @@ public:
         return sizeof(size_t);
     }
 
-    ssize_t execute(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
+    ssize_t sendrecv(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
         if(root) {
-            // Nel caso in cui l'EOS sia stato preso dal Manager
-            if(closing)
-                return 0;
-            else {
-                memcpy((char*)recvbuff+(rank*sendsize), sendbuff, sendsize);
-                return this->receive(recvbuff, recvsize);
-            }
+            memcpy((char*)recvbuff+(rank*sendsize), sendbuff, sendsize);
+            return this->receive(recvbuff, recvsize);
         }
         else {
             return this->send(sendbuff, sendsize);
         }
     }
 
-    void close(bool close_wr=true, bool close_rd=true) {
-#if 0		
-        // - Tutti i non-root devono fare close "simultaneamente", quindi non deve
-        // esserci qualcuno che fa send a tempo X se un altro ha fatto close a tempo X
-        if(root && !closing) {
-            MTCL_ERROR("[internal]:\t", "GatherGeneric::close root process trying to close with active non-root process. Aborting.\n");
-            errno = EINVAL;
-            return;
-        }
-#endif        
+    void close(bool close_wr=true, bool close_rd=true) {        
         for(auto& h : participants) {
             h->close(true, false);
         }
-                
+
         return;
     }
     

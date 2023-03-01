@@ -160,6 +160,17 @@ public:
         return sizeof(size_t);
     }
 
+    bool peek() {
+        int f = 0;
+        if (MPI_Iprobe(this->rank, 0, MPI_COMM_WORLD, &f, MPI_STATUS_IGNORE) != MPI_SUCCESS){
+            MTCL_MPI_PRINT(100, "HandleMPI::peek MPI_Iprobe ERROR\n");
+            errno = ECOMM;
+            return -1;
+        }
+
+        return f;
+    }
+
     ssize_t sendEOS() {
 		size_t sz = 0;
 		return MPI_Send(&sz, 1, MPI_UNSIGNED_LONG, this->rank, 0, this->server_comm); 

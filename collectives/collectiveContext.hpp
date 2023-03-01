@@ -16,13 +16,6 @@
 #include "uccImpl.hpp"
 #endif
 
-enum CollectiveType {
-    BROADCAST,
-    FANIN,
-    FANOUT,
-    GATHER
-};
-
 
 class CollectiveContext : public CommunicationHandle {
     friend class Manager;
@@ -32,7 +25,6 @@ protected:
     bool root;
     int rank;
     CollectiveImpl* coll;
-    CollectiveType type;
     bool canSend, canReceive;
     bool completed = false;
 
@@ -46,16 +38,17 @@ protected:
     }
 
 public:
-    CollectiveContext(int size, bool root, int rank, CollectiveType type,
+    CollectiveContext(int size, bool root, int rank, HandleType type,
             bool canSend=false, bool canReceive=false) : size(size), root(root),
-                rank(rank), type(type), canSend(canSend), canReceive(canReceive) {
+                rank(rank), canSend(canSend), canReceive(canReceive) {
+                    this->type = type;
                     closed_rd = !canReceive;
                     closed_wr = !canSend;
                     counter = 1;
     }
 
     bool setImplementation(ImplementationType impl, std::vector<Handle*> participants) {
-        const std::map<CollectiveType, std::function<CollectiveImpl*()>> contexts = {
+        const std::map<HandleType, std::function<CollectiveImpl*()>> contexts = {
             {BROADCAST,  [&]{
                     CollectiveImpl* coll = nullptr;
                     switch (impl) {
@@ -192,8 +185,12 @@ public:
         return coll->probe(size, blocking);
     }
 
-    ssize_t execute(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
-        return coll->execute(sendbuff, sendsize, recvbuff, recvsize);
+    bool peek() {
+        return coll->peek();
+    }
+
+    ssize_t sendrecv(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
+        return coll->sendrecv(sendbuff, sendsize, recvbuff, recvsize);
     }
 
     void close(bool close_wr=true, bool close_rd=true) {
@@ -206,8 +203,8 @@ public:
         return size;
     }
 
-    void finalize(bool blockflag) {
-        coll->finalize(blockflag);
+    void finalize(bool blockflag, std::string name="") {
+        coll->finalize(blockflag, name);
     }
 
     void yield();
@@ -216,10 +213,10 @@ public:
 };
 
 
-CollectiveContext *createContext(CollectiveType type, int size, bool root, int rank)
+CollectiveContext *createContext(HandleType type, int size, bool root, int rank)
 {
-    const std::map<CollectiveType, std::function<CollectiveContext*()>> contexts = {
-        {BROADCAST,  [&]{return new CollectiveContext(size, root, rank, type, root, !root);}},
+    const std::map<HandleType, std::function<CollectiveContext*()>> contexts = {
+        {BROADCAST,  [&]{return new CollectiveContext(size, root, rank, type, false, false);}},
         {FANIN,  [&]{return new CollectiveContext(size, root, rank, type, !root, root);}},
         {FANOUT,  [&]{return new CollectiveContext(size, root, rank, type, root, !root);}},
         {GATHER,  [&]{return new CollectiveContext(size, root, rank, type, false, false);}}

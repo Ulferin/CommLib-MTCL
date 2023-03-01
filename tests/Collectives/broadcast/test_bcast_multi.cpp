@@ -4,13 +4,13 @@
  *
  * 
  * Compile with:
- *  $> RAPIDJSON_HOME=<rapidjson_install_path> make -f ../Makefile clean test_broadcast
+ *  $> RAPIDJSON_HOME=<rapidjson_install_path> make -f ../Makefile clean test_bcast_multi
  * 
  * Execution:
- *  $> ./test_broadcast 0 App1
- *  $> ./test_broadcast 1 App2
- *  $> ./test_broadcast 2 App3 
- *  $> ./test_broadcast 2 App4
+ *  $> ./test_bcast_multi 0 App1
+ *  $> ./test_bcast_multi 1 App2
+ *  $> ./test_bcast_multi 2 App3 
+ *  $> ./test_bcast_multi 2 App4
  * 
  * 
  */
@@ -23,6 +23,7 @@
 
 inline static std::string hello{"Hello team!"};
 inline static std::string bye{"Bye team!"};
+inline static std::string hello_hg2{"Hello team 2!"};
 
 int main(int argc, char** argv){
 
@@ -31,13 +32,21 @@ int main(int argc, char** argv){
         return 1;
     }
 
-    std::string config{"tcp_config.json"};
+    std::string config;
+#ifdef ENABLE_TCP
+    config = {"tcp_config.json"};
+#endif
 #ifdef ENABLE_MPI
     config = {"mpi_config.json"};
 #endif
 #ifdef ENABLE_UCX
     config = {"ucx_config.json"};
 #endif
+
+    if(config.empty()) {
+        printf("No protocol enabled. Please compile with TPROTOCOL=TCP|UCX|MPI\n");
+        return 1;
+    }
 
     int rank = atoi(argv[1]);
 	Manager::init(argv[2], config);
@@ -47,17 +56,16 @@ int main(int argc, char** argv){
         auto hg = Manager::createTeam("App1:App2:App3:App4", "App1", BROADCAST);
         auto hg2 = Manager::createTeam("App1:App2", "App1", BROADCAST);
         if(!hg.isValid() || !hg2.isValid()) {
-            MTCL_PRINT(1, "[test_broadcast]:\t", "there was some error creating the teams.\n");
+            MTCL_PRINT(1, "[test_bcast_multi]:\t", "there was some error creating the teams.\n");
             return 1;
         }
 
-        hg.send((void*)hello.c_str(), hello.length());
-        hg2.send((void*)hello.c_str(), hello.length());
-        hg.send((void*)bye.c_str(), bye.length());
+        hg.sendrecv((void*)hello.c_str(), hello.length(), nullptr, 0);
+        hg2.sendrecv((void*)hello_hg2.c_str(), hello_hg2.length(), nullptr, 0);
+        hg.sendrecv((void*)bye.c_str(), bye.length(), nullptr, 0);
 
-
-        hg.close();
-        hg2.close();
+        // hg.close();
+        // hg2.close();
     }
     else {
 		auto hg = Manager::createTeam("App1:App2:App3:App4", "App1", BROADCAST);
@@ -72,45 +80,30 @@ int main(int argc, char** argv){
                 return 1;
             }
         }
-    
         
         char* s = new char[hello.length()+1];
-        hg.receive(s, hello.length());
+        hg.sendrecv(nullptr, 0, s, hello.length());
         s[hello.length()] = '\0';
         std::cout << "Received: " << s << std::endl;
 
-        hg.receive(s, bye.length());
+        hg.sendrecv(nullptr, 0, s, bye.length());
         s[bye.length()] = '\0';
         if(std::string(s) == bye)
             printf("Received bye message: %s\n", bye.c_str());
         delete[] s;
 
         if(rank == 1) {
-            char* s2;
-            size_t sz;
-            hg2.probe(sz, true);
-            s2 = new char[sz+1];
-            hg2.receive(s2, sz);
-            s2[sz] = '\0';
-            std::cout << "Received: " << s2 << std::endl;
-            delete[] s2;
-            ssize_t res;
-            do {
-                size_t sz;
-                res = hg2.probe(sz, true);
-            } while(res != 0);
+            s = new char[hello_hg2.length()+1];
+            hg2.sendrecv(nullptr, 0, s, hello_hg2.length());
+            s[hello_hg2.length()] = '\0';
+            std::cout << "Received: " << s << std::endl;
+            delete[] s;
             hg2.close();
         }
-
-        ssize_t res;
-        do {
-            size_t sz;
-            res = hg.probe(sz, true);
-        }while(res != 0);
         hg.close();
     }
 
-    Manager::finalize();
+    Manager::finalize(true);
 
     return 0;
 }

@@ -105,6 +105,7 @@ public:
             return -1;
 		return size;
     }
+
 	// receives the header containing the size (sizeof(size_t) bytes)
 	ssize_t probe(size_t& size, const bool blocking=true) {
 		size_t sz;
@@ -119,6 +120,13 @@ public:
 		size = be64toh(sz);
 		return sizeof(size_t);
 	}
+
+    bool peek() {
+        size_t sz;
+        ssize_t r = recv(fd, &sz, sizeof(size_t), MSG_PEEK | MSG_DONTWAIT);
+    
+        return r;
+    }
 	
     ssize_t receive(void* buff, size_t size) {
         return readn(fd, (char*)buff, size); 

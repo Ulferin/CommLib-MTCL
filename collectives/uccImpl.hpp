@@ -151,6 +151,15 @@ public:
         team = create_ucc_team(info, ctx);
     }
 
+    // UCX needs to override basic peek in order to correctly catch messages
+    // using UCX collectives
+    bool peek() override {
+        size_t sz;
+        ssize_t res = this->probe(sz, false);
+
+        return res > 0;
+    }
+
 };
 
 
@@ -161,6 +170,11 @@ public:
 
 
     ssize_t probe(size_t& size, const bool blocking=true) {
+        if(last_probe != -1) {
+            size = last_probe;
+            return sizeof(size_t);
+        }
+
         ucc_coll_args_t      args;
         if(req == nullptr) {
 
@@ -235,6 +249,10 @@ public:
 
 
     ssize_t receive(void* buff, size_t size) {
+        size_t sz;
+        ssize_t res;
+        if((res = this->probe(sz, true)) <= 0) return res;
+
         ucc_coll_args_t      args;
         ucc_coll_req_h       req;
 
@@ -254,21 +272,24 @@ public:
         }
         ucc_collective_finalize(req);
         
+        last_probe = -1;
+
         return size;
     }
 
-    void close(bool close_wr=true, bool close_rd=true) {
-        // Non-root process must wait for the root process to terminate before
-        // it can issue a close operation.
-        if(!root && !closing) {
-            MTCL_ERROR("[internal]:\t", "BroadcastUCC::close non-root process trying to close with active root process. Aborting.\n");
-            errno = EINVAL;
-            return;
-        }
-
-        // Root process can issue the close to all its non-root processes. At
-        // finalize it will flush the EOS messages coming from non-root proc.
+    ssize_t sendrecv(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
         if(root) {
+            return this->send(sendbuff, sendsize);
+        }
+        else {
+            return this->receive(recvbuff, recvsize);
+        }
+    }
+
+    void close(bool close_wr=true, bool close_rd=true) {
+        // Root process can issue the close to all its non-root processes.
+        if(root) {
+            closing = true;
             size_t EOS = 0;
             ucc_coll_args_t      args;
 
@@ -288,14 +309,10 @@ public:
         return;
     }
 
-    void finalize(bool) {
-        // closing = true means we already completed the termination process
-        // for this process
-        if(closing) return;
-
+    void finalize(bool, std::string name="") {
         if(root) {
             // The user didn't call the close explicitly
-            if(req == nullptr) {
+            if(!closing) {
                 this->close(true, true);
             }
             while (UCC_INPROGRESS == ucc_collective_test(req)) { 
@@ -304,11 +321,19 @@ public:
             ucc_collective_finalize(req);
         }
         else {
-            size_t sz = 1;
-            do {
+            while(!closing) {
+                size_t sz = 1;
                 this->probe(sz, true);
-            }while(sz != 0);
+                if(sz == 0) break;
+				MTCL_ERROR("[internal]:\t", "Spurious message received of size %ld on handle with name %s!\n", sz, name.c_str());
+
+                char* data = new char[sz];
+                this->receive(data, sz);
+                delete[] data;
+            }
         }
+
+        // ucc_context_destroy(ctx);
     }
 
 
@@ -325,6 +350,11 @@ public:
     }
 
     ssize_t probe(size_t& size, const bool blocking=true) {
+        if(last_probe != -1) {
+            size = last_probe;
+            return sizeof(size_t);
+        }
+
         ucc_coll_args_t      args;
         if(req == nullptr) {
             /* BROADCAST HEADER */
@@ -360,7 +390,7 @@ public:
         }
         ucc_collective_finalize(req);
 
-        last_probe = probe_data[(root_rank + 1) % this->size];
+        last_probe = probe_data[(rank + 1) % this->size];
         if(last_probe == 0) closing=true;
         size = last_probe;
         req = nullptr;
@@ -397,16 +427,13 @@ public:
         return -1;
     }
 
-    ssize_t execute(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
-        if(root && closing)
-            return 0;
-        
+    ssize_t sendrecv(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {        
         ucc_coll_args_t args;
         ucc_coll_req_h  request;
 
         if(root) {
             size_t sz;
-            if(last_probe == -1) this->probe(sz, true);
+            this->probe(sz, true);
             if(closing) return 0;
             last_probe = -1;
         }
@@ -439,14 +466,8 @@ public:
     }
 
     void close(bool close_wr=true, bool close_rd=true) {
-        if(root && !closing) {
-            MTCL_ERROR("[internal]:\t", "GatherUCC: root process trying to close with active non-root process. Aborting.\n");
-            errno = EINVAL;
-            return;
-        }
-
-        // Root process can issue the close to all its non-root processes. At
-        // finalize it will flush the EOS messages coming from non-root proc.
+        // Non-root process can issue the explicit close to the root process and
+        // go on. At finalize it will flush the pending operations.
         if(!root) {
 
             /* BROADCAST EOS */
@@ -461,18 +482,15 @@ public:
             UCC_CHECK(ucc_collective_init(&close_args, &req, team)); 
             UCC_CHECK(ucc_collective_post(req));  
 
+            closing = true;
             return;
         }
     }
 
-    void finalize(bool) {
-        // closing = true means we already completed the termination process
-        // for this process
-        if(closing) return;
-
+    void finalize(bool, std::string name="") {
         if(!root) {
             // The user didn't call the close explicitly
-            if(req == nullptr) {
+            if(!closing) {
                 this->close(true, true);
             }
             while (UCC_INPROGRESS == ucc_collective_test(req)) { 
@@ -481,12 +499,19 @@ public:
             ucc_collective_finalize(req);
         }
         else {
-            size_t sz = 1;
-            do {
+            while(!closing) {
+                size_t sz = 1;
                 this->probe(sz, true);
-            }while(!closing);
+                if(sz == 0) break;
+				MTCL_ERROR("[internal]:\t", "Spurious message received of size %ld on handle with name %s!\n", sz, name.c_str());
+
+                char* data = new char[sz];
+                this->receive(data, sz);
+                delete[] data;
+            }
         }
 
+        // ucc_context_destroy(ctx);
         delete[] probe_data;
     }
 

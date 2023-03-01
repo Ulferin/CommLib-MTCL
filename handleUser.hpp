@@ -155,9 +155,9 @@ public:
 		return realHandle->receive(buff, std::min(sz,size));
     }
 
-    ssize_t execute(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
+    ssize_t sendrecv(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
 		realHandle->probed={false,0};
-        return realHandle->execute(sendbuff, sendsize, recvbuff, recvsize);
+        return realHandle->sendrecv(sendbuff, sendsize, recvbuff, recvsize);
     }
 
     void close(){
@@ -172,6 +172,13 @@ public:
 		if (!realHandle) return {true, true};
 		return {realHandle->closed_rd, realHandle->closed_wr};
 	}
+
+    HandleType getType() {
+        if(realHandle)
+            return realHandle->getType();
+        else
+            return INVALID_TYPE;
+    }
 
     ~HandleUser(){
         // if this handle is readable and it is not closed, when i destruct this handle implicitly i'm giving the control to the runtime.

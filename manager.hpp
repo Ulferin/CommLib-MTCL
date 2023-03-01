@@ -152,43 +152,12 @@ private:
     }
 #endif
 	
-    static ssize_t poll(CollectiveContext* realHandle, size_t& size) {
-		if (realHandle->probed.first) { // previously probed, return 0 if EOS received
-			size=realHandle->probed.second;
-			return (size?sizeof(size_t):0);
+    static bool poll(CollectiveContext* realHandle) {
+		if (realHandle->probed.first) { // previously probed
+            return true;
 		}
-        
-		if (realHandle->closed_rd) return 0;
 
-		// reading the header to get the size of the message
-		ssize_t r;
-		if ((r=realHandle->probe(size, false))<=0) {
-			switch(r) {
-			case 0: {
-				realHandle->close(true, true);
-				return 0;
-			}
-			case -1: {	
-                if (errno==EINVAL) {
-                    return -1;
-                }			
-				if (errno==ECONNRESET) {
-					realHandle->close(true, true);
-					return 0;
-				}
-				if (errno==EWOULDBLOCK || errno==EAGAIN) {
-					errno = EWOULDBLOCK;
-					return -1;
-				}
-			}}
-			return r;
-		}
-		realHandle->probed={true,size};
-		if (size==0) { // EOS received
-			realHandle->close(false, true);
-			return 0;
-		}
-		return r;		
+        return realHandle->peek();
     }
 
 
@@ -204,9 +173,8 @@ private:
                 std::unique_lock lk(ctx_mutex);
                 for(auto& [ctx, toManage] : contexts) {
                     if(toManage) {
-                        size_t sz;
-                        ssize_t res = poll(ctx, sz);
-                        if(res >= 0) {
+                        bool res = poll(ctx);
+                        if(res) {
                             toManage = false;
                             std::unique_lock readylk(mutex);
                             handleReady.push(HandleUser(ctx, true, false));
@@ -385,7 +353,7 @@ public:
         //while(!handleReady.empty()) handleReady.pop();
 
         for(auto& [ctx, _] : contexts) {
-            ctx->finalize(blockflag);
+            ctx->finalize(blockflag, ctx->getName());
             if(ctx->counter == 1)
                 delete ctx;
             else ctx->counter--;
@@ -423,9 +391,8 @@ public:
 
             for(auto& [ctx, toManage] : contexts) {
                 if(toManage) {
-                    size_t sz;
-                    ssize_t res = poll(ctx, sz);
-                    if(res >= 0) {
+                    bool res = poll(ctx);
+                    if(res) {
                         toManage = false;
                         handleReady.push(HandleUser(ctx, true, false));
                     }
@@ -611,7 +578,7 @@ public:
             App2 --> |App1 e App3
             App3 --> |App1 e App2
     */
-    static HandleUser createTeam(std::string participants, std::string root, CollectiveType type) {
+    static HandleUser createTeam(std::string participants, std::string root, HandleType type) {
 
 
 #ifndef ENABLE_CONFIGFILE
@@ -664,7 +631,7 @@ public:
 
         MTCL_PRINT(100, "[Manager]: \t", "Manager::createTeam initializing collective with size: %d - AppName: %s - rank: %d - mpi: %d - ucc: %d\n", size, Manager::appName.c_str(), rank, mpi_impl, ucc_impl);
 
-        std::string teamID{participants + root + std::to_string(type)};
+        std::string teamID{participants + root + "-" + std::to_string(type)};
 
         std::vector<Handle*> coll_handles;
 
@@ -694,6 +661,9 @@ public:
                         }
                         if ((groupsReady.count(teamID) != 0) && ctx->update(groupsReady.at(teamID).size())) {
                             coll_handles = groupsReady.at(teamID);
+                            for(auto h : coll_handles) {
+                                h->setName(teamID+"-"+Manager::appName);
+                            }
                             groupsReady.erase(teamID);
                             break;
                         }
@@ -755,6 +725,7 @@ public:
         if(!ctx->setImplementation(impl, coll_handles)) {
             return HandleUser();
         }
+        ctx->setName(teamID+"-"+Manager::appName);
 		{
 			std::unique_lock lk(ctx_mutex);
 			contexts.emplace(ctx, false);
@@ -801,6 +772,11 @@ public:
 void CollectiveContext::yield() {
     if (!closed_rd && canReceive) {
         Manager::releaseTeam(this);
+    }
+    else if(!closed_rd) {
+        MTCL_PRINT(1, "[internal]:\t", "CollectiveContext::yield cannot yield this context.\n");
+        //TODO: if yield is called by HandleUser destructor, we may want to close
+        //      the collective if its type is BROADCAST or GATHER
     }
 }
 

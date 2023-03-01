@@ -126,6 +126,12 @@ public:
         return sizeof(size_t);
     }
 
+    bool peek() {
+        size_t sz;
+        ssize_t res = this->probe(sz, false);
+        return res > 0;
+    }
+
     ~HandleMQTT() {
         delete client;
     }

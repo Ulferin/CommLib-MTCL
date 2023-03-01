@@ -93,7 +93,7 @@ int main(int argc, char** argv){
 					fprintf(stderr, "ERRORE\n");
 					abort();
 				}
-				//hg.close();
+				hg.close();
 			}					   			
 		}
     }

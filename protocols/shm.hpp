@@ -41,6 +41,8 @@ public:
         return in.get(buff,size);
     }
 
+    bool peek() {return false;}
+
     ~HandleSHM() {}
 };
 

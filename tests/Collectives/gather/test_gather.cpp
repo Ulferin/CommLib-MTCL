@@ -4,7 +4,7 @@
  *
  *
  * Compile with:
- *  $> RAPIDJSON_HOME="/rapidjson/install/path" make -f ../Makefile clean test_gather
+ *  $> TPROTOCOL=<TCP|UCX|MPI> RAPIDJSON_HOME="/rapidjson/install/path" make -f ../Makefile clean test_gather
  * 
  * Execution:
  *  $> ./test_gather 0 App1
@@ -30,13 +30,21 @@ int main(int argc, char** argv){
 
     int rank = atoi(argv[1]);
 
-    std::string config{"tcp_config.json"};
+    std::string config;
+#ifdef ENABLE_TCP
+    config = {"tcp_config.json"};
+#endif
 #ifdef ENABLE_MPI
     config = {"mpi_config.json"};
 #endif
 #ifdef ENABLE_UCX
     config = {"ucx_config.json"};
 #endif
+
+    if(config.empty()) {
+        printf("No protocol enabled. Please compile with TPROTOCOL=TCP|UCX|MPI\n");
+        return 1;
+    }
 
     printf("Running with config file: %s\n", config.c_str());
 	Manager::init(argv[2], config);
@@ -50,8 +58,13 @@ int main(int argc, char** argv){
     char* buff = nullptr;
     if(rank == 0) buff = new char[hg.size()*data.length()];
 
-    hg.execute(data.c_str(), data.length(), buff, data.length());
-    if(rank != 0) hg.close();
+    hg.sendrecv(data.c_str(), data.length(), buff, data.length());
+//     if(rank != 0) {
+// #if 1
+//         hg.sendrecv(data.c_str(), data.length(), buff, data.length());
+// #endif
+//     }
+    hg.close();
 
     // Root
     if(rank == 0) {
@@ -59,15 +72,10 @@ int main(int argc, char** argv){
             std::string res(buff+(i*data.length()), data.length());
             printf("buff[%d] = %s\n", i, res.c_str());
         }
-        // while(true) {
-        //     ssize_t res = hg.execute(data.c_str(), data.length(), buff, data.length());
-        //     if(res == 0) break;
-        // }
-        // hg.close();
         delete[] buff;
     }
 
-    Manager::finalize();
+    Manager::finalize(true);
 
     return 0;
 }

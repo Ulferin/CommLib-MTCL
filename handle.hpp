@@ -5,6 +5,16 @@
 #include <atomic>
 
 #include "protocolInterface.hpp"
+#include "utils.hpp"
+
+enum HandleType {
+    BROADCAST,
+    FANIN,
+    FANOUT,
+    GATHER,
+    P2P,
+    INVALID_TYPE
+};
 
 class CommunicationHandle {
     friend class HandleUser;
@@ -17,6 +27,7 @@ protected:
     std::pair<bool, size_t> probed{false,0};  
 	std::atomic<bool> closed_rd = false, closed_wr = false;
     std::atomic<int> counter = 0;
+    HandleType type = P2P;
 
 
     virtual void incrementReferenceCounter() = 0;
@@ -68,7 +79,8 @@ public:
     virtual void close(bool close_wr=true, bool close_rd=true) = 0;
 
 
-    virtual ssize_t execute(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
+    virtual ssize_t sendrecv(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
+        MTCL_PRINT(100, "[internal]:\t", "CommunicationHandle::sendrecv invalid operation.\n");
         errno = EINVAL;
         return -1;
     }
@@ -76,6 +88,8 @@ public:
     virtual int getSize() {return 1;}
     void setName(const std::string &name) { handleName = name; }
 	const std::string& getName() { return handleName; }
+    HandleType getType() {return type;}
+
 
 	const bool isClosed()   { return closed_rd && closed_wr; }
 };
@@ -103,7 +117,17 @@ protected:
 	// if first=true second is the size contained in the header
     virtual ssize_t sendEOS() = 0;
 
+
 public:
+    Handle() {}
+
+    /**
+     * @brief Checks if there is something ready to be read on this handle.
+     * 
+     * @return \b true, if ready, \b false otherwise.
+     */
+    virtual bool peek() = 0;
+
     void yield() {
         if (!closed_rd)
             parent->notify_yield(this);

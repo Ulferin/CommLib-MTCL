@@ -65,7 +65,7 @@ int main(int argc, char** argv){
         hg.close();
     }
 
-    Manager::finalize();
+    Manager::finalize(true);
 
     return 0;
 }
