@@ -26,6 +26,9 @@ class HandleUCX : public Handle {
         int complete;
     } test_req_t;
 
+    ucs_status_ptr_t request = nullptr;
+    test_req_t ctx;
+    ucp_request_param_t param;
 
     static void common_cb(void *user_data, const char *type_str) {
         test_req_t *ctx;
@@ -67,7 +70,7 @@ protected:
         param->user_data    = ctx;
     }
 
-    ucs_status_t request_wait(void* request, test_req_t* ctx, char* operation) {
+    ucs_status_t request_wait(void* request, test_req_t* ctx, char* operation, bool blocking) {
         ucs_status_t status = UCS_OK;
 
         // Operation completed immediately, callback is not called!
@@ -81,6 +84,11 @@ protected:
                 operation, ucs_status_string(status));
             ucp_request_free(request);
             return status;
+        }
+
+        if(!blocking) {
+            ucp_worker_progress(ucp_worker);
+            if(ctx->complete == 0) return UCS_INPROGRESS;
         }
 
         while(ctx->complete == 0) {
@@ -98,28 +106,23 @@ protected:
     }
 
     ssize_t receive_internal(void* buff, size_t size, bool blocking) {
-        ucp_request_param_t param;
-        test_req_t* request;
-        test_req_t ctx;
-        size_t res;
+        size_t res = 0;
 
-        fill_request_param(&ctx, &param, false);
-        param.op_attr_mask |= UCP_OP_ATTR_FIELD_FLAGS;
-        param.flags = blocking ? UCP_STREAM_RECV_FLAG_WAITALL : 0;
-        param.cb.recv_stream = stream_recv_cb;
-        request              = (test_req_t*)ucp_stream_recv_nbx(endpoint, buff, size,
-                                                   &res, &param);
-
-        /*NOTE: we do not check how many bytes we actually wrote in the buffer*/
-        if(!blocking) {
-            if(request == NULL && res == 0) {
-                errno = EWOULDBLOCK;
-                return -1;
-            }
+        if(request == nullptr) {
+            fill_request_param(&ctx, &param, false);
+            param.op_attr_mask |= UCP_OP_ATTR_FIELD_FLAGS;
+            param.flags = UCP_STREAM_RECV_FLAG_WAITALL;
+            param.cb.recv_stream = stream_recv_cb;
+            request              = ucp_stream_recv_nbx(endpoint, buff, size,
+                                                    &res, &param);
         }
 
         ucs_status_t status;
-        if((status = request_wait(request, &ctx, (char*)"receive_internal")) != UCS_OK) {
+        if((status = request_wait(request, &ctx, (char*)"receive_internal", blocking)) != UCS_OK) {
+            if(status == UCS_INPROGRESS) {
+                errno = EWOULDBLOCK;
+                return -1;
+            }
             int res = -1;
             if(status == UCS_ERR_CONNECTION_RESET) {
                 res = 0;
@@ -130,6 +133,8 @@ protected:
 
             return res;
         }
+
+        request = nullptr;
 
         return size;
     }
@@ -144,6 +149,7 @@ public:
     std::atomic<bool> closed_rd{false};
 
     ssize_t last_probe = -1;
+    size_t test_probe = 42;
 
     HandleUCX(ConnType* parent, ucp_ep_h endpoint, ucp_worker_h worker) : Handle(parent), endpoint(endpoint), ucp_worker(worker) {}
 
@@ -163,7 +169,7 @@ public:
         request       = (test_req_t*)ucp_stream_send_nbx(endpoint, iov, 1, &param);
 
         ucs_status_t status;
-        if((status = request_wait(request, &ctx, (char*)"sendEOS")) != UCS_OK) {
+        if((status = request_wait(request, &ctx, (char*)"sendEOS", true)) != UCS_OK) {
             int res = -1;
             if(status == UCS_ERR_CONNECTION_RESET)
                 errno = ECONNRESET;
@@ -194,7 +200,7 @@ public:
         request       = (test_req_t*)ucp_stream_send_nbx(endpoint, iov, 2, &param);
 
         ucs_status_t status;
-        if((status = request_wait(request, &ctx, (char*)"send")) != UCS_OK) {
+        if((status = request_wait(request, &ctx, (char*)"send", true)) != UCS_OK) {
             int res = -1;
             if(status == UCS_ERR_CONNECTION_RESET)
                 errno = ECONNRESET;
@@ -220,12 +226,11 @@ public:
             return sizeof(size_t);
         }
 
-        size_t sz;
-
-        if(receive_internal(&sz, sizeof(size_t), blocking) <= 0)
+        if(receive_internal(&test_probe, sizeof(size_t), blocking) <= 0)
             return -1;
 
-        size = be64toh(sz);
+
+        size = be64toh(test_probe);
         last_probe = size;
         return sizeof(size_t);
     }
@@ -558,7 +563,7 @@ public:
 			REMOVE_CODE_IF(std::unique_lock lock(shm));
 			connections.insert({server_ep, {handle, false}});
 		}
-
+        MTCL_UCX_PRINT(100, "Connect ok to UCX:%s\n", address.c_str());
         return handle;
     }
 
@@ -711,9 +716,12 @@ public:
     }
 
     void end(bool blockflag=false) {
+        if(connections.empty()) return;
         auto modified_connections = connections;
-        for(auto& [_, handlePair] : modified_connections)
+        for(auto& [_, handlePair] : modified_connections) {
+            if(handlePair.first->already_closed) continue;
 			setAsClosed(handlePair.first, blockflag);
+        }
         
         ucp_worker_release_address(ucp_worker, local_addr);
         // ucp_worker_destroy(ucp_worker);

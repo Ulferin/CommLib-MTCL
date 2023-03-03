@@ -236,6 +236,9 @@ public:
 			REMOVE_CODE_IF(std::unique_lock lock(shm));
 			connections.insert({{rank, tag}, {handle, false}});
 		}
+
+        MTCL_MPI_PRINT(100, "Connection ok to MPI:%s\n", dest.c_str());
+
         return handle;
     }
 

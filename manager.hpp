@@ -17,7 +17,7 @@
 #include "protocolInterface.hpp"
 #include "protocols/tcp.hpp"
 #include "protocols/shm.hpp"
-// #define ENABLE_CONFIGFILE
+
 #ifdef ENABLE_CONFIGFILE
 #include <fstream>
 #include <rapidjson/rapidjson.h>
@@ -185,7 +185,6 @@ private:
             }
         }
     }
-
 #ifdef ENABLE_CONFIGFILE
     template <bool B, typename T>
     static std::vector<std::string> JSONArray2VectorString(const rapidjson::GenericArray<B, T>& arr){
