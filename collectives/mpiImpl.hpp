@@ -33,14 +33,13 @@ public:
             coll_size = participants.size() + 1;
             root_rank = local_rank;
             ranks = new int[participants.size()+1];
-            ranks[root_rank] = root_rank;
-
+            ranks[0] = root_rank;
 
             for(size_t i = 0; i < participants.size(); i++) {
                 participants.at(i)->send(&root_rank, sizeof(int));
                 int remote_rank;
                 receiveFromHandle(participants.at(i), &remote_rank, sizeof(int));
-                ranks[remote_rank] = remote_rank;
+                ranks[i+1] = remote_rank;
             }
 
             for(auto& p : participants) {
@@ -148,11 +147,8 @@ public:
         size_t sz;
         ssize_t res;
         if((res = this->probe(sz, true)) <= 0) return res;
-        // if(MPI_Bcast(&last_probe, 1, MPI_UNSIGNED_LONG, root_rank, comm) != MPI_SUCCESS) {
-        //     errno = ECOMM;
-        //     return -1;
-        // }
-        // if(last_probe == 0) return 0;
+
+        if(last_probe == 0) return 0;
         if(MPI_Bcast((void*)buff, size, MPI_BYTE, root_rank, comm) != MPI_SUCCESS) {
             errno = ECOMM;
             return -1;
@@ -165,13 +161,11 @@ public:
 
     ssize_t sendrecv(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
         if(root) {
-            this->send(sendbuff, sendsize);
+            return this->send(sendbuff, sendsize);
         }
         else {
-            this->receive(recvbuff, recvsize);
+            return this->receive(recvbuff, recvsize);
         }
-
-        return sizeof(size_t);
     }
 
     void close(bool close_wr=true, bool close_rd=true) {
@@ -285,7 +279,7 @@ public:
     
     ssize_t sendrecv(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
         if(root) {
-            if(MPI_Igather(&recvsize, 1, MPI_UNSIGNED_LONG, probe_data, 1, MPI_UNSIGNED_LONG, root_rank, comm, &request_header) != MPI_SUCCESS) {
+            if(MPI_Igather(&recvsize, 1, MPI_UNSIGNED_LONG, probe_data, 1, MPI_UNSIGNED_LONG, 0, comm, &request_header) != MPI_SUCCESS) {
                 MTCL_ERROR("[internal]:\t", "GatherMPI::probe Ibcast error\n");
                 errno = ECOMM;
                 return -1;
@@ -306,7 +300,7 @@ public:
                 }
 
                 if(probe_data[i] > recvsize) {
-                    MTCL_PRINT(100, "[internal]:\t", "GatherMPI::sendrecv the provided recvsize is too small\n");
+                    MTCL_ERROR("[internal]:\t", "GatherMPI::sendrecv the provided recvsize is too small\n");
                     errno = ENOMEM;
                     return -1;
                 }
@@ -314,14 +308,14 @@ public:
         }
         else {
             MPI_Status status;
-            if(MPI_Igather(&sendsize, 1, MPI_UNSIGNED_LONG, nullptr, 0, MPI_UNSIGNED_LONG, root_rank, comm, &request_header) != MPI_SUCCESS) {
+            if(MPI_Igather(&sendsize, 1, MPI_UNSIGNED_LONG, nullptr, 0, MPI_UNSIGNED_LONG, 0, comm, &request_header) != MPI_SUCCESS) {
                 errno = ECOMM;
                 return -1;
             }
             MPI_Wait(&request_header, &status);
         }
 
-        if(MPI_Gather(sendbuff, sendsize, MPI_BYTE, recvbuff, recvsize, MPI_BYTE, root_rank, comm) != MPI_SUCCESS) {
+        if(MPI_Gather(sendbuff, sendsize, MPI_BYTE, recvbuff, recvsize, MPI_BYTE, 0, comm) != MPI_SUCCESS) {
             errno = ECOMM;
             return -1;
         }
@@ -332,7 +326,7 @@ public:
 
         if(!root) {
             size_t EOS = 0;
-            MPI_Igather(&EOS, 1, MPI_UNSIGNED_LONG, nullptr, 0, MPI_UNSIGNED_LONG, root_rank, comm, &request_header);
+            MPI_Igather(&EOS, 1, MPI_UNSIGNED_LONG, nullptr, 0, MPI_UNSIGNED_LONG, 0, comm, &request_header);
             closing = true;
         }
     }
@@ -349,7 +343,7 @@ public:
         else if(!closing) {
             while(true) {
                 size_t sz = 1;
-                if(MPI_Igather(&sz, 1, MPI_UNSIGNED_LONG, probe_data, 1, MPI_UNSIGNED_LONG, root_rank, comm, &request_header) != MPI_SUCCESS) {
+                if(MPI_Igather(&sz, 1, MPI_UNSIGNED_LONG, probe_data, 1, MPI_UNSIGNED_LONG, 0, comm, &request_header) != MPI_SUCCESS) {
                     MTCL_ERROR("[internal]:\t", "GatherMPI::probe Ibcast error\n");
                     errno = ECOMM;
                     return;

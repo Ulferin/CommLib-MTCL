@@ -349,8 +349,6 @@ public:
                     REMOVE_CODE_IF(ulock.lock());
 
 					
-					MTCL_TCP_ERROR("update: ready descriptor\n"); // togliere
-					
                     // Updates ready connections and removes from listening
                     FD_CLR(idx, &set);
 

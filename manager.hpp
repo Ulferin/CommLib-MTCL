@@ -467,7 +467,8 @@ public:
 
 
     static Handle* connectHandle(std::string s) {
-        std::string protocol = s.substr(0, s.find(":"));
+        size_t pos;
+        std::string protocol = s.substr(0, (pos = s.find(":")) == std::string::npos ? 0 : pos);
        
         if(protocol.empty()){
             // vedo se uso il file di config e provo a ciclo tutte le listen del componente di destinazione 
@@ -483,6 +484,7 @@ public:
                 }
 #endif
             // stampa di errore??
+            MTCL_ERROR("[internal]:\t", "Manager::connectHandle specified appName not found in configuration file.\n");
             return nullptr;
         }
 

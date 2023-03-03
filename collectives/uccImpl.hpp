@@ -209,6 +209,7 @@ public:
         ucc_collective_finalize(req);
         req = nullptr;
         size = last_probe;
+
         return sizeof(size_t);
     }
 
@@ -252,6 +253,7 @@ public:
         size_t sz;
         ssize_t res;
         if((res = this->probe(sz, true)) <= 0) return res;
+        if(sz == 0) return 0;
 
         ucc_coll_args_t      args;
         ucc_coll_req_h       req;
