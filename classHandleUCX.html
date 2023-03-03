@@ -152,15 +152,18 @@ std::atomic&lt; bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>
 <tr class="memitem:a980c899b59a3bbef49acefe30ec7d4f0"><td class="memItemLeft" align="right" valign="top"><a id="a980c899b59a3bbef49acefe30ec7d4f0"></a>
 ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>last_probe</b> = -1</td></tr>
 <tr class="separator:a980c899b59a3bbef49acefe30ec7d4f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a56a7c6cf06b99b5a9a0c162a3193a8a2"><td class="memItemLeft" align="right" valign="top"><a id="a56a7c6cf06b99b5a9a0c162a3193a8a2"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>test_probe</b> = 42</td></tr>
+<tr class="separator:a56a7c6cf06b99b5a9a0c162a3193a8a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
 <tr class="memitem:af7cf132510d7946fccdd04f916ae4d10"><td class="memItemLeft" align="right" valign="top"><a id="af7cf132510d7946fccdd04f916ae4d10"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>fill_request_param</b> (test_req_t *ctx, ucp_request_param_t *param, bool is_send)</td></tr>
 <tr class="separator:af7cf132510d7946fccdd04f916ae4d10"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9a48be4b1a95b02fc4b9a701240e7ece"><td class="memItemLeft" align="right" valign="top"><a id="a9a48be4b1a95b02fc4b9a701240e7ece"></a>
-ucs_status_t&#160;</td><td class="memItemRight" valign="bottom"><b>request_wait</b> (void *request, test_req_t *ctx, char *operation)</td></tr>
-<tr class="separator:a9a48be4b1a95b02fc4b9a701240e7ece"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa3aaa3ceb054ae095e660164dde714b2"><td class="memItemLeft" align="right" valign="top"><a id="aa3aaa3ceb054ae095e660164dde714b2"></a>
+ucs_status_t&#160;</td><td class="memItemRight" valign="bottom"><b>request_wait</b> (void *request, test_req_t *ctx, char *operation, bool blocking)</td></tr>
+<tr class="separator:aa3aaa3ceb054ae095e660164dde714b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0fedbe95ccc8bcf54a5e0958e5008c42"><td class="memItemLeft" align="right" valign="top"><a id="a0fedbe95ccc8bcf54a5e0958e5008c42"></a>
 ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>receive_internal</b> (void *buff, size_t size, bool blocking)</td></tr>
 <tr class="separator:a0fedbe95ccc8bcf54a5e0958e5008c42"><td class="memSeparator" colspan="2">&#160;</td></tr>
