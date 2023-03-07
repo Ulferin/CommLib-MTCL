@@ -604,7 +604,7 @@ $(function() {
 <div class="line"><a name="l00572"></a><span class="lineno">  572</span>&#160;<span class="comment">            App2 --&gt; |App1 and App3</span></div>
 <div class="line"><a name="l00573"></a><span class="lineno">  573</span>&#160;<span class="comment">            App3 --&gt; |App1 and App2</span></div>
 <div class="line"><a name="l00574"></a><span class="lineno">  574</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00575"></a><span class="lineno">  575</span>&#160;    <span class="keyword">static</span> <a class="code" href="classHandleUser.html">HandleUser</a> createTeam(std::string participants, std::string root, HandleType type) {</div>
+<div class="line"><a name="l00575"></a><span class="lineno">  575</span>&#160;    <span class="keyword">static</span> <a class="code" href="classHandleUser.html">HandleUser</a> createTeam(<span class="keyword">const</span> std::string participants, <span class="keyword">const</span> std::string root, HandleType type) {</div>
 <div class="line"><a name="l00576"></a><span class="lineno">  576</span>&#160; </div>
 <div class="line"><a name="l00577"></a><span class="lineno">  577</span>&#160; </div>
 <div class="line"><a name="l00578"></a><span class="lineno">  578</span>&#160;<span class="preprocessor">#ifndef ENABLE_CONFIGFILE</span></div>
@@ -744,52 +744,54 @@ $(function() {
 <div class="line"><a name="l00712"></a><span class="lineno">  712</span>&#160; </div>
 <div class="line"><a name="l00713"></a><span class="lineno">  713</span>&#160;            coll_handles.push_back(handle);</div>
 <div class="line"><a name="l00714"></a><span class="lineno">  714</span>&#160;        }</div>
-<div class="line"><a name="l00715"></a><span class="lineno">  715</span>&#160;        <span class="keywordflow">if</span>(!ctx-&gt;setImplementation(impl, coll_handles)) {</div>
-<div class="line"><a name="l00716"></a><span class="lineno">  716</span>&#160;            <span class="keywordflow">return</span> <a class="code" href="classHandleUser.html">HandleUser</a>();</div>
-<div class="line"><a name="l00717"></a><span class="lineno">  717</span>&#160;        }</div>
-<div class="line"><a name="l00718"></a><span class="lineno">  718</span>&#160;        ctx-&gt;setName(teamID+<span class="stringliteral">&quot;-&quot;</span>+Manager::appName);</div>
-<div class="line"><a name="l00719"></a><span class="lineno">  719</span>&#160;        {</div>
-<div class="line"><a name="l00720"></a><span class="lineno">  720</span>&#160;            std::unique_lock lk(ctx_mutex);</div>
-<div class="line"><a name="l00721"></a><span class="lineno">  721</span>&#160;            contexts.emplace(ctx, <span class="keyword">false</span>);</div>
-<div class="line"><a name="l00722"></a><span class="lineno">  722</span>&#160;        }</div>
-<div class="line"><a name="l00723"></a><span class="lineno">  723</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="classHandleUser.html">HandleUser</a>(ctx, <span class="keyword">true</span>, <span class="keyword">true</span>);</div>
-<div class="line"><a name="l00724"></a><span class="lineno">  724</span>&#160; </div>
-<div class="line"><a name="l00725"></a><span class="lineno">  725</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00715"></a><span class="lineno">  715</span>&#160;        std::hash&lt;std::string&gt; hashf;</div>
+<div class="line"><a name="l00716"></a><span class="lineno">  716</span>&#160;        <span class="keywordtype">int</span> uniqtag = <span class="keyword">static_cast&lt;</span><span class="keywordtype">int</span><span class="keyword">&gt;</span>(hashf(teamID) % std::numeric_limits&lt;int&gt;::max());</div>
+<div class="line"><a name="l00717"></a><span class="lineno">  717</span>&#160;        <span class="keywordflow">if</span>(!ctx-&gt;setImplementation(impl, coll_handles, uniqtag)) {</div>
+<div class="line"><a name="l00718"></a><span class="lineno">  718</span>&#160;            <span class="keywordflow">return</span> <a class="code" href="classHandleUser.html">HandleUser</a>();</div>
+<div class="line"><a name="l00719"></a><span class="lineno">  719</span>&#160;        }</div>
+<div class="line"><a name="l00720"></a><span class="lineno">  720</span>&#160;        ctx-&gt;setName(teamID+<span class="stringliteral">&quot;-&quot;</span>+Manager::appName);</div>
+<div class="line"><a name="l00721"></a><span class="lineno">  721</span>&#160;        {</div>
+<div class="line"><a name="l00722"></a><span class="lineno">  722</span>&#160;            std::unique_lock lk(ctx_mutex);</div>
+<div class="line"><a name="l00723"></a><span class="lineno">  723</span>&#160;            contexts.emplace(ctx, <span class="keyword">false</span>);</div>
+<div class="line"><a name="l00724"></a><span class="lineno">  724</span>&#160;        }</div>
+<div class="line"><a name="l00725"></a><span class="lineno">  725</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="classHandleUser.html">HandleUser</a>(ctx, <span class="keyword">true</span>, <span class="keyword">true</span>);</div>
 <div class="line"><a name="l00726"></a><span class="lineno">  726</span>&#160; </div>
-<div class="line"><a name="l00727"></a><span class="lineno">  727</span>&#160;    }</div>
+<div class="line"><a name="l00727"></a><span class="lineno">  727</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="line"><a name="l00728"></a><span class="lineno">  728</span>&#160; </div>
-<div class="line"><a name="l00729"></a><span class="lineno">  729</span>&#160; </div>
-<div class="line"><a name="l00738"></a><span class="lineno"><a class="line" href="classManager.html#a842ea4e15e1f144e25a447b6a9df8d85">  738</a></span>&#160;    <span class="keyword">static</span> <a class="code" href="classHandleUser.html">HandleUser</a> <a class="code" href="classManager.html#a842ea4e15e1f144e25a447b6a9df8d85">connect</a>(std::string s) {</div>
-<div class="line"><a name="l00739"></a><span class="lineno">  739</span>&#160;        <a class="code" href="classHandle.html">Handle</a>* handle = connectHandle(s);</div>
-<div class="line"><a name="l00740"></a><span class="lineno">  740</span>&#160; </div>
-<div class="line"><a name="l00741"></a><span class="lineno">  741</span>&#160;        <span class="comment">// if handle is connected, we perform the handshake</span></div>
-<div class="line"><a name="l00742"></a><span class="lineno">  742</span>&#160;        <span class="keywordflow">if</span>(handle) {</div>
-<div class="line"><a name="l00743"></a><span class="lineno">  743</span>&#160;            <span class="keywordtype">int</span> collective = 0;</div>
-<div class="line"><a name="l00744"></a><span class="lineno">  744</span>&#160;            handle-&gt;<a class="code" href="classCommunicationHandle.html#a8fb025ad7663cc51002f7bc411f03920">send</a>(&amp;collective, <span class="keyword">sizeof</span>(<span class="keywordtype">int</span>));</div>
-<div class="line"><a name="l00745"></a><span class="lineno">  745</span>&#160;        }</div>
-<div class="line"><a name="l00746"></a><span class="lineno">  746</span>&#160; </div>
-<div class="line"><a name="l00747"></a><span class="lineno">  747</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="classHandleUser.html">HandleUser</a>(handle, <span class="keyword">true</span>, <span class="keyword">true</span>);</div>
-<div class="line"><a name="l00748"></a><span class="lineno">  748</span>&#160;    };</div>
-<div class="line"><a name="l00749"></a><span class="lineno">  749</span>&#160; </div>
-<div class="line"><a name="l00755"></a><span class="lineno"><a class="line" href="classManager.html#a52731c2088e57556428ec505b44e1839">  755</a></span>&#160;    <span class="keyword">static</span> std::string <a class="code" href="classManager.html#a52731c2088e57556428ec505b44e1839">getTypeOfHandle</a>(<a class="code" href="classHandleUser.html">HandleUser</a>&amp; h){</div>
-<div class="line"><a name="l00756"></a><span class="lineno">  756</span>&#160;        <span class="keyword">auto</span> realHandle = (<a class="code" href="classHandle.html">Handle</a>*)h.realHandle;</div>
-<div class="line"><a name="l00757"></a><span class="lineno">  757</span>&#160;        <span class="keywordflow">return</span> realHandle-&gt;parent-&gt;instanceName;</div>
-<div class="line"><a name="l00758"></a><span class="lineno">  758</span>&#160;    }</div>
-<div class="line"><a name="l00759"></a><span class="lineno">  759</span>&#160; </div>
-<div class="line"><a name="l00760"></a><span class="lineno">  760</span>&#160;};</div>
+<div class="line"><a name="l00729"></a><span class="lineno">  729</span>&#160;    }</div>
+<div class="line"><a name="l00730"></a><span class="lineno">  730</span>&#160; </div>
+<div class="line"><a name="l00731"></a><span class="lineno">  731</span>&#160; </div>
+<div class="line"><a name="l00740"></a><span class="lineno"><a class="line" href="classManager.html#a842ea4e15e1f144e25a447b6a9df8d85">  740</a></span>&#160;    <span class="keyword">static</span> <a class="code" href="classHandleUser.html">HandleUser</a> <a class="code" href="classManager.html#a842ea4e15e1f144e25a447b6a9df8d85">connect</a>(std::string s) {</div>
+<div class="line"><a name="l00741"></a><span class="lineno">  741</span>&#160;        <a class="code" href="classHandle.html">Handle</a>* handle = connectHandle(s);</div>
+<div class="line"><a name="l00742"></a><span class="lineno">  742</span>&#160; </div>
+<div class="line"><a name="l00743"></a><span class="lineno">  743</span>&#160;        <span class="comment">// if handle is connected, we perform the handshake</span></div>
+<div class="line"><a name="l00744"></a><span class="lineno">  744</span>&#160;        <span class="keywordflow">if</span>(handle) {</div>
+<div class="line"><a name="l00745"></a><span class="lineno">  745</span>&#160;            <span class="keywordtype">int</span> collective = 0;</div>
+<div class="line"><a name="l00746"></a><span class="lineno">  746</span>&#160;            handle-&gt;<a class="code" href="classCommunicationHandle.html#a8fb025ad7663cc51002f7bc411f03920">send</a>(&amp;collective, <span class="keyword">sizeof</span>(<span class="keywordtype">int</span>));</div>
+<div class="line"><a name="l00747"></a><span class="lineno">  747</span>&#160;        }</div>
+<div class="line"><a name="l00748"></a><span class="lineno">  748</span>&#160; </div>
+<div class="line"><a name="l00749"></a><span class="lineno">  749</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="classHandleUser.html">HandleUser</a>(handle, <span class="keyword">true</span>, <span class="keyword">true</span>);</div>
+<div class="line"><a name="l00750"></a><span class="lineno">  750</span>&#160;    };</div>
+<div class="line"><a name="l00751"></a><span class="lineno">  751</span>&#160; </div>
+<div class="line"><a name="l00757"></a><span class="lineno"><a class="line" href="classManager.html#a52731c2088e57556428ec505b44e1839">  757</a></span>&#160;    <span class="keyword">static</span> std::string <a class="code" href="classManager.html#a52731c2088e57556428ec505b44e1839">getTypeOfHandle</a>(<a class="code" href="classHandleUser.html">HandleUser</a>&amp; h){</div>
+<div class="line"><a name="l00758"></a><span class="lineno">  758</span>&#160;        <span class="keyword">auto</span> realHandle = (<a class="code" href="classHandle.html">Handle</a>*)h.realHandle;</div>
+<div class="line"><a name="l00759"></a><span class="lineno">  759</span>&#160;        <span class="keywordflow">return</span> realHandle-&gt;parent-&gt;instanceName;</div>
+<div class="line"><a name="l00760"></a><span class="lineno">  760</span>&#160;    }</div>
 <div class="line"><a name="l00761"></a><span class="lineno">  761</span>&#160; </div>
-<div class="line"><a name="l00762"></a><span class="lineno">  762</span>&#160;<span class="keywordtype">void</span> CollectiveContext::yield() {</div>
-<div class="line"><a name="l00763"></a><span class="lineno">  763</span>&#160;    <span class="keywordflow">if</span> (!closed_rd &amp;&amp; canReceive) {</div>
-<div class="line"><a name="l00764"></a><span class="lineno">  764</span>&#160;        Manager::releaseTeam(<span class="keyword">this</span>);</div>
-<div class="line"><a name="l00765"></a><span class="lineno">  765</span>&#160;    }</div>
-<div class="line"><a name="l00766"></a><span class="lineno">  766</span>&#160;    <span class="keywordflow">else</span> <span class="keywordflow">if</span>(!closed_rd) {</div>
-<div class="line"><a name="l00767"></a><span class="lineno">  767</span>&#160;        MTCL_PRINT(1, <span class="stringliteral">&quot;[internal]:\t&quot;</span>, <span class="stringliteral">&quot;CollectiveContext::yield cannot yield this context.\n&quot;</span>);</div>
-<div class="line"><a name="l00768"></a><span class="lineno">  768</span>&#160;        <span class="comment">//TODO: if yield is called by HandleUser destructor, we may want to close</span></div>
-<div class="line"><a name="l00769"></a><span class="lineno">  769</span>&#160;        <span class="comment">//      the collective if its type is BROADCAST or GATHER</span></div>
-<div class="line"><a name="l00770"></a><span class="lineno">  770</span>&#160;    }</div>
-<div class="line"><a name="l00771"></a><span class="lineno">  771</span>&#160;}</div>
-<div class="line"><a name="l00772"></a><span class="lineno">  772</span>&#160; </div>
-<div class="line"><a name="l00773"></a><span class="lineno">  773</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00762"></a><span class="lineno">  762</span>&#160;};</div>
+<div class="line"><a name="l00763"></a><span class="lineno">  763</span>&#160; </div>
+<div class="line"><a name="l00764"></a><span class="lineno">  764</span>&#160;<span class="keywordtype">void</span> CollectiveContext::yield() {</div>
+<div class="line"><a name="l00765"></a><span class="lineno">  765</span>&#160;    <span class="keywordflow">if</span> (!closed_rd &amp;&amp; canReceive) {</div>
+<div class="line"><a name="l00766"></a><span class="lineno">  766</span>&#160;        Manager::releaseTeam(<span class="keyword">this</span>);</div>
+<div class="line"><a name="l00767"></a><span class="lineno">  767</span>&#160;    }</div>
+<div class="line"><a name="l00768"></a><span class="lineno">  768</span>&#160;    <span class="keywordflow">else</span> <span class="keywordflow">if</span>(!closed_rd) {</div>
+<div class="line"><a name="l00769"></a><span class="lineno">  769</span>&#160;        MTCL_PRINT(1, <span class="stringliteral">&quot;[internal]:\t&quot;</span>, <span class="stringliteral">&quot;CollectiveContext::yield cannot yield this context.\n&quot;</span>);</div>
+<div class="line"><a name="l00770"></a><span class="lineno">  770</span>&#160;        <span class="comment">//TODO: if yield is called by HandleUser destructor, we may want to close</span></div>
+<div class="line"><a name="l00771"></a><span class="lineno">  771</span>&#160;        <span class="comment">//      the collective if its type is BROADCAST or GATHER</span></div>
+<div class="line"><a name="l00772"></a><span class="lineno">  772</span>&#160;    }</div>
+<div class="line"><a name="l00773"></a><span class="lineno">  773</span>&#160;}</div>
+<div class="line"><a name="l00774"></a><span class="lineno">  774</span>&#160; </div>
+<div class="line"><a name="l00775"></a><span class="lineno">  775</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassCollectiveContext_html"><div class="ttname"><a href="classCollectiveContext.html">CollectiveContext</a></div><div class="ttdef"><b>Definition:</b> collectiveContext.hpp:20</div></div>
 <div class="ttc" id="aclassCollectiveContext_html_ab0f0fc0e23cffc686b7cd8f9972970ce"><div class="ttname"><a href="classCollectiveContext.html#ab0f0fc0e23cffc686b7cd8f9972970ce">CollectiveContext::update</a></div><div class="ttdeci">bool update(int count)</div><div class="ttdoc">Updates the status of the collective during the creation and checks if the team is ready to be used.</div><div class="ttdef"><b>Definition:</b> collectiveContext.hpp:123</div></div>
 <div class="ttc" id="aclassCommunicationHandle_html_a8d978b07b48a5e86c65a502cdd739d42"><div class="ttname"><a href="classCommunicationHandle.html#a8d978b07b48a5e86c65a502cdd739d42">CommunicationHandle::receive</a></div><div class="ttdeci">virtual ssize_t receive(void *buff, size_t size)=0</div><div class="ttdoc">Read at most size byte into buff from the remote end connected to this Handle. Wait until all size da...</div></div>
@@ -803,8 +805,8 @@ $(function() {
 <div class="ttc" id="aclassManager_html_a2a7189d20e75807bfc390de8fb6b2409"><div class="ttname"><a href="classManager.html#a2a7189d20e75807bfc390de8fb6b2409">Manager::listen</a></div><div class="ttdeci">static int listen(std::string s)</div><div class="ttdoc">Listen on incoming connections.</div><div class="ttdef"><b>Definition:</b> manager.hpp:449</div></div>
 <div class="ttc" id="aclassManager_html_a33e1eb5d1e2cf4d4d1b23361d30743e7"><div class="ttname"><a href="classManager.html#a33e1eb5d1e2cf4d4d1b23361d30743e7">Manager::finalize</a></div><div class="ttdeci">static void finalize(bool blockflag=false)</div><div class="ttdoc">Finalize the manger closing all the pending open connections.</div><div class="ttdef"><b>Definition:</b> manager.hpp:343</div></div>
 <div class="ttc" id="aclassManager_html_a35322a2d7f2bcaf5eef57daf0ea6c3aa"><div class="ttname"><a href="classManager.html#a35322a2d7f2bcaf5eef57daf0ea6c3aa">Manager::init</a></div><div class="ttdeci">static int init(std::string appName, std::string configFile1=&quot;&quot;, std::string configFile2=&quot;&quot;)</div><div class="ttdoc">Initialization of the manager. Required to use the library.</div><div class="ttdef"><b>Definition:</b> manager.hpp:257</div></div>
-<div class="ttc" id="aclassManager_html_a52731c2088e57556428ec505b44e1839"><div class="ttname"><a href="classManager.html#a52731c2088e57556428ec505b44e1839">Manager::getTypeOfHandle</a></div><div class="ttdeci">static std::string getTypeOfHandle(HandleUser &amp;h)</div><div class="ttdoc">Given an handle return the name of the protocol instance given in phase of registration.</div><div class="ttdef"><b>Definition:</b> manager.hpp:755</div></div>
-<div class="ttc" id="aclassManager_html_a842ea4e15e1f144e25a447b6a9df8d85"><div class="ttname"><a href="classManager.html#a842ea4e15e1f144e25a447b6a9df8d85">Manager::connect</a></div><div class="ttdeci">static HandleUser connect(std::string s)</div><div class="ttdoc">Connect to a peer.</div><div class="ttdef"><b>Definition:</b> manager.hpp:738</div></div>
+<div class="ttc" id="aclassManager_html_a52731c2088e57556428ec505b44e1839"><div class="ttname"><a href="classManager.html#a52731c2088e57556428ec505b44e1839">Manager::getTypeOfHandle</a></div><div class="ttdeci">static std::string getTypeOfHandle(HandleUser &amp;h)</div><div class="ttdoc">Given an handle return the name of the protocol instance given in phase of registration.</div><div class="ttdef"><b>Definition:</b> manager.hpp:757</div></div>
+<div class="ttc" id="aclassManager_html_a842ea4e15e1f144e25a447b6a9df8d85"><div class="ttname"><a href="classManager.html#a842ea4e15e1f144e25a447b6a9df8d85">Manager::connect</a></div><div class="ttdeci">static HandleUser connect(std::string s)</div><div class="ttdoc">Connect to a peer.</div><div class="ttdef"><b>Definition:</b> manager.hpp:740</div></div>
 <div class="ttc" id="aclassManager_html_af0d2ab1463c5877b990cd7cd3fcb986d"><div class="ttname"><a href="classManager.html#af0d2ab1463c5877b990cd7cd3fcb986d">Manager::registerType</a></div><div class="ttdeci">static void registerType(std::string name)</div><div class="ttdoc">Create an instance of the protocol implementation.</div><div class="ttdef"><b>Definition:</b> manager.hpp:428</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

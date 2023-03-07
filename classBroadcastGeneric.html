@@ -101,13 +101,13 @@ ssize_t&#160;</td><td class="memItemRight" valign="bottom"><b>sendrecv</b> (cons
 <tr class="memitem:a40b1a615bb18b23e9ddd5b2633e799e9"><td class="memItemLeft" align="right" valign="top"><a id="a40b1a615bb18b23e9ddd5b2633e799e9"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>close</b> (bool close_wr=true, bool close_rd=true)</td></tr>
 <tr class="separator:a40b1a615bb18b23e9ddd5b2633e799e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aca33377f2e0f85186f7e92f4c4fcf3bf"><td class="memItemLeft" align="right" valign="top"><a id="aca33377f2e0f85186f7e92f4c4fcf3bf"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>BroadcastGeneric</b> (std::vector&lt; <a class="el" href="classHandle.html">Handle</a> * &gt; participants, bool root)</td></tr>
-<tr class="separator:aca33377f2e0f85186f7e92f4c4fcf3bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae54110c589487cc669c7cf8a44b39d51"><td class="memItemLeft" align="right" valign="top"><a id="ae54110c589487cc669c7cf8a44b39d51"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>BroadcastGeneric</b> (std::vector&lt; <a class="el" href="classHandle.html">Handle</a> * &gt; participants, bool root, int uniqtag)</td></tr>
+<tr class="separator:ae54110c589487cc669c7cf8a44b39d51"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classCollectiveImpl"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classCollectiveImpl')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classCollectiveImpl.html">CollectiveImpl</a></td></tr>
-<tr class="memitem:a251d2eadbcb528c38a7017bb4b2c5427 inherit pub_methods_classCollectiveImpl"><td class="memItemLeft" align="right" valign="top"><a id="a251d2eadbcb528c38a7017bb4b2c5427"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>CollectiveImpl</b> (std::vector&lt; <a class="el" href="classHandle.html">Handle</a> * &gt; participants)</td></tr>
-<tr class="separator:a251d2eadbcb528c38a7017bb4b2c5427 inherit pub_methods_classCollectiveImpl"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a50e903acac3a14b3ec5ae3d1e8975c78 inherit pub_methods_classCollectiveImpl"><td class="memItemLeft" align="right" valign="top"><a id="a50e903acac3a14b3ec5ae3d1e8975c78"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>CollectiveImpl</b> (std::vector&lt; <a class="el" href="classHandle.html">Handle</a> * &gt; participants, int uniqtag)</td></tr>
+<tr class="separator:a50e903acac3a14b3ec5ae3d1e8975c78 inherit pub_methods_classCollectiveImpl"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a924823bdda5e300f2e8c09dc6ef4de04 inherit pub_methods_classCollectiveImpl"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCollectiveImpl.html#a924823bdda5e300f2e8c09dc6ef4de04">peek</a> ()</td></tr>
 <tr class="memdesc:a924823bdda5e300f2e8c09dc6ef4de04 inherit pub_methods_classCollectiveImpl"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if any of the participants has something ready to be read.  <a href="classCollectiveImpl.html#a924823bdda5e300f2e8c09dc6ef4de04">More...</a><br /></td></tr>
 <tr class="separator:a924823bdda5e300f2e8c09dc6ef4de04 inherit pub_methods_classCollectiveImpl"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -124,6 +124,9 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>root</b></td></tr>
 <tr class="memitem:a4b99364e3b4f3252d09aba2594da365d inherit pro_attribs_classCollectiveImpl"><td class="memItemLeft" align="right" valign="top"><a id="a4b99364e3b4f3252d09aba2594da365d"></a>
 std::vector&lt; <a class="el" href="classHandle.html">Handle</a> * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>participants</b></td></tr>
 <tr class="separator:a4b99364e3b4f3252d09aba2594da365d inherit pro_attribs_classCollectiveImpl"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6cf23bb64d03cef8fdcd0bcd04514c29 inherit pro_attribs_classCollectiveImpl"><td class="memItemLeft" align="right" valign="top"><a id="a6cf23bb64d03cef8fdcd0bcd04514c29"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>uniqtag</b> =-1</td></tr>
+<tr class="separator:a6cf23bb64d03cef8fdcd0bcd04514c29 inherit pro_attribs_classCollectiveImpl"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>

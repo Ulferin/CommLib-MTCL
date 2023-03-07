@@ -96,9 +96,9 @@ Inheritance diagram for CollectiveImpl:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a251d2eadbcb528c38a7017bb4b2c5427"><td class="memItemLeft" align="right" valign="top"><a id="a251d2eadbcb528c38a7017bb4b2c5427"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>CollectiveImpl</b> (std::vector&lt; <a class="el" href="classHandle.html">Handle</a> * &gt; participants)</td></tr>
-<tr class="separator:a251d2eadbcb528c38a7017bb4b2c5427"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a50e903acac3a14b3ec5ae3d1e8975c78"><td class="memItemLeft" align="right" valign="top"><a id="a50e903acac3a14b3ec5ae3d1e8975c78"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>CollectiveImpl</b> (std::vector&lt; <a class="el" href="classHandle.html">Handle</a> * &gt; participants, int uniqtag)</td></tr>
+<tr class="separator:a50e903acac3a14b3ec5ae3d1e8975c78"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a924823bdda5e300f2e8c09dc6ef4de04"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCollectiveImpl.html#a924823bdda5e300f2e8c09dc6ef4de04">peek</a> ()</td></tr>
 <tr class="memdesc:a924823bdda5e300f2e8c09dc6ef4de04"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks if any of the participants has something ready to be read.  <a href="classCollectiveImpl.html#a924823bdda5e300f2e8c09dc6ef4de04">More...</a><br /></td></tr>
 <tr class="separator:a924823bdda5e300f2e8c09dc6ef4de04"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -135,6 +135,9 @@ Protected Attributes</h2></td></tr>
 <tr class="memitem:a4b99364e3b4f3252d09aba2594da365d"><td class="memItemLeft" align="right" valign="top"><a id="a4b99364e3b4f3252d09aba2594da365d"></a>
 std::vector&lt; <a class="el" href="classHandle.html">Handle</a> * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>participants</b></td></tr>
 <tr class="separator:a4b99364e3b4f3252d09aba2594da365d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6cf23bb64d03cef8fdcd0bcd04514c29"><td class="memItemLeft" align="right" valign="top"><a id="a6cf23bb64d03cef8fdcd0bcd04514c29"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>uniqtag</b> =-1</td></tr>
+<tr class="separator:a6cf23bb64d03cef8fdcd0bcd04514c29"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Interface for transport-specific network functionalities for collective operations. Subclasses specify different behaviors depending on the specific transport used to implement the collective operations and on the specific type of collective. </p>
