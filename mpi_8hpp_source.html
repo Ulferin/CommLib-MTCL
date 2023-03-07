@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>CommLib: protocols/mpi.hpp Source File</title>
+<title>CommLib: include/protocols/mpi.hpp Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -61,7 +61,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_5280ec33e0efe019e655258f927f0b9b.html">protocols</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_0ecd0d2d96e98f0bbdd217d6bfac5eae.html">protocols</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -343,123 +343,66 @@ $(function() {
 <div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;            addinQ(<span class="keyword">true</span>, handle);</div>
 <div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;            REMOVE_CODE_IF(ulock.unlock());</div>
 <div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;        }</div>
-<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160; </div>
-<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;        <span class="comment">/*</span></div>
-<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;<span class="comment">        if (MPI_Iprobe(MPI_ANY_SOURCE, MPI_DISCONNECT_TAG, MPI_COMM_WORLD, &amp;flag, &amp;status) != MPI_SUCCESS) {</span></div>
-<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;<span class="comment">            MTCL_MPI_ERROR(&quot;ConnMPI::update: MPI_Iprobe ERROR (DISCONNECT)\n&quot;);</span></div>
-<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;<span class="comment">            errno = ECOMM;</span></div>
-<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;<span class="comment">            throw;</span></div>
-<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;<span class="comment">        }</span></div>
-<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;<span class="comment">        if (flag) {</span></div>
-<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;<span class="comment">            int headersLen;</span></div>
-<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;<span class="comment">            MPI_Get_count(&amp;status, MPI_INT, &amp;headersLen);</span></div>
-<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;<span class="comment">            int header[headersLen];</span></div>
-<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;<span class="comment">            </span></div>
-<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;<span class="comment">            if (MPI_Recv(header, headersLen, MPI_INT, status.MPI_SOURCE, MPI_DISCONNECT_TAG, MPI_COMM_WORLD, &amp;status) != MPI_SUCCESS) {</span></div>
-<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;<span class="comment">                MTCL_MPI_ERROR(&quot;ConnMPI::update: MPI_Recv ERROR (DISCONNECT)\n&quot;);</span></div>
-<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;<span class="comment">                errno = ECOMM;</span></div>
-<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;<span class="comment">                throw;</span></div>
-<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;<span class="comment">            }</span></div>
-<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;<span class="comment">            </span></div>
-<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;<span class="comment">            int source = status.MPI_SOURCE;</span></div>
-<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;<span class="comment">            int source_tag = header[0];</span></div>
-<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;<span class="comment">            REMOVE_CODE_IF(ulock.lock());</span></div>
-<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;<span class="comment">            auto it = connections.find({source, source_tag});</span></div>
-<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;<span class="comment">            if (it != connections.end()) {</span></div>
-<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;<span class="comment">                connections[{source, source_tag}].first-&gt;closing = true;</span></div>
-<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;<span class="comment">                if (connections[{source, source_tag}].second) {</span></div>
-<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;<span class="comment">                    connections[{source, source_tag}].second = false;</span></div>
-<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;<span class="comment">                    addinQ(false, connections[{source, source_tag}].first);</span></div>
-<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;<span class="comment">                }</span></div>
-<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;<span class="comment">            }</span></div>
-<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;<span class="comment">            REMOVE_CODE_IF(ulock.unlock());</span></div>
-<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;<span class="comment">        }</span></div>
-<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;<span class="comment">        */</span></div>
+<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;        </div>
+<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;        REMOVE_CODE_IF(ulock.lock());</div>
+<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;        <span class="keywordflow">for</span> (<span class="keyword">auto</span>&amp; [rankTagPair, handlePair] : connections) {</div>
+<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;            <span class="keywordflow">if</span>(handlePair.second) {</div>
+<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;                <span class="keywordflow">if</span> (MPI_Iprobe(rankTagPair.first, rankTagPair.second, MPI_COMM_WORLD, &amp;flag, &amp;status) != MPI_SUCCESS) {</div>
+<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;                    MTCL_MPI_ERROR(<span class="stringliteral">&quot;ConnMPI::update: MPI_Iprobe ERROR\n&quot;</span>);</div>
+<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;                    errno = ECOMM;</div>
+<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;                    <span class="keywordflow">throw</span>;</div>
+<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;                }</div>
+<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;                <span class="keywordflow">if</span> (flag) {</div>
+<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;                    handlePair.second = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;                    <span class="comment">// NOTE: called with ulock lock hold. Double lock if there is the IO-thread!</span></div>
+<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;                    addinQ(<span class="keyword">false</span>, handlePair.first);</div>
+<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;                }</div>
+<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;            }</div>
+<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;        }</div>
+<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;        REMOVE_CODE_IF(ulock.unlock());        </div>
+<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;    }</div>
+<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160; </div>
+<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160; </div>
+<div class="line"><a name="l00295"></a><span class="lineno"><a class="line" href="classConnMPI.html#ad01e31cb5ae66c7a4fc750ea97b5af1f">  295</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classConnMPI.html#ad01e31cb5ae66c7a4fc750ea97b5af1f">notify_close</a>(<a class="code" href="classHandle.html">Handle</a>* h, <span class="keywordtype">bool</span> close_wr=<span class="keyword">true</span>, <span class="keywordtype">bool</span> close_rd=<span class="keyword">true</span>) {</div>
+<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;        <a class="code" href="classHandleMPI.html">HandleMPI</a>* hMPI = <span class="keyword">reinterpret_cast&lt;</span><a class="code" href="classHandleMPI.html">HandleMPI</a>*<span class="keyword">&gt;</span>(h);</div>
+<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;                    </div>
+<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;        REMOVE_CODE_IF(std::unique_lock l(shm));</div>
+<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160; </div>
+<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;        <span class="keywordflow">if</span> (close_rd)</div>
+<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;            connections.erase({hMPI-&gt;rank, hMPI-&gt;tag});</div>
+<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;    }</div>
+<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;    </div>
+<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160; </div>
+<div class="line"><a name="l00305"></a><span class="lineno"><a class="line" href="classConnMPI.html#aaa0610139e3a821cb44d2b82e6b642ff">  305</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classConnMPI.html#aaa0610139e3a821cb44d2b82e6b642ff">notify_yield</a>(<a class="code" href="classHandle.html">Handle</a>* h) {</div>
+<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;        <a class="code" href="classHandleMPI.html">HandleMPI</a>* hMPI = <span class="keyword">reinterpret_cast&lt;</span><a class="code" href="classHandleMPI.html">HandleMPI</a>*<span class="keyword">&gt;</span>(h);</div>
 <div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;        </div>
-<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;        REMOVE_CODE_IF(ulock.lock());</div>
-<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;        <span class="keywordflow">for</span> (<span class="keyword">auto</span>&amp; [rankTagPair, handlePair] : connections) {</div>
-<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;            <span class="keywordflow">if</span>(handlePair.second) {</div>
-<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;                <span class="keywordflow">if</span> (MPI_Iprobe(rankTagPair.first, rankTagPair.second, MPI_COMM_WORLD, &amp;flag, &amp;status) != MPI_SUCCESS) {</div>
-<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;                    MTCL_MPI_ERROR(<span class="stringliteral">&quot;ConnMPI::update: MPI_Iprobe ERROR\n&quot;</span>);</div>
-<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;                    errno = ECOMM;</div>
-<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;                    <span class="keywordflow">throw</span>;</div>
-<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;                }</div>
-<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;                <span class="keywordflow">if</span> (flag) {</div>
-<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;                    handlePair.second = <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;                    <span class="comment">// NOTE: called with ulock lock hold. Double lock if there is the IO-thread!</span></div>
-<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;                    addinQ(<span class="keyword">false</span>, handlePair.first);</div>
-<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;                }</div>
-<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;            }</div>
-<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;        }</div>
-<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;        REMOVE_CODE_IF(ulock.unlock());        </div>
-<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;    }</div>
+<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;        {</div>
+<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;            REMOVE_CODE_IF(std::unique_lock l(shm));</div>
+<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;            <span class="keyword">auto</span> it = connections.find({hMPI-&gt;rank, hMPI-&gt;tag});</div>
+<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;            <span class="keywordflow">if</span> (it != connections.end())</div>
+<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;                it-&gt;second.second = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;        }</div>
+<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;    }</div>
+<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160; </div>
+<div class="line"><a name="l00316"></a><span class="lineno"><a class="line" href="classConnMPI.html#ad355372560506e7922c8ad33b255e9d1">  316</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classConnMPI.html#ad355372560506e7922c8ad33b255e9d1">end</a>(<span class="keywordtype">bool</span> blockflag=<span class="keyword">false</span>) {</div>
+<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;        <span class="keyword">auto</span> modified_connections = connections;</div>
+<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;        <span class="keywordflow">for</span>(<span class="keyword">auto</span>&amp; [_, handlePair] : modified_connections)</div>
+<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;            setAsClosed(handlePair.first, <span class="keyword">true</span>);</div>
+<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;        MPI_Finalize();</div>
+<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;    }</div>
+<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;};</div>
+<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160; </div>
+<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160; </div>
 <div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160; </div>
-<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160; </div>
-<div class="line"><a name="l00327"></a><span class="lineno"><a class="line" href="classConnMPI.html#ad01e31cb5ae66c7a4fc750ea97b5af1f">  327</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classConnMPI.html#ad01e31cb5ae66c7a4fc750ea97b5af1f">notify_close</a>(<a class="code" href="classHandle.html">Handle</a>* h, <span class="keywordtype">bool</span> close_wr=<span class="keyword">true</span>, <span class="keywordtype">bool</span> close_rd=<span class="keyword">true</span>) {</div>
-<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;        <a class="code" href="classHandleMPI.html">HandleMPI</a>* hMPI = <span class="keyword">reinterpret_cast&lt;</span><a class="code" href="classHandleMPI.html">HandleMPI</a>*<span class="keyword">&gt;</span>(h);</div>
-<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;                    </div>
-<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;        REMOVE_CODE_IF(std::unique_lock l(shm));</div>
-<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160; </div>
-<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;        <span class="keywordflow">if</span> (close_rd)</div>
-<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;            connections.erase({hMPI-&gt;rank, hMPI-&gt;tag});</div>
-<div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160;        </div>
-<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160; </div>
-<div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160; </div>
-<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;        <span class="comment">/*</span></div>
-<div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;<span class="comment">        if (!hMPI-&gt;closing){</span></div>
-<div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;<span class="comment">            if (MPI_Send(&amp;hMPI-&gt;tag, 1, MPI_INT, hMPI-&gt;rank, MPI_DISCONNECT_TAG, MPI_COMM_WORLD) != MPI_SUCCESS) {</span></div>
-<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;<span class="comment">                MTCL_MPI_ERROR(&quot;ConnMPI::notify_close: MPI_Send ERROR\n&quot;);</span></div>
-<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;<span class="comment">                errno = ECOMM;</span></div>
-<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;<span class="comment">            }</span></div>
-<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;<span class="comment">        }</span></div>
-<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;<span class="comment">        {</span></div>
-<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160;<span class="comment">            REMOVE_CODE_IF(std::unique_lock l(shm));</span></div>
-<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;<span class="comment">            connections.erase({hMPI-&gt;rank, hMPI-&gt;tag});</span></div>
-<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;<span class="comment">        }*/</span></div>
-<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;    }</div>
-<div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;    </div>
-<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160; </div>
-<div class="line"><a name="l00351"></a><span class="lineno"><a class="line" href="classConnMPI.html#aaa0610139e3a821cb44d2b82e6b642ff">  351</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classConnMPI.html#aaa0610139e3a821cb44d2b82e6b642ff">notify_yield</a>(<a class="code" href="classHandle.html">Handle</a>* h) {</div>
-<div class="line"><a name="l00352"></a><span class="lineno">  352</span>&#160;        <a class="code" href="classHandleMPI.html">HandleMPI</a>* hMPI = <span class="keyword">reinterpret_cast&lt;</span><a class="code" href="classHandleMPI.html">HandleMPI</a>*<span class="keyword">&gt;</span>(h);</div>
-<div class="line"><a name="l00353"></a><span class="lineno">  353</span>&#160;        </div>
-<div class="line"><a name="l00354"></a><span class="lineno">  354</span>&#160;        {</div>
-<div class="line"><a name="l00355"></a><span class="lineno">  355</span>&#160;            REMOVE_CODE_IF(std::unique_lock l(shm));</div>
-<div class="line"><a name="l00356"></a><span class="lineno">  356</span>&#160;            <span class="keyword">auto</span> it = connections.find({hMPI-&gt;rank, hMPI-&gt;tag});</div>
-<div class="line"><a name="l00357"></a><span class="lineno">  357</span>&#160;            <span class="keywordflow">if</span> (it != connections.end())</div>
-<div class="line"><a name="l00358"></a><span class="lineno">  358</span>&#160;                it-&gt;second.second = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00359"></a><span class="lineno">  359</span>&#160;        }</div>
-<div class="line"><a name="l00360"></a><span class="lineno">  360</span>&#160;        </div>
-<div class="line"><a name="l00361"></a><span class="lineno">  361</span>&#160;        <span class="comment">/*</span></div>
-<div class="line"><a name="l00362"></a><span class="lineno">  362</span>&#160;<span class="comment">        if (hMPI-&gt;closing) {</span></div>
-<div class="line"><a name="l00363"></a><span class="lineno">  363</span>&#160;<span class="comment">            addinQ(false, h);</span></div>
-<div class="line"><a name="l00364"></a><span class="lineno">  364</span>&#160;<span class="comment">            return;</span></div>
-<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;<span class="comment">        }</span></div>
-<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160;<span class="comment">        {</span></div>
-<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160;<span class="comment">            REMOVE_CODE_IF(std::unique_lock l(shm));</span></div>
-<div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160;<span class="comment">            connections[{hMPI-&gt;rank, hMPI-&gt;tag}].second = true;</span></div>
-<div class="line"><a name="l00369"></a><span class="lineno">  369</span>&#160;<span class="comment">        }</span></div>
-<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160;<span class="comment">        */</span></div>
-<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160;    }</div>
-<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160; </div>
-<div class="line"><a name="l00373"></a><span class="lineno"><a class="line" href="classConnMPI.html#ad355372560506e7922c8ad33b255e9d1">  373</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classConnMPI.html#ad355372560506e7922c8ad33b255e9d1">end</a>(<span class="keywordtype">bool</span> blockflag=<span class="keyword">false</span>) {</div>
-<div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;        <span class="keyword">auto</span> modified_connections = connections;</div>
-<div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160;        <span class="keywordflow">for</span>(<span class="keyword">auto</span>&amp; [_, handlePair] : modified_connections)</div>
-<div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;            setAsClosed(handlePair.first, <span class="keyword">true</span>);</div>
-<div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160;        MPI_Finalize();</div>
-<div class="line"><a name="l00378"></a><span class="lineno">  378</span>&#160;    }</div>
-<div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160;};</div>
-<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160; </div>
-<div class="line"><a name="l00381"></a><span class="lineno">  381</span>&#160; </div>
-<div class="line"><a name="l00382"></a><span class="lineno">  382</span>&#160; </div>
-<div class="line"><a name="l00383"></a><span class="lineno">  383</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassConnMPI_html"><div class="ttname"><a href="classConnMPI.html">ConnMPI</a></div><div class="ttdef"><b>Definition:</b> mpi.hpp:153</div></div>
 <div class="ttc" id="aclassConnMPI_html_a0618295732b20bcdc2aceb44c5bc719b"><div class="ttname"><a href="classConnMPI.html#a0618295732b20bcdc2aceb44c5bc719b">ConnMPI::listen</a></div><div class="ttdeci">int listen(std::string s)</div><div class="ttdoc">Start listening for new connections at the specified address s.</div><div class="ttdef"><b>Definition:</b> mpi.hpp:182</div></div>
 <div class="ttc" id="aclassConnMPI_html_a23b38202b801f517051a95e76081d1e3"><div class="ttname"><a href="classConnMPI.html#a23b38202b801f517051a95e76081d1e3">ConnMPI::connect</a></div><div class="ttdeci">Handle * connect(const std::string &amp;dest)</div><div class="ttdoc">Create a new Handle object establishing a connection to the remote peer specified by string s.</div><div class="ttdef"><b>Definition:</b> mpi.hpp:188</div></div>
 <div class="ttc" id="aclassConnMPI_html_a9e4bb43c76fd34acacdc6c12283c6de9"><div class="ttname"><a href="classConnMPI.html#a9e4bb43c76fd34acacdc6c12283c6de9">ConnMPI::init</a></div><div class="ttdeci">int init(std::string)</div><div class="ttdoc">Initialize the ConnType object.</div><div class="ttdef"><b>Definition:</b> mpi.hpp:163</div></div>
-<div class="ttc" id="aclassConnMPI_html_aaa0610139e3a821cb44d2b82e6b642ff"><div class="ttname"><a href="classConnMPI.html#aaa0610139e3a821cb44d2b82e6b642ff">ConnMPI::notify_yield</a></div><div class="ttdeci">void notify_yield(Handle *h)</div><div class="ttdoc">Manage the notification of an Handle object h issuing a yield operation. After this method is complet...</div><div class="ttdef"><b>Definition:</b> mpi.hpp:351</div></div>
+<div class="ttc" id="aclassConnMPI_html_aaa0610139e3a821cb44d2b82e6b642ff"><div class="ttname"><a href="classConnMPI.html#aaa0610139e3a821cb44d2b82e6b642ff">ConnMPI::notify_yield</a></div><div class="ttdeci">void notify_yield(Handle *h)</div><div class="ttdoc">Manage the notification of an Handle object h issuing a yield operation. After this method is complet...</div><div class="ttdef"><b>Definition:</b> mpi.hpp:305</div></div>
 <div class="ttc" id="aclassConnMPI_html_ace8c27fcc5650e34a44c7b97b3bda56e"><div class="ttname"><a href="classConnMPI.html#ace8c27fcc5650e34a44c7b97b3bda56e">ConnMPI::update</a></div><div class="ttdeci">void update()</div><div class="ttdoc">Non-blocking polling over the managed set of Handle objects. It should be used to check whether Handl...</div><div class="ttdef"><b>Definition:</b> mpi.hpp:245</div></div>
-<div class="ttc" id="aclassConnMPI_html_ad01e31cb5ae66c7a4fc750ea97b5af1f"><div class="ttname"><a href="classConnMPI.html#ad01e31cb5ae66c7a4fc750ea97b5af1f">ConnMPI::notify_close</a></div><div class="ttdeci">void notify_close(Handle *h, bool close_wr=true, bool close_rd=true)</div><div class="ttdoc">Manage the notification of an Handle object h issuing a close operation. The Handle is invalidated an...</div><div class="ttdef"><b>Definition:</b> mpi.hpp:327</div></div>
-<div class="ttc" id="aclassConnMPI_html_ad355372560506e7922c8ad33b255e9d1"><div class="ttname"><a href="classConnMPI.html#ad355372560506e7922c8ad33b255e9d1">ConnMPI::end</a></div><div class="ttdeci">void end(bool blockflag=false)</div><div class="ttdoc">Stop listening for new connections and terminate existing Handles.</div><div class="ttdef"><b>Definition:</b> mpi.hpp:373</div></div>
+<div class="ttc" id="aclassConnMPI_html_ad01e31cb5ae66c7a4fc750ea97b5af1f"><div class="ttname"><a href="classConnMPI.html#ad01e31cb5ae66c7a4fc750ea97b5af1f">ConnMPI::notify_close</a></div><div class="ttdeci">void notify_close(Handle *h, bool close_wr=true, bool close_rd=true)</div><div class="ttdoc">Manage the notification of an Handle object h issuing a close operation. The Handle is invalidated an...</div><div class="ttdef"><b>Definition:</b> mpi.hpp:295</div></div>
+<div class="ttc" id="aclassConnMPI_html_ad355372560506e7922c8ad33b255e9d1"><div class="ttname"><a href="classConnMPI.html#ad355372560506e7922c8ad33b255e9d1">ConnMPI::end</a></div><div class="ttdeci">void end(bool blockflag=false)</div><div class="ttdoc">Stop listening for new connections and terminate existing Handles.</div><div class="ttdef"><b>Definition:</b> mpi.hpp:316</div></div>
 <div class="ttc" id="aclassConnType_html"><div class="ttname"><a href="classConnType.html">ConnType</a></div><div class="ttdef"><b>Definition:</b> protocolInterface.hpp:10</div></div>
 <div class="ttc" id="aclassHandleMPI_html"><div class="ttname"><a href="classHandleMPI.html">HandleMPI</a></div><div class="ttdef"><b>Definition:</b> mpi.hpp:20</div></div>
 <div class="ttc" id="aclassHandleMPI_html_a4f418644d25dde36202814fc7dec1598"><div class="ttname"><a href="classHandleMPI.html#a4f418644d25dde36202814fc7dec1598">HandleMPI::receive</a></div><div class="ttdeci">ssize_t receive(void *buff, size_t size)</div><div class="ttdoc">Read at most size byte into buff from the remote end connected to this Handle. Wait until all size da...</div><div class="ttdef"><b>Definition:</b> mpi.hpp:98</div></div>

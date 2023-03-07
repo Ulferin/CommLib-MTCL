@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>CommLib: handleUser.hpp Source File</title>
+<title>CommLib: include/handleUser.hpp Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -45,7 +45,6 @@ $(function() {
 });
 /* @license-end */</script>
 <div id="main-nav"></div>
-</div><!-- top -->
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -60,6 +59,11 @@ $(function() {
 </iframe>
 </div>
 
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li>  </ul>
+</div>
+</div><!-- top -->
 <div class="header">
   <div class="headertitle">
 <div class="title">handleUser.hpp</div>  </div>
@@ -262,14 +266,6 @@ $(function() {
 <div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160; </div>
 <div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160; </div>
-<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160; </div>
-<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;<span class="comment">/*</span></div>
-<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;<span class="comment">P1 close() =&gt; sendEOS()    -----&gt; receiveEOS e setta non readable tutti</span></div>
-<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;<span class="comment">1) P2 send() ------&gt;</span></div>
-<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;<span class="comment">2) P2 close() =&gt; sendEOS() -------&gt; receiveEOS e setta a non readable writeable ===&gt;&gt; chiusura effettiva!</span></div>
-<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;<span class="comment">*/</span></div>
 <div class="ttc" id="aclassCommunicationHandle_html"><div class="ttname"><a href="classCommunicationHandle.html">CommunicationHandle</a></div><div class="ttdef"><b>Definition:</b> handle.hpp:19</div></div>
 <div class="ttc" id="aclassCommunicationHandle_html_a8d978b07b48a5e86c65a502cdd739d42"><div class="ttname"><a href="classCommunicationHandle.html#a8d978b07b48a5e86c65a502cdd739d42">CommunicationHandle::receive</a></div><div class="ttdeci">virtual ssize_t receive(void *buff, size_t size)=0</div><div class="ttdoc">Read at most size byte into buff from the remote end connected to this Handle. Wait until all size da...</div></div>
 <div class="ttc" id="aclassCommunicationHandle_html_a8fb025ad7663cc51002f7bc411f03920"><div class="ttname"><a href="classCommunicationHandle.html#a8fb025ad7663cc51002f7bc411f03920">CommunicationHandle::send</a></div><div class="ttdeci">virtual ssize_t send(const void *buff, size_t size)=0</div><div class="ttdoc">Send size byte of buff to the remote end connected to this Handle. Wait until all data has been sent ...</div></div>
