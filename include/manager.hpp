@@ -572,7 +572,7 @@ public:
             App2 --> |App1 and App3
             App3 --> |App1 and App2
     */
-    static HandleUser createTeam(std::string participants, std::string root, HandleType type) {
+    static HandleUser createTeam(const std::string participants, const std::string root, HandleType type) {
 
 
 #ifndef ENABLE_CONFIGFILE
@@ -712,7 +712,9 @@ public:
 
             coll_handles.push_back(handle);
         }
-        if(!ctx->setImplementation(impl, coll_handles)) {
+		std::hash<std::string> hashf;
+		int uniqtag = static_cast<int>(hashf(teamID) % std::numeric_limits<int>::max());
+        if(!ctx->setImplementation(impl, coll_handles, uniqtag)) {
             return HandleUser();
         }
         ctx->setName(teamID+"-"+Manager::appName);

@@ -23,7 +23,7 @@ protected:
     int* ranks;
 
 public:
-    MPICollective(std::vector<Handle*> participants, bool root) : CollectiveImpl(participants), root(root) {
+    MPICollective(std::vector<Handle*> participants, bool root, int uniqtag) : CollectiveImpl(participants, uniqtag), root(root) {
 
         //TODO: add endianess conversion
         MPI_Comm_rank(MPI_COMM_WORLD, &local_rank);
@@ -42,7 +42,7 @@ public:
             }
 
             for(auto& p : participants) {
-                p->send(ranks, sizeof(int)*(participants.size()+1));
+                p->send(ranks, sizeof(int)*(participants.size()+1));  // checks!!!
             }
 
         }
@@ -60,9 +60,15 @@ public:
         }
 
         MPI_Group group_world;
-        MPI_Comm_group(MPI_COMM_WORLD, &group_world);
-        MPI_Group_incl(group_world, coll_size, ranks, &group);
-        MPI_Comm_create_group(MPI_COMM_WORLD, group, 0, &comm);
+        if (MPI_Comm_group(MPI_COMM_WORLD, &group_world) != MPI_SUCCESS) {
+			MTCL_ERROR("[internal]:\t", "MPI_Collective::MPI_Comm_group\n");
+		}
+        if (MPI_Group_incl(group_world, coll_size, ranks, &group) != MPI_SUCCESS) {
+			MTCL_ERROR("[internal]:\t", "MPI_Collective::MPI_Group_incl\n");
+		}
+        if (MPI_Comm_create_group(MPI_COMM_WORLD, group, uniqtag, &comm) != MPI_SUCCESS) {
+			MTCL_ERROR("[internal]:\t", "MPI_Collective::MPI_Comm_create_group\n");
+		}
 
         delete[] ranks;
         //TODO: closing connections???
@@ -85,7 +91,7 @@ class BroadcastMPI : public MPICollective {
 private:
 
 public:
-    BroadcastMPI(std::vector<Handle*> participants, bool root) : MPICollective(participants, root) {}
+    BroadcastMPI(std::vector<Handle*> participants, bool root, int uniqtag) : MPICollective(participants, root, uniqtag) {}
 
 
     ssize_t probe(size_t& size, const bool blocking=true) {
@@ -214,7 +220,7 @@ class GatherMPI : public MPICollective {
     size_t  EOS = 0;
 
 public:
-    GatherMPI(std::vector<Handle*> participants, bool root) : MPICollective(participants, root) {
+    GatherMPI(std::vector<Handle*> participants, bool root, int uniqtag) : MPICollective(participants, root, uniqtag) {
         probe_data = new size_t[participants.size()+1];
     }
 

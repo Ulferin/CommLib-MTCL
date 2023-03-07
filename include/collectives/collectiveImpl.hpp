@@ -26,6 +26,8 @@ enum ImplementationType {
 class CollectiveImpl {
 protected:
     std::vector<Handle*> participants;
+	int uniqtag=-1;
+	
     //TODO: 
     // virtual bool canSend() = 0;
     // virtual bool canReceive() = 0;
@@ -98,7 +100,7 @@ protected:
 
 
 public:
-    CollectiveImpl(std::vector<Handle*> participants) : participants(participants) {
+    CollectiveImpl(std::vector<Handle*> participants, int uniqtag) : participants(participants),uniqtag(uniqtag) {
         // for(auto& h : participants) h->incrementReferenceCounter();
     }
 
@@ -189,7 +191,7 @@ public:
     }
 
 public:
-    BroadcastGeneric(std::vector<Handle*> participants, bool root) : CollectiveImpl(participants), root(root) {}
+    BroadcastGeneric(std::vector<Handle*> participants, bool root, int uniqtag) : CollectiveImpl(participants, uniqtag), root(root) {}
 
 };
 
@@ -277,7 +279,7 @@ public:
     }
 
 public:
-    FanInGeneric(std::vector<Handle*> participants, bool root) : CollectiveImpl(participants), root(root) {}
+    FanInGeneric(std::vector<Handle*> participants, bool root, int uniqtag) : CollectiveImpl(participants,uniqtag), root(root) {}
 
 };
 
@@ -334,7 +336,7 @@ public:
     }
 
 public:
-    FanOutGeneric(std::vector<Handle*> participants, bool root) : CollectiveImpl(participants), root(root) {}
+    FanOutGeneric(std::vector<Handle*> participants, bool root, int uniqtag) : CollectiveImpl(participants, uniqtag), root(root) {}
 
 };
 
@@ -346,8 +348,8 @@ private:
     int rank;
     bool allReady{true};
 public:
-    GatherGeneric(std::vector<Handle*> participants, bool root, int rank) :
-        CollectiveImpl(participants), root(root), rank(rank) {}
+    GatherGeneric(std::vector<Handle*> participants, bool root, int rank, int uniqtag) :
+        CollectiveImpl(participants, uniqtag), root(root), rank(rank) {}
 
     ssize_t probe(size_t& size, const bool blocking=true) {
         return -1;

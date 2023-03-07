@@ -12,9 +12,9 @@
  * 
  * The application structure is as follows:
  * 
- *       ______________________P2P handle_______________________________
- *      |                                                               |
- *      v             | --> Worker1 (App2) --> |                        |
+ *       ______________________P2P handle________________________________
+ *      |                                                                |
+ *      v             | --> Worker1 (App2) --> |                         |
  * Emitter --BCast--> |        ...             | --Gather--> Collector --
  *                    | --> WorkerN (App3) --> |                         
  *      
@@ -215,7 +215,7 @@ int main(int argc, char** argv){
         auto fbk = Manager::getNext();
         fbk.yield();        
 
-        auto hg = Manager::createTeam(broadcast_string, participants.at(EMITTER_RANK), BROADCAST);
+		auto hg = Manager::createTeam(broadcast_string, participants.at(EMITTER_RANK), BROADCAST);
         if(hg.isValid() && fbk.isValid())
             printf("Emitter starting\n");
         else
@@ -267,7 +267,7 @@ int main(int argc, char** argv){
         }
 
         auto hg_gather = Manager::createTeam(gather_string, participants.at(COLLECTOR_RANK), GATHER);
-
+		
         int* gather_data = new int[hg_gather.size()];
 
         ssize_t r;
@@ -295,7 +295,10 @@ int main(int argc, char** argv){
     // Worker
     else {
         auto hg_bcast = Manager::createTeam(broadcast_string, participants.at(EMITTER_RANK), BROADCAST);
-        auto hg_gather = Manager::createTeam(gather_string, participants.at(COLLECTOR_RANK), GATHER);
+
+		auto hg_gather = Manager::createTeam(gather_string, participants.at(COLLECTOR_RANK), GATHER);
+
+		
         if(hg_bcast.isValid() && hg_gather.isValid())
             printf("Correctly created teams\n");
         else {

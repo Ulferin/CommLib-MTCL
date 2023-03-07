@@ -2,7 +2,7 @@
 ### Multi Transport Communication Library (MTCL)
 
 The MTCL library aims to provide a common (and simple enough) interface for
-several back-end communication libraries. 
+several back-end communication libraries. Currently we support TCP/IP, MPI, MPIP2P (i.e., dynamic MPI), UCX, MQTT.
 
 
 ### Dependencies

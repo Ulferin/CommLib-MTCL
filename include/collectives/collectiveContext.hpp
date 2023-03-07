@@ -47,22 +47,22 @@ public:
                     counter = 1;
     }
 
-    bool setImplementation(ImplementationType impl, std::vector<Handle*> participants) {
+    bool setImplementation(ImplementationType impl, std::vector<Handle*> participants, int uniqtag) {
         const std::map<HandleType, std::function<CollectiveImpl*()>> contexts = {
             {BROADCAST,  [&]{
                     CollectiveImpl* coll = nullptr;
                     switch (impl) {
                         case GENERIC:
-                            coll = new BroadcastGeneric(participants, root);
+                            coll = new BroadcastGeneric(participants, root, uniqtag);
                             break;
                         case MPI:
                             #ifdef ENABLE_MPI
-                            coll = new BroadcastMPI(participants, root);
+                            coll = new BroadcastMPI(participants, root, uniqtag);
                             #endif
                             break;
                         case UCC:
                             #ifdef ENABLE_UCX
-                            coll = new BroadcastUCC(participants, rank, size, root);
+                            coll = new BroadcastUCC(participants, rank, size, root, uniqtag);
                             #endif
                             break;
                         default:
@@ -72,22 +72,22 @@ public:
                     return coll;
                 }
             },
-            {FANIN,  [&]{return new FanInGeneric(participants, root);}},
-            {FANOUT, [&]{return new FanOutGeneric(participants, root);}},
+            {FANIN,  [&]{return new FanInGeneric(participants, root, uniqtag);}},
+            {FANOUT, [&]{return new FanOutGeneric(participants, root, uniqtag);}},
             {GATHER,  [&]{
                     CollectiveImpl* coll = nullptr;
                     switch (impl) {
                         case GENERIC:
-                            coll = new GatherGeneric(participants, root, rank);
+                            coll = new GatherGeneric(participants, root, rank, uniqtag);
                             break;
                         case MPI:
                             #ifdef ENABLE_MPI
-                            coll = new GatherMPI(participants, root);
+                            coll = new GatherMPI(participants, root, uniqtag);
                             #endif
                             break;
                         case UCC:
                             #ifdef ENABLE_UCX
-                            coll = new GatherUCC(participants, rank, size, root);
+                            coll = new GatherUCC(participants, rank, size, root, uniqtag);
                             #endif
                             break;
                         default:
