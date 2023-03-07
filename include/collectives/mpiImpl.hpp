@@ -24,9 +24,8 @@ protected:
 
 public:
     MPICollective(std::vector<Handle*> participants, bool root) : CollectiveImpl(participants), root(root) {
-        // Creazione comunicatore
 
-        //TODO: aggiungere conversione endianess
+        //TODO: add endianess conversion
         MPI_Comm_rank(MPI_COMM_WORLD, &local_rank);
         int coll_size;
         if(root) {
@@ -66,7 +65,7 @@ public:
         MPI_Comm_create_group(MPI_COMM_WORLD, group, 0, &comm);
 
         delete[] ranks;
-        //TODO: close delle connessioni???
+        //TODO: closing connections???
     }
 
     // MPI needs to override basic peek in order to correctly catch messages

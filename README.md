@@ -1,5 +1,8 @@
+
 ### Multi Transport Communication Library (MTCL)
 
+The MTCL library aims to provide a common (and simple enough) interface for
+several back-end communication libraries. 
 
 
 ### Dependencies

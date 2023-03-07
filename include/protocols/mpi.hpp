@@ -272,38 +272,6 @@ public:
             addinQ(true, handle);
             REMOVE_CODE_IF(ulock.unlock());
         }
-
-        /*
-        if (MPI_Iprobe(MPI_ANY_SOURCE, MPI_DISCONNECT_TAG, MPI_COMM_WORLD, &flag, &status) != MPI_SUCCESS) {
-			MTCL_MPI_ERROR("ConnMPI::update: MPI_Iprobe ERROR (DISCONNECT)\n");
-			errno = ECOMM;
-			throw;
-		}
-        if (flag) {
-            int headersLen;
-            MPI_Get_count(&status, MPI_INT, &headersLen);
-            int header[headersLen];
-            
-            if (MPI_Recv(header, headersLen, MPI_INT, status.MPI_SOURCE, MPI_DISCONNECT_TAG, MPI_COMM_WORLD, &status) != MPI_SUCCESS) {
-				MTCL_MPI_ERROR("ConnMPI::update: MPI_Recv ERROR (DISCONNECT)\n");
-				errno = ECOMM;
-                throw;
-            }
-            
-            int source = status.MPI_SOURCE;
-            int source_tag = header[0];
-            REMOVE_CODE_IF(ulock.lock());
-			auto it = connections.find({source, source_tag});
-			if (it != connections.end()) {
-				connections[{source, source_tag}].first->closing = true;
-				if (connections[{source, source_tag}].second) {
-					connections[{source, source_tag}].second = false;
-					addinQ(false, connections[{source, source_tag}].first);
-				}
-			}
-            REMOVE_CODE_IF(ulock.unlock());
-        }
-        */
 		
         REMOVE_CODE_IF(ulock.lock());
         for (auto& [rankTagPair, handlePair] : connections) {
@@ -331,21 +299,7 @@ public:
 
         if (close_rd)
             connections.erase({hMPI->rank, hMPI->tag});
-        
-
-
-        /*
-        if (!hMPI->closing){
-            if (MPI_Send(&hMPI->tag, 1, MPI_INT, hMPI->rank, MPI_DISCONNECT_TAG, MPI_COMM_WORLD) != MPI_SUCCESS) {
-				MTCL_MPI_ERROR("ConnMPI::notify_close: MPI_Send ERROR\n");
-				errno = ECOMM;
-			}
-        }
-		{
-			REMOVE_CODE_IF(std::unique_lock l(shm));
-			connections.erase({hMPI->rank, hMPI->tag});
-		}*/
-    }
+	}
 	
 
     void notify_yield(Handle* h) {
@@ -357,18 +311,7 @@ public:
             if (it != connections.end())
                 it->second.second = true;
         }
-        
-        /*
-        if (hMPI->closing) {
-            addinQ(false, h);
-            return;
-        }
-		{
-			REMOVE_CODE_IF(std::unique_lock l(shm));
-			connections[{hMPI->rank, hMPI->tag}].second = true;
-		}
-        */
-    }
+	}
 
     void end(bool blockflag=false) {
         auto modified_connections = connections;

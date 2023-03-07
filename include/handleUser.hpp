@@ -195,11 +195,3 @@ public:
 
 #endif
 
-
-/*
-
-P1 close() => sendEOS()    -----> receiveEOS e setta non readable tutti
-
-1) P2 send() ------>
-2) P2 close() => sendEOS() -------> receiveEOS e setta a non readable writeable ===>> chiusura effettiva!
-*/

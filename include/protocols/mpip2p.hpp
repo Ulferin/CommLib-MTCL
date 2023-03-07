@@ -36,30 +36,6 @@ public:
     bool closing = false;
     HandleMPIP2P(ConnType* parent, int rank, MPI_Comm server_comm, bool busy=true) : Handle(parent), rank(rank), server_comm(server_comm) {}
 
-    /*void checkClosing() {
-        MPI_Status status;
-        int flag;
-        if (MPI_Iprobe(rank, MPIP2P_DISCONNECT_TAG, server_comm, &flag, &status) != MPI_SUCCESS) {
-            MTCL_MPIP2P_ERROR("ConnMPIP2P::update: MPI_Iprobe ERROR (DISCONNECT)\n");
-            errno = ECOMM;
-            throw;
-        }
-        if(flag) {
-            if(status.MPI_TAG == MPIP2P_DISCONNECT_TAG) {
-                int headersLen;
-                MPI_Get_count(&status, MPI_INT, &headersLen);
-                int header[headersLen];
-                
-                if (MPI_Recv(header, headersLen, MPI_INT, status.MPI_SOURCE, MPIP2P_DISCONNECT_TAG, server_comm, &status) != MPI_SUCCESS) {
-                    MTCL_MPIP2P_ERROR("ConnMPIP2P::update: MPI_Recv ERROR (DISCONNECT)\n");
-                    errno = ECOMM;
-                    throw;
-                }
-                closing = true;
-            }
-        }
-    }*/
-
     ssize_t send(const void* buff, size_t size) {
         /*MPI_Request request;
         if (MPI_Isend(buff, size, MPI_BYTE, rank, 0, server_comm, &request) != MPI_SUCCESS) {
@@ -380,7 +356,7 @@ public:
 			}
             t1.join();
 
-            MPI_Unpublish_name(MPIP2P_PUBLISH_NAME, MPI_INFO_NULL, portname);
+            MPI_Unpublish_name(published_label.c_str(), MPI_INFO_NULL, portname);
             MPI_Close_port(portname);
         }
 

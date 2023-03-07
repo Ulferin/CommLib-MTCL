@@ -87,8 +87,6 @@ private:
             h->probe(size, true);
             h->receive(&collective, sizeof(int));
 
-            // Se collettiva, leggo il teamID e aggiorno il contesto
-            // Questo serve per sincronizzazione del root sulle accept
             if(collective) {
                 size_t size;
                 h->probe(size, true);
@@ -110,22 +108,19 @@ private:
 		handleReady.push(HandleUser(h, true, b));
 	}
 #else	
-    static inline void addinQ(bool b, Handle* h) {
+    static inline void addinQ(const bool b, Handle* h) {
 
         int collective = 0;
 
-        // Ad ogni nuova connessione controllo se l'handle è riferito a collettiva
-        if(b) {
+        if(b) { // For each new connection... is the handle coming from a collective?
             // new connection, read handle type (p2p=0, collective=1)
             size_t size;
             h->probe(size, true);
             h->receive(&collective, sizeof(int));
         
-            // Se collettiva, handle manda ulteriori dati con string teamID.
-            // Con teamID possiamo associare uno ed un solo contesto a tutti
-            // gli handle della stessa collettiva in modo da aggiornare stato della
-            // collettiva da qui in avanti
-            // Questo serve per sincronizzazione del root sulle accept
+            // If collective, the handle sends further data with string teamID.
+            // The teamID uniquely associate a single context to all handles of the same collective
+            // This is useful to synchronize the root thread for the accepts.
             if(collective) {
                 size_t size;
                 h->probe(size, true);
@@ -471,7 +466,7 @@ public:
         std::string protocol = s.substr(0, (pos = s.find(":")) == std::string::npos ? 0 : pos);
        
         if(protocol.empty()){
-            // vedo se uso il file di config e provo a ciclo tutte le listen del componente di destinazione 
+            // checking if there is a config file to cycle on all addresses
 #ifdef ENABLE_CONFIGFILE
             if (components.count(s))
                 for(auto& le : std::get<2>(components[s])){
@@ -483,7 +478,6 @@ public:
                     }
                 }
 #endif
-            // stampa di errore??
             MTCL_ERROR("[internal]:\t", "Manager::connectHandle specified appName not found in configuration file.\n");
             return nullptr;
         }
@@ -492,14 +486,14 @@ public:
         std::string appLabel = s.substr(s.find(":") + 1, s.length());
 
         #ifdef ENABLE_CONFIGFILE
-            if (components.count(appLabel)){ // l'utente ha scritto una label effettivamente
+            if (components.count(appLabel)){ // there is a label
                 auto& component = components.at(appLabel);
                 std::string& host = std::get<0>(component); // host= [pool:]hostname
                 std::string pool = getPoolFromHost(host);
 
-                    if (pool != poolName){ // se entrambi vuoti o uguali non entro 
+                    if (pool != poolName){ 
                         std::string connectionString2Proxy;
-                        if (poolName.empty() && !pool.empty()){ // passo dal proxy del pool di destinazione
+                        if (poolName.empty() && !pool.empty()){ // go through the proxy of the destination pool
                             // connect verso il proxy di pool
                             if (protocol == "UCX" || protocol == "TCP"){
                                for (auto& ip: pools[pool].first){
@@ -522,7 +516,7 @@ public:
                             }
                         }
                     
-                        if (!poolName.empty() && !pool.empty()){ // contatto il mio proxy
+                        if (!poolName.empty() && !pool.empty()){ // try to contact my proxy
                             if (protocol == "UCX" || protocol == "TCP"){
                                for (auto& ip: pools[poolName].first){
                                 auto* handle = protocolsMap[protocol]->connect(ip + ":" + (protocol == "UCX" ? "13001" : "13000"));
@@ -562,22 +556,21 @@ public:
     }
 
 
-    /* Broadcast:
+    /*  Team: App1 App2 App3.
+        Broadcast:
           App1(root) ---->  | App2
                             | App3
 
         Fan-out
-            App1(root) --> | App2 o App3
+            App1(root) --> | App2 or App3
 
         Fan-in
-            App2 ----> | --> App1(root)
-            App3 ----> |
-
+            App2 or App3 --> | App1(root)
 
         AllGather
-            App1 --> |App2 e App3   ==  App2 & App3 --> | App1 (gather) --> | App2 & App3 (Broadcast result)
-            App2 --> |App1 e App3
-            App3 --> |App1 e App2
+            App1 --> |App2 and App3   ==  App2 & App3 --> | App1 (gather) --> | App2 & App3 (Broadcast result)
+            App2 --> |App1 and App3
+            App3 --> |App1 and App2
     */
     static HandleUser createTeam(std::string participants, std::string root, HandleType type) {
 
@@ -648,7 +641,6 @@ public:
                 return HandleUser();
             }
 
-            // #define SINGLE_IO_THREAD
 #if defined(SINGLE_IO_THREAD)
                 if ((groupsReady.count(teamID) != 0) && ctx->update(groupsReady.at(teamID).size())) {
                     coll_handles = groupsReady.at(teamID);
@@ -671,9 +663,7 @@ public:
                     } while(true);
                 }
 #else
-                // Accetta tante connessioni quanti sono i partecipanti
-                // Qui mi serve recuperare esattamente gli handle che hanno fatto
-                // connect per partecipazione ad una collettiva specifica
+                // Retrieving the connected handles associated to the collective
                 std::unique_lock lk(group_mutex);
                 group_cond.wait(lk, [&]{
                     return (groupsReady.count(teamID) != 0) && ctx->update(groupsReady.at(teamID).size());
@@ -699,9 +689,8 @@ public:
 
             Handle* handle = nullptr;
             for(auto& addr : root_addrs) {
-                //TODO: bisogna fare il detect del protocollo a cui fare la connect
-                //      se i booleani mpi_impl/ucc_impl sono settati, bisogna connettersi
-                //      esattamente a quel protocollo
+                //TODO: need to detect the protocol for the connect
+                //      if mpi_impl/ucc_impl, then we must use the proper protocol
                 handle = connectHandle(addr);
                 if(handle != nullptr) {
                     MTCL_PRINT(100, "[Manager]:\t", "Connection ok to %s\n", addr.c_str());

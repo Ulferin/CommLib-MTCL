@@ -16,8 +16,8 @@
 
 #include "../handle.hpp"
 #include "../protocolInterface.hpp"
-#include "../utils.hpp"     //TODO:<----- rimuovi
-#include "../config.hpp"    //TODO:<----- rimuovi
+#include "../utils.hpp" 
+#include "../config.hpp"
 
 
 class HandleUCX : public Handle {

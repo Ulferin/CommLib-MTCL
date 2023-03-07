@@ -52,7 +52,7 @@
 #include <rapidjson/writer.h>
 
 #include <iostream>
-#include "../../mtcl.hpp"
+#include "mtcl.hpp"
 
 inline static int EMITTER_RANK{0};
 inline static int WORKER_RANK{2};

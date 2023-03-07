@@ -2,7 +2,7 @@ ifndef CXX
 CXX 	   = g++
 endif
 CXXFLAGS  += -std=c++17
-INCS       = -I ..
+INCS       = -I ../include
 ifdef DEBUG
 	OPTIMIZE_FLAGS  += -g -fno-inline-functions
 else
@@ -24,7 +24,7 @@ endif
 ifeq ($(findstring MPI,$(TPROTOCOL)),MPI)
 	CXX 	  = mpicxx
 	CXXFLAGS += -DENABLE_$(TPROTOCOL)
-	TARGET    = ../protocols/stop_accept
+	TARGET    = ../include/protocols/stop_accept
 ifdef MPI_HOME
 	INCS   += `pkg-config --cflags-only-I $(MPI_HOME)/lib/pkgconfig/ompi-cxx.pc`
 	LIBS   += `pkg-config --libs $(MPI_HOME)/lib/pkgconfig/ompi-cxx.pc`
@@ -77,6 +77,6 @@ all: $(TARGET)
 clean: 
 	-rm -fr $(TARGET) *~
 cleanall: clean
-	-rm -fr *.d uri_file.txt ../protocols/stop_accept
+	-rm -fr *.d uri_file.txt ../include/protocols/stop_accept
 
 include $(SOURCES:.cpp=.d)

@@ -26,7 +26,7 @@ enum ImplementationType {
 class CollectiveImpl {
 protected:
     std::vector<Handle*> participants;
-    //TODO: implementare qui can_send/can_receive
+    //TODO: 
     // virtual bool canSend() = 0;
     // virtual bool canReceive() = 0;
 

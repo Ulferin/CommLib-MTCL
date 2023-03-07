@@ -26,7 +26,7 @@
 
 
 #include <iostream>
-#include "../../mtcl.hpp"
+#include "mtcl.hpp"
 
 inline static std::string hello{"Hello team!"};
 inline static std::string bye{"Bye team!"};
