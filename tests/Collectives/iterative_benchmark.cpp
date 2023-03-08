@@ -7,8 +7,9 @@
  * by the Collector to the Emitter. Each communication channel is tied to the
  * enabled protocol at compilation time.
  * 
- * The configuration file for each run of the application is automatically generated
- * by the application itself upon execution of the Emitter node.
+ * The configuration file, if not provided, is automatically generated
+ * by the application itself upon execution of the Emitter node to run on a single
+ * machine.
  * 
  * The application structure is as follows:
  * 
@@ -38,10 +39,11 @@
  *  $> ./iterative_benchmark 2 2 10 5
  *  $> ./iterative_benchmark 3 2 10 5
  * 
- *  $> mpirun -n 1 ./iterative_benchmark 0 2 10 5 iterative_bench.json : \ 
- *  -n 1 ./iterative_benchmark 1 2 10 5 iterative_bench.json : \ 
- *  -n 1 sh -c 'sleep 1; ./iterative_benchmark 2 2 10 5 iterative_bench.json' : \ 
- *  -n 1 sh -c 'sleep 1; ./iterative_benchmark 3 2 10 5 iterative_bench.json'
+ *  $> mpirun 
+ *       -n 1 ./iterative_benchmark 0 2 10 5 iterative_bench.json : \
+ *       -n 1 ./iterative_benchmark 1 2 10 5 iterative_bench.json : \ 
+ *       -n 1 ./iterative_benchmark 2 2 10 5 iterative_bench.json : \ 
+ *       -n 1 ./iterative_benchmark 3 2 10 5 iterative_bench.json
  * 
  * */
 
@@ -260,7 +262,7 @@ int main(int argc, char** argv){
     // Collector
     else if(rank==1) {
         // Feedback channel
-        auto fbk = Manager::connect("Emitter");
+        auto fbk = Manager::connect("Emitter", 100, 200);
         if(!fbk.isValid()) {
             printf("Connection failed\n");
             return 1;

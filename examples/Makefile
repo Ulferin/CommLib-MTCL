@@ -1,8 +1,11 @@
 ifndef CXX
 CXX 	   = g++
 endif
+
+# all local example files do not use collectives
 CXXFLAGS  += -std=c++17
 INCS       = -I ../include
+
 ifdef DEBUG
 	OPTIMIZE_FLAGS  += -g -fno-inline-functions
 else
@@ -11,14 +14,6 @@ endif
 
 ifdef SINGLE_IO_THREAD
 	CXXFLAGS +=-DSINGLE_IO_THREAD
-endif
-
-ifdef ENABLE_COLLECTIVES
-ifndef UCC_HOME
-$(error UCC_HOME env variable not defined!);
-endif
-	INCS += -I$(UCC_HOME)/include
-	LIBS += -L${UCC_HOME}/lib -Wl,-rpath,${UCC_HOME}/lib -lucc
 endif
 
 ifeq ($(findstring MPI,$(TPROTOCOL)),MPI)
@@ -45,8 +40,11 @@ ifeq ($(findstring UCX, $(TPROTOCOL)),UCX)
 ifndef UCX_HOME
 $(error UCX_HOME env variable not defined!);
 endif
-	INCS += -I$(UCX_HOME)/include
-	LIBS += -L$(UCX_HOME)/lib -Wl,-rpath,${UCX_HOME}/lib -lucp -luct -lucs -lucm
+ifndef UCC_HOME
+$(error UCC_HOME env variable not defined!);
+endif
+	INCS += -I$(UCX_HOME)/include -I$(UCC_HOME)/include
+	LIBS += -L$(UCX_HOME)/lib -L$(UCC_HOME)/lib -Wl,-rpath,${UCX_HOME}/lib -Wl,-rpath,${UCC_HOME}/lib -lucc -lucp -luct -lucs -lucm
 endif
 
 CXXFLAGS         += -Wall

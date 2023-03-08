@@ -1,7 +1,9 @@
 #ifndef HANDLEUSER_HPP
 #define HANDLEUSER_HPP
 
+#ifndef MTCL_DISABLE_COLLECTIVES
 #include "collectives/collectiveContext.hpp"
+#endif
 #include "handle.hpp"
 #include "errno.h"
 

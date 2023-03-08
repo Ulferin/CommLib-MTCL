@@ -142,7 +142,7 @@ public:
 		REMOVE_CODE_IF(ulock.unlock());		
     }
 
-    Handle* connect(const std::string& address) {
+    Handle* connect(const std::string& address, int retry=-1, unsigned timeout=0) {
 		shmBuffer connshm;
 		if (connshm.open(address) == -1) {
 			MTCL_SHM_PRINT(100, "ConnSHM::connect, cannot open the connection buffer, errno=%d\n", errno);

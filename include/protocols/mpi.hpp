@@ -185,7 +185,7 @@ public:
     }
 
 
-    Handle* connect(const std::string& dest) {
+    Handle* connect(const std::string& dest, int, unsigned) {
         // in pratica questo specifica il tag utilizzato per le comunicazioni successive
         // per ora solo tag, poi si vede
 

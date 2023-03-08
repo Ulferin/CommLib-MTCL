@@ -10,6 +10,7 @@ const unsigned IO_THREAD_POLL_TIMEOUT  = 10;
 // ------ TCP ------
 const unsigned TCP_BACKLOG             = 128;
 const unsigned TCP_POLL_TIMEOUT        = 10; 
+const unsigned UNREACHABLE_ADDR_TIMOUT = 100;  // milliseconds   
 
 // ------ SHM ------
 const unsigned SHM_SMALL_MSG_SIZE      = (1<<22);
@@ -35,10 +36,13 @@ const std::string MQTT_EXIT_TOPIC {"-exit"};
 // default broker address if not otherwise provided
 const std::string MQTT_SERVER_ADDRESS{ "tcp://localhost:1883" };
 
-
 // ------- UCX ------
 const unsigned UCX_BACKLOG             = 128;
 const unsigned UCX_POLL_TIMEOUT        = 10; 
+
+// -------- COLLECTIVES ------
+const int CCONNECTION_RETRY            = 10;
+const unsigned CCONNECTION_TIMEOUT     = 100;  // milliseconds
 
 
 #endif 

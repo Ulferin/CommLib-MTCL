@@ -137,59 +137,6 @@ public:
 
 };
 
-int connect_with_timeout(int sockfd, const struct sockaddr *addr, socklen_t addrlen, unsigned int timeout_ms) {
-    int rc = 0;
-    // Set O_NONBLOCK
-    int sockfd_flags_before;
-    if((sockfd_flags_before=fcntl(sockfd,F_GETFL,0)<0)) return -1;
-    if(fcntl(sockfd,F_SETFL,sockfd_flags_before | O_NONBLOCK)<0) return -1;
-    // Start connecting (asynchronously)
-    do {
-        if (connect(sockfd, addr, addrlen)<0) {
-            // Did connect return an error? If so, we'll fail.
-            if ((errno != EWOULDBLOCK) && (errno != EINPROGRESS)) {
-                rc = -1;
-            }
-            // Otherwise, we'll wait for it to complete.
-            else {
-                // Set a deadline timestamp 'timeout' ms from now (needed b/c poll can be interrupted)
-                struct timespec now;
-                if(clock_gettime(CLOCK_MONOTONIC, &now)<0) { rc=-1; break; }
-                struct timespec deadline = { .tv_sec = now.tv_sec,
-                                             .tv_nsec = now.tv_nsec + timeout_ms*1000000l};
-                // Wait for the connection to complete.
-                do {
-                    // Calculate how long until the deadline
-                    if(clock_gettime(CLOCK_MONOTONIC, &now)<0) { rc=-1; break; }
-                    int ms_until_deadline = (int)(  (deadline.tv_sec  - now.tv_sec)*1000l
-                                                  + (deadline.tv_nsec - now.tv_nsec)/1000000l);
-                    if(ms_until_deadline<0) { rc=0; break; }
-                    // Wait for connect to complete (or for the timeout deadline)
-                    struct pollfd pfds[] = { { .fd = sockfd, .events = POLLOUT } };
-                    rc = poll(pfds, 1, ms_until_deadline);
-                    // If poll 'succeeded', make sure it *really* succeeded
-                    if(rc>0) {
-                        int error = 0; socklen_t len = sizeof(error);
-                        int retval = getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &error, &len);
-                        if(retval==0) errno = error;
-                        if(error!=0) rc=-1;
-                    }
-                }
-                // If poll was interrupted, try again.
-                while(rc==-1 && errno==EINTR);
-                // Did poll timeout? If so, fail.
-                if(rc==0) {
-                    errno = ETIMEDOUT;
-                    rc=-1;
-                }
-            }
-        }
-    } while(0);
-    // Restore original O_NONBLOCK state
-    if(fcntl(sockfd,F_SETFL,sockfd_flags_before)<0) return -1;
-    // Success
-    return rc;
-}
 
 class ConnTcp : public ConnType {
 private:
@@ -375,48 +322,13 @@ public:
     }
 
     // URL: host:prot || label: stringa utente
-    Handle* connect(const std::string& address/*, const std::string& label=std::string()*/) {
-		const std::string host = address.substr(0, address.find(":"));
-		const std::string svc  = address.substr(host.length()+1);
-		
-		MTCL_TCP_PRINT(100, "connect to %s:%s\n", host.c_str(), svc.c_str());
+    Handle* connect(const std::string& address, int retry, unsigned timeout_ms) {
 
-        int fd;
-
-        struct addrinfo hints;
-        struct addrinfo *result, *rp;
-
-        memset(&hints, 0, sizeof(hints));
-        hints.ai_family   = AF_UNSPEC;              /* Allow IPv4 or IPv6 */
-        hints.ai_socktype = SOCK_STREAM;            /* Stream socket */
-        hints.ai_flags    = 0;
-        hints.ai_protocol = IPPROTO_TCP;            /* Allow only TCP */
-
-        // resolve the address (assumo stringa formattata come host:port)
-        if (getaddrinfo(host.c_str(), svc.c_str(), &hints, &result) != 0) {
-			MTCL_TCP_PRINT(100, "ConnTcp::connect  getaddrinfo errno=%d\n", errno);
-            return nullptr;
+		int fd=internal_connect(address, retry, timeout_ms);
+		if (fd == -1) {
+			return nullptr;
 		}
-
-        // try to connect to a possible one of the resolution results
-        for (rp = result; rp != NULL; rp = rp->ai_next) {
-            fd = socket(rp->ai_family, rp->ai_socktype,
-                            rp->ai_protocol);
-            if (fd == -1) {
-				MTCL_TCP_PRINT(100, "ConnTcp::connect socket errno=%d\n", errno);
-                continue;
-			}
-
-            if (connect_with_timeout(fd, rp->ai_addr, rp->ai_addrlen, 100) != -1) // 100ms of timeout
-                break;                  /* Success */
-
-            close(fd);
-        }
-        free(result);
-            
-        if (rp == NULL)            /* No address succeeded */
-            return nullptr;
-
+		
         HandleTCP *handle = new HandleTCP(this, fd);
 		{
 			REMOVE_CODE_IF(std::unique_lock lock(shm));

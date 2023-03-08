@@ -108,7 +108,7 @@ protected:
 public:
     int root_rank;
 
-    UCCCollective(std::vector<Handle*> participants, int rank, int size, bool root) : CollectiveImpl(participants), rank(rank), size(size), root(root) {
+    UCCCollective(std::vector<Handle*> participants, int rank, int size, bool root, int uniqtag) : CollectiveImpl(participants, uniqtag), rank(rank), size(size), root(root) {
         /* === UCC collective operation === */
         /* Init ucc library */
         ucc_lib_params_t lib_params = {
@@ -166,7 +166,7 @@ public:
 class BroadcastUCC : public UCCCollective {
 
 public:
-    BroadcastUCC(std::vector<Handle*> participants, int rank, int size, bool root) : UCCCollective(participants, rank, size, root) {}
+    BroadcastUCC(std::vector<Handle*> participants, int rank, int size, bool root, int uniqtag) : UCCCollective(participants, rank, size, root, uniqtag) {}
 
 
     ssize_t probe(size_t& size, const bool blocking=true) {
@@ -347,7 +347,7 @@ class GatherUCC : public UCCCollective {
     size_t EOS = 0;
 
 public:
-    GatherUCC(std::vector<Handle*> participants, int rank, int size, bool root) : UCCCollective(participants, rank, size, root) {
+    GatherUCC(std::vector<Handle*> participants, int rank, int size, bool root, int uniqtag) : UCCCollective(participants, rank, size, root, uniqtag) {
                 probe_data = new size_t[participants.size()+1];
     }
 

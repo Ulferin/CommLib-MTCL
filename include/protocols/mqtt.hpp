@@ -303,7 +303,7 @@ public:
 
 
     // String for connection composed of manager_id:topic
-    Handle* connect(const std::string& address) {
+    Handle* connect(const std::string& address, int retry, unsigned timeout) {
         std::string manager_id = address.substr(0, address.find(":"));
 
         if(manager_id.empty()) {

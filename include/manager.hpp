@@ -56,7 +56,8 @@ class Manager {
     inline static std::map<std::string, std::vector<Handle*>> groupsReady;
     inline static std::map<CollectiveContext*, bool> contexts;
     inline static std::set<std::string> listening_endps;
-    
+	inline static std::set<std::string> createdTeams;
+	
     inline static std::string appName;
     inline static std::string poolName;
 
@@ -78,62 +79,84 @@ class Manager {
 private:
     Manager() {}
 
+	// initial handshake for a connection, it could be a p2p connection or a connection
+	// part of a collective handle
+	static inline int connectionHandshake(char *& teamID, Handle *h) {
+		// new connection, read handle type (p2p=0, collective=1)
+		size_t size;
+		if (h->probe(size, true) <=0) {
+			MTCL_ERROR("[Manager]:\t", "addinQ handshake error in probe, errno=%d\n", errno);
+			teamID=nullptr;
+			return -1;
+		}
+		int collective = 0;		
+		if (h->receive(&collective, sizeof(int)) <=0) {
+			MTCL_ERROR("[Manager]:\t", "addinQ handshake error in receiving collective flag, errno=%d\n", errno);
+			teamID=nullptr;
+			return -1;
+		}
+        
+		// If collective, the handle sends further data with string teamID.
+		// The teamID uniquely associate a single context to all handles of the same collective
+		// This is useful to synchronize the root thread for the accepts.
+		if(collective) {
+			size_t size;
+			if (h->probe(size, true) <= 0) {
+				MTCL_ERROR("[Manager]:\t", "addinQ handshake error in probe, teamID size, errno=%d\n", errno);
+				teamID=nullptr;
+				return -1;
+			}
+			// sanity check
+			if (size>1048576) {
+				MTCL_ERROR("[Manager]:\t", "addinQ handshake error in probe, teamID size TOO LARGE (size=%ld)\n", size);
+				teamID=nullptr;
+				return -1;
+			}
+			
+			teamID = new char[size+1];
+			assert(teamID);
+			if (h->receive(teamID, size) <=0) {
+				MTCL_ERROR("[Manager]:\t", "addinQ handshake error in probe, receiving teamID, errno=%d\n", errno);
+				delete [] teamID;
+				teamID=nullptr;
+				return -1;
+			}
+			teamID[size] = '\0';			
+			MTCL_PRINT(100, "[Manager]: \t", "Manager::addinQ received connection for team: %s\n", teamID);
+		}		
+		return 0;
+	}
+	
 #if defined(SINGLE_IO_THREAD)
 	static inline void addinQ(bool b, Handle* h) {
-        int collective = 0;
+        if(b) { // we have to see if it is part of a collective
+			char *teamID=nullptr;
+			if (connectionHandshake(teamID, h)==-1) return;
 
-        if(b) {
-            size_t size;
-            h->probe(size, true);
-            h->receive(&collective, sizeof(int));
-
-            if(collective) {
-                size_t size;
-                h->probe(size, true);
-                char* teamID = new char[size+1];
-                h->receive(teamID, size);
-                teamID[size] = '\0';
-
-                MTCL_PRINT(100, "[Manager]: \t", "Manager::addinQ received connection for team: %s\n", teamID);
-
+			if (teamID) {
                 if(groupsReady.count(teamID) == 0)
                     groupsReady.emplace(teamID, std::vector<Handle*>{});
-
+				
                 groupsReady.at(teamID).push_back(h);
                 delete[] teamID;
                 return;
             }
         }
-
+		
 		handleReady.push(HandleUser(h, true, b));
 	}
 #else	
     static inline void addinQ(const bool b, Handle* h) {
 
-        int collective = 0;
-
         if(b) { // For each new connection... is the handle coming from a collective?
-            // new connection, read handle type (p2p=0, collective=1)
-            size_t size;
-            h->probe(size, true);
-            h->receive(&collective, sizeof(int));
-        
-            // If collective, the handle sends further data with string teamID.
-            // The teamID uniquely associate a single context to all handles of the same collective
-            // This is useful to synchronize the root thread for the accepts.
-            if(collective) {
-                size_t size;
-                h->probe(size, true);
-                char* teamID = new char[size+1];
-                h->receive(teamID, size);
-                teamID[size] = '\0';
+			char *teamID = nullptr;
+			if (connectionHandshake(teamID, h) == -1) return;
 
-                MTCL_PRINT(100, "[Manager]: \t", "Manager::addinQ received connection for team: %s\n", teamID);
-
-                std::unique_lock lk(group_mutex);
+			if (teamID) {
+				std::unique_lock lk(group_mutex);
                 if(groupsReady.count(teamID) == 0)
                     groupsReady.emplace(teamID, std::vector<Handle*>{});
-
+				
                 groupsReady.at(teamID).push_back(h);
                 delete[] teamID;
                 group_cond.notify_one();
@@ -461,7 +484,7 @@ public:
     }
 
 
-    static Handle* connectHandle(std::string s) {
+    static Handle* connectHandle(std::string s, int retry, unsigned timeout) {
         size_t pos;
         std::string protocol = s.substr(0, (pos = s.find(":")) == std::string::npos ? 0 : pos);
        
@@ -473,12 +496,12 @@ public:
                     std::string sWoProtocol = le.substr(le.find(":") + 1, le.length());
                     std::string remote_protocol = le.substr(0, le.find(":"));
                     if (protocolsMap.count(remote_protocol)){
-                        auto* h = protocolsMap[remote_protocol]->connect(sWoProtocol);
+                        auto* h = protocolsMap[remote_protocol]->connect(sWoProtocol, retry, timeout);
                         if (h) return h;
                     }
                 }
 #endif
-            MTCL_ERROR("[internal]:\t", "Manager::connectHandle specified appName not found in configuration file.\n");
+            MTCL_ERROR("[internal]:\t", "Manager::connectHandle specified appName (%s) not found in configuration file.\n", s.c_str());
             return nullptr;
         }
 
@@ -500,9 +523,9 @@ public:
                                 // if the ip contains a port is better to skip it, probably is a tunnel used betweens proxies
                                 Handle* handle;
 				if (ip.find(":") != std::string::npos) 
-                                	handle = protocolsMap["TCP"]->connect(ip);
+					handle = protocolsMap["TCP"]->connect(ip, retry,timeout);
 				else
-					 handle = protocolsMap[protocol]->connect(ip + ":" + (protocol == "UCX" ? "13001" : "13000"));
+					handle = protocolsMap[protocol]->connect(ip + ":" + (protocol == "UCX" ? "13001" : "13000"), retry, timeout);
                                 //handle->send(s.c_str(), s.length());
                                 if (handle){
 					handle->send(s.c_str(), s.length());
@@ -510,7 +533,7 @@ public:
 				}
                                }
                             } else {
-                                auto* handle = protocolsMap[protocol]->connect("PROXY-" + pool);
+                                auto* handle = protocolsMap[protocol]->connect("PROXY-" + pool, retry, timeout);
                                 handle->send(s.c_str(), s.length());
                                 if (handle) return handle;
                             }
@@ -519,12 +542,12 @@ public:
                         if (!poolName.empty() && !pool.empty()){ // try to contact my proxy
                             if (protocol == "UCX" || protocol == "TCP"){
                                for (auto& ip: pools[poolName].first){
-                                auto* handle = protocolsMap[protocol]->connect(ip + ":" + (protocol == "UCX" ? "13001" : "13000"));
+								   auto* handle = protocolsMap[protocol]->connect(ip + ":" + (protocol == "UCX" ? "13001" : "13000"), retry, timeout);
                                 handle->send(s.c_str(), s.length());
                                 if (handle) return handle;
                                }
                             } else {
-                                auto* handle = protocolsMap[protocol]->connect("PROXY-" + poolName);
+                                auto* handle = protocolsMap[protocol]->connect("PROXY-" + poolName, retry, timeout);
                                 handle->send(s.c_str(), s.length());
                                 if (handle) return handle;
                             }
@@ -534,7 +557,7 @@ public:
                         // connessione diretta
                         for (auto& le : std::get<2>(component))
                             if (le.find(protocol) != std::string::npos){
-                                auto* handle = protocolsMap[protocol]->connect(le.substr(le.find(":") + 1, le.length()));
+                                auto* handle = protocolsMap[protocol]->connect(le.substr(le.find(":") + 1, le.length()), retry, timeout);
                                 if (handle) return handle;
                             }
                         
@@ -546,7 +569,8 @@ public:
         #endif
 
         if(protocolsMap.count(protocol)) {
-            Handle* handle = protocolsMap[protocol]->connect(s.substr(s.find(":") + 1, s.length()));
+            Handle* handle = protocolsMap[protocol]->connect(s.substr(s.find(":") + 1, s.length()),
+															 retry, timeout);
             if(handle) {
                 return handle;
             }
@@ -579,7 +603,15 @@ public:
         MTCL_ERROR("[Manager]:\t", "Manager::createTeam team creation is only available with a configuration file\n");
         return HandleUser();
 #else
+        std::string teamID{participants + root + "-" + std::to_string(type)};
 
+		if (createdTeams.count(teamID) != 0) {
+			MTCL_ERROR("[Manager]:\t", "Manager::createTeam, team already created [%s]\n", teamID.c_str());
+			errno=EINVAL;
+			return HandleUser();
+		}
+		createdTeams.insert(teamID);
+		
         // Retrieve team size
         int size = 0;
         std::istringstream is(participants);
@@ -623,15 +655,25 @@ public:
 			return HandleUser();
         }
 
-        MTCL_PRINT(100, "[Manager]: \t", "Manager::createTeam initializing collective with size: %d - AppName: %s - rank: %d - mpi: %d - ucc: %d\n", size, Manager::appName.c_str(), rank, mpi_impl, ucc_impl);
+        MTCL_PRINT(100, "[Manager]:\t", "Manager::createTeam initializing collective with size: %d - AppName: %s - rank: %d - mpi: %d - ucc: %d\n", size, Manager::appName.c_str(), rank, mpi_impl, ucc_impl);
 
-        std::string teamID{participants + root + "-" + std::to_string(type)};
 
         std::vector<Handle*> coll_handles;
 
         ImplementationType impl;
-        if(mpi_impl) impl = MPI;
-        else if(ucc_impl) impl = UCC;
+        if (mpi_impl) {
+			impl = MPI;
+			if constexpr (!MPI_ENABLED) {
+					MTCL_ERROR("[Manager]:\t", "Manager::createTeam the selected protocol (MPI) has not been enabled AppName: %s\n", Manager::appName.c_str());
+					return HandleUser();
+			}
+		} else if(ucc_impl) {
+			impl = UCC;
+			if constexpr (!UCC_ENABLED) {
+					MTCL_ERROR("[Manager]:\t", "Manager::createTeam the selected protocol (UCX/UCC) has not been enabled AppName: %s\n", Manager::appName.c_str());
+					return HandleUser();
+				}
+		}
         else impl = GENERIC;
 
         auto ctx = createContext(type, size, Manager::appName == root, rank);
@@ -691,7 +733,7 @@ public:
             for(auto& addr : root_addrs) {
                 //TODO: need to detect the protocol for the connect
                 //      if mpi_impl/ucc_impl, then we must use the proper protocol
-                handle = connectHandle(addr);
+                handle = connectHandle(addr, CCONNECTION_RETRY, CCONNECTION_TIMEOUT);
                 if(handle != nullptr) {
                     MTCL_PRINT(100, "[Manager]:\t", "Connection ok to %s\n", addr.c_str());
                     break; 
@@ -737,15 +779,19 @@ public:
      * 
      * @param connectionString URI of the peer or label 
     */
-    static HandleUser connect(std::string s) {
-        Handle* handle = connectHandle(s);
+    static HandleUser connect(std::string s, int nretry=-1, unsigned timeout=0) {
+        Handle* handle = connectHandle(s, nretry, timeout);
 
         // if handle is connected, we perform the handshake
         if(handle) {
-            int collective = 0;
-            handle->send(&collective, sizeof(int));
+            int collective = 0; // no nbh conversion
+            if (handle->send(&collective, sizeof(int))==-1) {
+                MTCL_ERROR("[Manager]:\t", "handshake error, errno=%d (%s)\n",
+						   errno, strerror(errno));
+                return HandleUser();				
+			}
         }
-
+		
         return HandleUser(handle, true, true);
     };
 

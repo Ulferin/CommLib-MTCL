@@ -485,56 +485,21 @@ public:
     }
 
 
-    Handle* connect(const std::string& address) {
-        const std::string host = address.substr(0, address.find(":"));
-		const std::string svc  = address.substr(host.length()+1);
-
-        int fd;
-        int res;
-
-        struct addrinfo hints;
-        struct addrinfo *result, *rp;
-
-        memset(&hints, 0, sizeof(hints));
-        hints.ai_family   = AF_UNSPEC;              /* Allow IPv4 or IPv6 */
-        hints.ai_socktype = SOCK_STREAM;            /* Stream socket */
-        hints.ai_flags    = 0;
-        hints.ai_protocol = IPPROTO_TCP;            /* Allow only TCP */
-
-        // resolve the address (assumo stringa formattata come host:port)
-        if (getaddrinfo(host.c_str(), svc.c_str(), &hints, &result) != 0) {
-			MTCL_UCX_PRINT(100, "ConnUCX::connect  getaddrinfo errno=%d\n", errno);
-            return nullptr;
-		}
-
-        // try to connect to a possible one of the resolution results
-        for (rp = result; rp != NULL; rp = rp->ai_next) {
-            fd = socket(rp->ai_family, rp->ai_socktype,
-                            rp->ai_protocol);
-            if (fd == -1) {
-				MTCL_UCX_PRINT(100, "ConnUCX::connect socket errno=%d\n", errno);
-                continue;
-			}
-
-            if (::connect(fd, rp->ai_addr, rp->ai_addrlen) != -1)
-                break;                  /* Success */
-
-            close(fd);
-        }
-        free(result);
-            
-        if (rp == NULL)            /* No address succeeded */
-            return nullptr;
-
+    Handle* connect(const std::string& address, int retry, unsigned timeout_ms) {
+		
+		int fd=internal_connect(address, retry, timeout_ms);
+		if (fd==-1) return nullptr;
+		
         // To store address info of the remote peer
         ucp_address_t* peer_addr;
         size_t peer_addr_len;
-        res = exchange_address(fd, local_addr, local_addr_len, &peer_addr, &peer_addr_len);
+        int res = exchange_address(fd, local_addr, local_addr_len, &peer_addr, &peer_addr_len);
         if(res != 0) {
             MTCL_UCX_PRINT(100, "ConnUCX::connect error exchanging address, handle is invalid\n");
+			close(fd);
             return nullptr;
         }
-
+		
         // Create endpoint with info received from OOB socket
         ucp_ep_h server_ep;
         ucp_ep_params_t ep_params;
@@ -547,6 +512,7 @@ public:
         ep_status = ucp_ep_create(ucp_worker, &ep_params, &server_ep);
         if(ep_status != UCS_OK) {
             MTCL_UCX_PRINT(100, "ConnUCX::connect error creating the endpoint\n");
+			close(fd);
             errno = EINVAL;
             return nullptr;
         }
@@ -556,7 +522,6 @@ public:
         MTCL_UCX_PRINT(1, "\n\n=== Endpoint info ===\n");
         ucp_ep_print_info(server_ep, stderr);
 #endif
-
 
         HandleUCX *handle = new HandleUCX(this, server_ep, ucp_worker);
         {

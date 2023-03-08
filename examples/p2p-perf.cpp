@@ -44,7 +44,7 @@ void Server(const char serveraddr[]) {
 	char *buff = new char[maxsize];
 	assert(buff);
 
-	auto handle=Manager::getNext(); 
+	auto handle=Manager::getNext();
 	for(size_t size=minsize; size<=maxsize; size *= 2) {
 		for(int i=0;i<NROUND;++i) {
 			size_t r;
@@ -68,18 +68,7 @@ void Server(const char serveraddr[]) {
 }
 
 void Client(const char serveraddr[]) {
-
-	HandleUser handle;
-	for(int i=0;i<5;++i) {
-		auto h = Manager::connect(serveraddr);
-		if (!h.isValid()) {
-			MTCL_PRINT(0, "[Client]:\t", "cannot connect to server, retry\n");
-			std::this_thread::sleep_for(std::chrono::milliseconds(200));
-			continue;
-		}
-		handle = std::move(h);
-		break;
-	}
+	auto handle = Manager::connect(serveraddr, 5, 1000);
 	if (!handle.isValid()) {
 		MTCL_ERROR("[Client]:\t", "cannot connect to server, exit\n");
 		return;

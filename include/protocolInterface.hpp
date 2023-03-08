@@ -46,7 +46,7 @@ public:
      * @param[in] s address of the peer to which the connection is to be established
      * @return Pointer to the connected Handle object
      */
-    virtual Handle* connect(const std::string& s) = 0;
+    virtual Handle* connect(const std::string& s, int retry, unsigned timeout) = 0;
 
 
     /**
