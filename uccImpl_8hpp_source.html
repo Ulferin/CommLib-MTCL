@@ -179,7 +179,7 @@ $(function() {
 <div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;<span class="keyword">public</span>:</div>
 <div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;    <span class="keywordtype">int</span> root_rank;</div>
 <div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160; </div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;    <a class="code" href="classUCCCollective.html">UCCCollective</a>(std::vector&lt;Handle*&gt; participants, <span class="keywordtype">int</span> rank, <span class="keywordtype">int</span> size, <span class="keywordtype">bool</span> root) : <a class="code" href="classCollectiveImpl.html">CollectiveImpl</a>(participants), rank(rank), size(size), root(root) {</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;    <a class="code" href="classUCCCollective.html">UCCCollective</a>(std::vector&lt;Handle*&gt; participants, <span class="keywordtype">int</span> rank, <span class="keywordtype">int</span> size, <span class="keywordtype">bool</span> root, <span class="keywordtype">int</span> uniqtag) : <a class="code" href="classCollectiveImpl.html">CollectiveImpl</a>(participants, uniqtag), rank(rank), size(size), root(root) {</div>
 <div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;        <span class="comment">/* === UCC collective operation === */</span></div>
 <div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;        <span class="comment">/* Init ucc library */</span></div>
 <div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;        ucc_lib_params_t lib_params = {</div>
@@ -237,7 +237,7 @@ $(function() {
 <div class="line"><a name="l00166"></a><span class="lineno"><a class="line" href="classBroadcastUCC.html">  166</a></span>&#160;<span class="keyword">class </span><a class="code" href="classBroadcastUCC.html">BroadcastUCC</a> : <span class="keyword">public</span> <a class="code" href="classUCCCollective.html">UCCCollective</a> {</div>
 <div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160; </div>
 <div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;    <a class="code" href="classBroadcastUCC.html">BroadcastUCC</a>(std::vector&lt;Handle*&gt; participants, <span class="keywordtype">int</span> rank, <span class="keywordtype">int</span> size, <span class="keywordtype">bool</span> root) : <a class="code" href="classUCCCollective.html">UCCCollective</a>(participants, rank, size, root) {}</div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;    <a class="code" href="classBroadcastUCC.html">BroadcastUCC</a>(std::vector&lt;Handle*&gt; participants, <span class="keywordtype">int</span> rank, <span class="keywordtype">int</span> size, <span class="keywordtype">bool</span> root, <span class="keywordtype">int</span> uniqtag) : <a class="code" href="classUCCCollective.html">UCCCollective</a>(participants, rank, size, root, uniqtag) {}</div>
 <div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160; </div>
 <div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160; </div>
 <div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;    ssize_t probe(<span class="keywordtype">size_t</span>&amp; size, <span class="keyword">const</span> <span class="keywordtype">bool</span> blocking=<span class="keyword">true</span>) {</div>
@@ -418,7 +418,7 @@ $(function() {
 <div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;    <span class="keywordtype">size_t</span> EOS = 0;</div>
 <div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160; </div>
 <div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160;    <a class="code" href="classGatherUCC.html">GatherUCC</a>(std::vector&lt;Handle*&gt; participants, <span class="keywordtype">int</span> rank, <span class="keywordtype">int</span> size, <span class="keywordtype">bool</span> root) : <a class="code" href="classUCCCollective.html">UCCCollective</a>(participants, rank, size, root) {</div>
+<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160;    <a class="code" href="classGatherUCC.html">GatherUCC</a>(std::vector&lt;Handle*&gt; participants, <span class="keywordtype">int</span> rank, <span class="keywordtype">int</span> size, <span class="keywordtype">bool</span> root, <span class="keywordtype">int</span> uniqtag) : <a class="code" href="classUCCCollective.html">UCCCollective</a>(participants, rank, size, root, uniqtag) {</div>
 <div class="line"><a name="l00351"></a><span class="lineno">  351</span>&#160;                probe_data = <span class="keyword">new</span> <span class="keywordtype">size_t</span>[participants.size()+1];</div>
 <div class="line"><a name="l00352"></a><span class="lineno">  352</span>&#160;    }</div>
 <div class="line"><a name="l00353"></a><span class="lineno">  353</span>&#160; </div>

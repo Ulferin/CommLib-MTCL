@@ -91,9 +91,9 @@ Public Member Functions</h2></td></tr>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConnSHM.html#a856a7288c50486007dfa2ff01c70994f">update</a> ()</td></tr>
 <tr class="memdesc:a856a7288c50486007dfa2ff01c70994f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Non-blocking polling over the managed set of <a class="el" href="classHandle.html">Handle</a> objects. It should be used to check whether Handles are ready to receive a message or they received a connection close event from the remote peer. Must return control to the <a class="el" href="classManager.html">Manager</a> after the polling phase is completed. <br /></td></tr>
 <tr class="separator:a856a7288c50486007dfa2ff01c70994f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9b86b5bafd83a5b7bc91bacc6c815e89"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classHandle.html">Handle</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConnSHM.html#a9b86b5bafd83a5b7bc91bacc6c815e89">connect</a> (const std::string &amp;address)</td></tr>
-<tr class="memdesc:a9b86b5bafd83a5b7bc91bacc6c815e89"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new <a class="el" href="classHandle.html">Handle</a> object establishing a connection to the remote peer specified by string <b>s</b>.  <a href="classConnSHM.html#a9b86b5bafd83a5b7bc91bacc6c815e89">More...</a><br /></td></tr>
-<tr class="separator:a9b86b5bafd83a5b7bc91bacc6c815e89"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a898796bca2e73acab2972caa6f4df939"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classHandle.html">Handle</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConnSHM.html#a898796bca2e73acab2972caa6f4df939">connect</a> (const std::string &amp;address, int retry=-1, unsigned timeout=0)</td></tr>
+<tr class="memdesc:a898796bca2e73acab2972caa6f4df939"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new <a class="el" href="classHandle.html">Handle</a> object establishing a connection to the remote peer specified by string <b>s</b>.  <a href="classConnSHM.html#a898796bca2e73acab2972caa6f4df939">More...</a><br /></td></tr>
+<tr class="separator:a898796bca2e73acab2972caa6f4df939"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3e5a24d5e2276059a2e97470a473c5af"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConnSHM.html#a3e5a24d5e2276059a2e97470a473c5af">notify_close</a> (<a class="el" href="classHandle.html">Handle</a> *h, bool close_wr=true, bool close_rd=true)</td></tr>
 <tr class="memdesc:a3e5a24d5e2276059a2e97470a473c5af"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manage the notification of an <a class="el" href="classHandle.html">Handle</a> object <b>h</b> issuing a close operation. The <a class="el" href="classHandle.html">Handle</a> is invalidated and should not be managed anymore.  <a href="classConnSHM.html#a3e5a24d5e2276059a2e97470a473c5af">More...</a><br /></td></tr>
 <tr class="separator:a3e5a24d5e2276059a2e97470a473c5af"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -135,8 +135,8 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>setAsClosed</b
 <tr class="separator:a0af55fae3ae286b5f5f60ae3484176cf inherit pro_static_methods_classConnType"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a9b86b5bafd83a5b7bc91bacc6c815e89"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9b86b5bafd83a5b7bc91bacc6c815e89">&#9670;&nbsp;</a></span>connect()</h2>
+<a id="a898796bca2e73acab2972caa6f4df939"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a898796bca2e73acab2972caa6f4df939">&#9670;&nbsp;</a></span>connect()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -148,8 +148,24 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>setAsClosed</b
           <td class="memname"><a class="el" href="classHandle.html">Handle</a>* ConnSHM::connect </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;&#160;</td>
-          <td class="paramname"><em>s</em></td><td>)</td>
+          <td class="paramname"><em>s</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>retry</em> = <code>-1</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned&#160;</td>
+          <td class="paramname"><em>timeout</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -168,7 +184,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>setAsClosed</b
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Pointer to the connected <a class="el" href="classHandle.html">Handle</a> object </dd></dl>
 
-<p>Implements <a class="el" href="classConnType.html#a6bdb335c3f00795a1e4d8b25ba3127f4">ConnType</a>.</p>
+<p>Implements <a class="el" href="classConnType.html#ab9a535577652f5c25e9cd43c4fa8f205">ConnType</a>.</p>
 
 </div>
 </div>

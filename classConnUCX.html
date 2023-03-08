@@ -87,9 +87,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ab958b4bdcba8d0673f1400c94e0edca9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConnUCX.html#ab958b4bdcba8d0673f1400c94e0edca9">listen</a> (std::string s)</td></tr>
 <tr class="memdesc:ab958b4bdcba8d0673f1400c94e0edca9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start listening for new connections at the specified address <b>s</b>.  <a href="classConnUCX.html#ab958b4bdcba8d0673f1400c94e0edca9">More...</a><br /></td></tr>
 <tr class="separator:ab958b4bdcba8d0673f1400c94e0edca9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac1fd058663e15bc0f637a7746e06b8b0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classHandle.html">Handle</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConnUCX.html#ac1fd058663e15bc0f637a7746e06b8b0">connect</a> (const std::string &amp;address)</td></tr>
-<tr class="memdesc:ac1fd058663e15bc0f637a7746e06b8b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new <a class="el" href="classHandle.html">Handle</a> object establishing a connection to the remote peer specified by string <b>s</b>.  <a href="classConnUCX.html#ac1fd058663e15bc0f637a7746e06b8b0">More...</a><br /></td></tr>
-<tr class="separator:ac1fd058663e15bc0f637a7746e06b8b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aee5067a26c79e1a139a6ed1c3f873562"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classHandle.html">Handle</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConnUCX.html#aee5067a26c79e1a139a6ed1c3f873562">connect</a> (const std::string &amp;address, int retry, unsigned timeout_ms)</td></tr>
+<tr class="memdesc:aee5067a26c79e1a139a6ed1c3f873562"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new <a class="el" href="classHandle.html">Handle</a> object establishing a connection to the remote peer specified by string <b>s</b>.  <a href="classConnUCX.html#aee5067a26c79e1a139a6ed1c3f873562">More...</a><br /></td></tr>
+<tr class="separator:aee5067a26c79e1a139a6ed1c3f873562"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adde2a6c6907dff70dab01e27e9255d52"><td class="memItemLeft" align="right" valign="top"><a id="adde2a6c6907dff70dab01e27e9255d52"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConnUCX.html#adde2a6c6907dff70dab01e27e9255d52">update</a> ()</td></tr>
 <tr class="memdesc:adde2a6c6907dff70dab01e27e9255d52"><td class="mdescLeft">&#160;</td><td class="mdescRight">Non-blocking polling over the managed set of <a class="el" href="classHandle.html">Handle</a> objects. It should be used to check whether Handles are ready to receive a message or they received a connection close event from the remote peer. Must return control to the <a class="el" href="classManager.html">Manager</a> after the polling phase is completed. <br /></td></tr>
@@ -156,8 +156,8 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>setAsClosed</b
 <tr class="separator:a0af55fae3ae286b5f5f60ae3484176cf inherit pro_static_methods_classConnType"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="ac1fd058663e15bc0f637a7746e06b8b0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac1fd058663e15bc0f637a7746e06b8b0">&#9670;&nbsp;</a></span>connect()</h2>
+<a id="aee5067a26c79e1a139a6ed1c3f873562"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aee5067a26c79e1a139a6ed1c3f873562">&#9670;&nbsp;</a></span>connect()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -169,8 +169,24 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>setAsClosed</b
           <td class="memname"><a class="el" href="classHandle.html">Handle</a>* ConnUCX::connect </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;&#160;</td>
-          <td class="paramname"><em>s</em></td><td>)</td>
+          <td class="paramname"><em>s</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>retry</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned&#160;</td>
+          <td class="paramname"><em>timeout</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -189,7 +205,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>setAsClosed</b
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Pointer to the connected <a class="el" href="classHandle.html">Handle</a> object </dd></dl>
 
-<p>Implements <a class="el" href="classConnType.html#a6bdb335c3f00795a1e4d8b25ba3127f4">ConnType</a>.</p>
+<p>Implements <a class="el" href="classConnType.html#ab9a535577652f5c25e9cd43c4fa8f205">ConnType</a>.</p>
 
 </div>
 </div>

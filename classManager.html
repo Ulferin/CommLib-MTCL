@@ -90,15 +90,15 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a2a7189d20e75807bfc390de8fb6b2409"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classManager.html#a2a7189d20e75807bfc390de8fb6b2409">listen</a> (std::string s)</td></tr>
 <tr class="memdesc:a2a7189d20e75807bfc390de8fb6b2409"><td class="mdescLeft">&#160;</td><td class="mdescRight">Listen on incoming connections.  <a href="classManager.html#a2a7189d20e75807bfc390de8fb6b2409">More...</a><br /></td></tr>
 <tr class="separator:a2a7189d20e75807bfc390de8fb6b2409"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a41286780ed146304eeb95bec6c028a84"><td class="memItemLeft" align="right" valign="top"><a id="a41286780ed146304eeb95bec6c028a84"></a>
-static <a class="el" href="classHandle.html">Handle</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>connectHandle</b> (std::string s)</td></tr>
-<tr class="separator:a41286780ed146304eeb95bec6c028a84"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a979f22b5ed25504a85997548bbf37c95"><td class="memItemLeft" align="right" valign="top"><a id="a979f22b5ed25504a85997548bbf37c95"></a>
+static <a class="el" href="classHandle.html">Handle</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>connectHandle</b> (std::string s, int retry, unsigned timeout)</td></tr>
+<tr class="separator:a979f22b5ed25504a85997548bbf37c95"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7eccae2aeb828876fe62dc20ffd70f1a"><td class="memItemLeft" align="right" valign="top"><a id="a7eccae2aeb828876fe62dc20ffd70f1a"></a>
 static <a class="el" href="classHandleUser.html">HandleUser</a>&#160;</td><td class="memItemRight" valign="bottom"><b>createTeam</b> (const std::string participants, const std::string root, HandleType type)</td></tr>
 <tr class="separator:a7eccae2aeb828876fe62dc20ffd70f1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a842ea4e15e1f144e25a447b6a9df8d85"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classHandleUser.html">HandleUser</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classManager.html#a842ea4e15e1f144e25a447b6a9df8d85">connect</a> (std::string s)</td></tr>
-<tr class="memdesc:a842ea4e15e1f144e25a447b6a9df8d85"><td class="mdescLeft">&#160;</td><td class="mdescRight">Connect to a peer.  <a href="classManager.html#a842ea4e15e1f144e25a447b6a9df8d85">More...</a><br /></td></tr>
-<tr class="separator:a842ea4e15e1f144e25a447b6a9df8d85"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abca887603242833d007cf50f2961f057"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classHandleUser.html">HandleUser</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classManager.html#abca887603242833d007cf50f2961f057">connect</a> (std::string s, int nretry=-1, unsigned timeout=0)</td></tr>
+<tr class="memdesc:abca887603242833d007cf50f2961f057"><td class="mdescLeft">&#160;</td><td class="mdescRight">Connect to a peer.  <a href="classManager.html#abca887603242833d007cf50f2961f057">More...</a><br /></td></tr>
+<tr class="separator:abca887603242833d007cf50f2961f057"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a52731c2088e57556428ec505b44e1839"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classManager.html#a52731c2088e57556428ec505b44e1839">getTypeOfHandle</a> (<a class="el" href="classHandleUser.html">HandleUser</a> &amp;h)</td></tr>
 <tr class="memdesc:a52731c2088e57556428ec505b44e1839"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given an handle return the name of the protocol instance given in phase of registration.  <a href="classManager.html#a52731c2088e57556428ec505b44e1839">More...</a><br /></td></tr>
 <tr class="separator:a52731c2088e57556428ec505b44e1839"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -115,8 +115,8 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>CollectiveContext</b
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Main class for the library </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
-<a id="a842ea4e15e1f144e25a447b6a9df8d85"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a842ea4e15e1f144e25a447b6a9df8d85">&#9670;&nbsp;</a></span>connect()</h2>
+<a id="abca887603242833d007cf50f2961f057"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abca887603242833d007cf50f2961f057">&#9670;&nbsp;</a></span>connect()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -128,8 +128,24 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>CollectiveContext</b
           <td class="memname">static <a class="el" href="classHandleUser.html">HandleUser</a> Manager::connect </td>
           <td>(</td>
           <td class="paramtype">std::string&#160;</td>
-          <td class="paramname"><em>s</em></td><td>)</td>
+          <td class="paramname"><em>s</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>nretry</em> = <code>-1</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned&#160;</td>
+          <td class="paramname"><em>timeout</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>

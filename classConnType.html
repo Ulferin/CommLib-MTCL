@@ -94,9 +94,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ad2c79c4f2ea8946bc65a25165c2d3682"><td class="memItemLeft" align="right" valign="top">virtual int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConnType.html#ad2c79c4f2ea8946bc65a25165c2d3682">listen</a> (std::string s)=0</td></tr>
 <tr class="memdesc:ad2c79c4f2ea8946bc65a25165c2d3682"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start listening for new connections at the specified address <b>s</b>.  <a href="classConnType.html#ad2c79c4f2ea8946bc65a25165c2d3682">More...</a><br /></td></tr>
 <tr class="separator:ad2c79c4f2ea8946bc65a25165c2d3682"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6bdb335c3f00795a1e4d8b25ba3127f4"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classHandle.html">Handle</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConnType.html#a6bdb335c3f00795a1e4d8b25ba3127f4">connect</a> (const std::string &amp;s)=0</td></tr>
-<tr class="memdesc:a6bdb335c3f00795a1e4d8b25ba3127f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new <a class="el" href="classHandle.html">Handle</a> object establishing a connection to the remote peer specified by string <b>s</b>.  <a href="classConnType.html#a6bdb335c3f00795a1e4d8b25ba3127f4">More...</a><br /></td></tr>
-<tr class="separator:a6bdb335c3f00795a1e4d8b25ba3127f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab9a535577652f5c25e9cd43c4fa8f205"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classHandle.html">Handle</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConnType.html#ab9a535577652f5c25e9cd43c4fa8f205">connect</a> (const std::string &amp;s, int retry, unsigned timeout)=0</td></tr>
+<tr class="memdesc:ab9a535577652f5c25e9cd43c4fa8f205"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new <a class="el" href="classHandle.html">Handle</a> object establishing a connection to the remote peer specified by string <b>s</b>.  <a href="classConnType.html#ab9a535577652f5c25e9cd43c4fa8f205">More...</a><br /></td></tr>
+<tr class="separator:ab9a535577652f5c25e9cd43c4fa8f205"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab0c4b273a40106d0090243e615dcb73f"><td class="memItemLeft" align="right" valign="top"><a id="ab0c4b273a40106d0090243e615dcb73f"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classConnType.html#ab0c4b273a40106d0090243e615dcb73f">update</a> ()=0</td></tr>
 <tr class="memdesc:ab0c4b273a40106d0090243e615dcb73f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Non-blocking polling over the managed set of <a class="el" href="classHandle.html">Handle</a> objects. It should be used to check whether Handles are ready to receive a message or they received a connection close event from the remote peer. Must return control to the <a class="el" href="classManager.html">Manager</a> after the polling phase is completed. <br /></td></tr>
@@ -134,8 +134,8 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>Handle</b></td></tr>
 <tr class="separator:a9470c7f2c90465ee28ee0cd19af986ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a6bdb335c3f00795a1e4d8b25ba3127f4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6bdb335c3f00795a1e4d8b25ba3127f4">&#9670;&nbsp;</a></span>connect()</h2>
+<a id="ab9a535577652f5c25e9cd43c4fa8f205"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab9a535577652f5c25e9cd43c4fa8f205">&#9670;&nbsp;</a></span>connect()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -147,8 +147,24 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>Handle</b></td></tr>
           <td class="memname">virtual <a class="el" href="classHandle.html">Handle</a>* ConnType::connect </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;&#160;</td>
-          <td class="paramname"><em>s</em></td><td>)</td>
+          <td class="paramname"><em>s</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>retry</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned&#160;</td>
+          <td class="paramname"><em>timeout</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -167,7 +183,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>Handle</b></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Pointer to the connected <a class="el" href="classHandle.html">Handle</a> object </dd></dl>
 
-<p>Implemented in <a class="el" href="classConnMPI.html#a23b38202b801f517051a95e76081d1e3">ConnMPI</a>, <a class="el" href="classConnUCX.html#ac1fd058663e15bc0f637a7746e06b8b0">ConnUCX</a>, <a class="el" href="classConnTcp.html#a5f8a1eade7b8db288ff7ef77f0c86022">ConnTcp</a>, <a class="el" href="classConnSHM.html#a9b86b5bafd83a5b7bc91bacc6c815e89">ConnSHM</a>, <a class="el" href="classConnMQTT.html#a30249d1596ee1b98b61f251c82a118f8">ConnMQTT</a>, and <a class="el" href="classConnMPIP2P.html#a91b9f60c6977dd1f14bd6a4fad5780e3">ConnMPIP2P</a>.</p>
+<p>Implemented in <a class="el" href="classConnMPI.html#a75e8ecc1c358a3a54fe2bd9aef2702fa">ConnMPI</a>, <a class="el" href="classConnSHM.html#a898796bca2e73acab2972caa6f4df939">ConnSHM</a>, <a class="el" href="classConnUCX.html#aee5067a26c79e1a139a6ed1c3f873562">ConnUCX</a>, <a class="el" href="classConnTcp.html#a021c85d3162ab15363758386e9219a61">ConnTcp</a>, and <a class="el" href="classConnMQTT.html#a2f2d223cea4899077b2f32829b3cbf41">ConnMQTT</a>.</p>
 
 </div>
 </div>
