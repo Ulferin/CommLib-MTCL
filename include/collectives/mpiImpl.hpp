@@ -95,6 +95,13 @@ public:
 
 
     ssize_t probe(size_t& size, const bool blocking=true) {
+		MTCL_ERROR("[internal]:\t", "Broadcast::probe operation not supported\n");
+		errno=EINVAL;
+        return -1;
+    }
+
+#if 0	
+    ssize_t probe(size_t& size, const bool blocking=true) {
         if(last_probe != -1) {
             size = last_probe;
             return sizeof(size_t);
@@ -135,11 +142,14 @@ public:
 
         return sizeof(size_t);
     }
+#endif	
 
     ssize_t send(const void* buff, size_t size) {
+#if 0		
         MPI_Status status;
         MPI_Ibcast(&size, 1, MPI_UNSIGNED_LONG, root_rank, comm, &request_header);
         MPI_Wait(&request_header, &status);
+#endif		
         if(MPI_Bcast((void*)buff, size, MPI_BYTE, root_rank, comm) != MPI_SUCCESS) {
             errno = ECOMM;
             return -1;
@@ -149,17 +159,19 @@ public:
     }
 
     ssize_t receive(void* buff, size_t size) {
+#if 0
         size_t sz;
         ssize_t res;
         if((res = this->probe(sz, true)) <= 0) return res;
 
         if(last_probe == 0) return 0;
+#endif		
         if(MPI_Bcast((void*)buff, size, MPI_BYTE, root_rank, comm) != MPI_SUCCESS) {
             errno = ECOMM;
             return -1;
         }
 
-        last_probe = -1;
+        //last_probe = -1;
         
         return size;
     }
@@ -174,18 +186,21 @@ public:
     }
 
     void close(bool close_wr=true, bool close_rd=true) {
+#if 0
+		
         // Root process can issue the close to all its non-root processes.
         if(root) {
             closing = true;
             size_t EOS = 0;
             MPI_Ibcast(&EOS, 1, MPI_UNSIGNED_LONG, root_rank, comm, &request_header);
         }
-        
+#endif
+		closing = true;		
         return;
     }
 
     void finalize(bool, std::string name="") {
-
+#if 0
         if(root) {
             // The user didn't call the close explicitly
             if(!closing) {
@@ -208,7 +223,11 @@ public:
                 
             }
         }
+#endif
 
+		if (!closing)
+			this->close(true,true);
+		
         MPI_Group_free(&group);
         MPI_Comm_free(&comm);
     }
@@ -225,6 +244,13 @@ public:
     }
 
 
+	ssize_t probe(size_t& size, const bool blocking=true) {
+		MTCL_ERROR("[internal]:\t", "Gather::probe operation not supported\n");
+		errno=EINVAL;
+        return -1;
+    }
+	
+#if 0
     ssize_t probe(size_t& size, const bool blocking=true) {
         if(last_probe != -1) {
             size = last_probe;
@@ -266,23 +292,21 @@ public:
 
         return sizeof(size_t);
     }
-
+#endif
+	
     ssize_t send(const void* buff, size_t size) {
-        MPI_Status status;
-        if(MPI_Igather(&size, 1, MPI_UNSIGNED_LONG, nullptr, 0, MPI_UNSIGNED_LONG, root_rank, comm, &request_header) != MPI_SUCCESS) {
-            errno = ECOMM;
-            return -1;
-        }
-        MPI_Wait(&request_header, &status);
-
-        return sizeof(size_t);
+		return -1; // TODO
+		
     }
 
     ssize_t receive(void* buff, size_t size) {
+		MTCL_ERROR("[internal]:\t", "Gather::receive operation not supported, you must use the sendrecv method\n");
+		errno=EINVAL;
         return -1;
     }
     
     ssize_t sendrecv(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
+#if 0		
         if(root) {
             if(MPI_Igather(&recvsize, 1, MPI_UNSIGNED_LONG, probe_data, 1, MPI_UNSIGNED_LONG, 0, comm, &request_header) != MPI_SUCCESS) {
                 MTCL_ERROR("[internal]:\t", "GatherMPI::probe Ibcast error\n");
@@ -319,24 +343,28 @@ public:
             }
             MPI_Wait(&request_header, &status);
         }
-
+#endif
+		
         if(MPI_Gather(sendbuff, sendsize, MPI_BYTE, recvbuff, recvsize, MPI_BYTE, 0, comm) != MPI_SUCCESS) {
             errno = ECOMM;
             return -1;
         }
-        return sizeof(size_t);
+        return (root?(recvsize*participants.size()):sendsize);
     }
 
     void close(bool close_wr=true, bool close_rd=true) {
-
+#if 0		
         if(!root) {
             size_t EOS = 0;
             MPI_Igather(&EOS, 1, MPI_UNSIGNED_LONG, nullptr, 0, MPI_UNSIGNED_LONG, 0, comm, &request_header);
             closing = true;
         }
+#endif
+		closing = true;
     }
 
     void finalize(bool, std::string name="") {
+#if 0
         if(!root) {
             // The user didn't call the close explicitly
             if(!closing) {
@@ -384,6 +412,11 @@ public:
         }
 
         delete[] probe_data;
+#endif
+
+		if(!closing) 
+			this->close(true, true);
+					
         MPI_Group_free(&group);
         MPI_Comm_free(&comm);
     }

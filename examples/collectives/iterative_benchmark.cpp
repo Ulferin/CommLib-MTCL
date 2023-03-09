@@ -39,13 +39,14 @@
  *  $> ./iterative_benchmark 2 2 10 5
  *  $> ./iterative_benchmark 3 2 10 5
  * 
- *  $> mpirun 
+ *  $> mpirun -x MTCL_VERBOSE=all
  *       -n 1 ./iterative_benchmark 0 2 10 5 iterative_bench.json : \
  *       -n 1 ./iterative_benchmark 1 2 10 5 iterative_bench.json : \ 
  *       -n 1 ./iterative_benchmark 2 2 10 5 iterative_bench.json : \ 
  *       -n 1 ./iterative_benchmark 3 2 10 5 iterative_bench.json
  * 
- * */
+ * 
+ */
 
 #include <fstream>
 #include <rapidjson/rapidjson.h>
@@ -164,6 +165,97 @@ void generate_configuration(int num_workers) {
     doc.Accept(writer);
 }
 
+void Emitter(const std::string& bcast, const std::string& broot) {
+
+	// Waiting for Collector
+	auto fbk = Manager::getNext();
+	fbk.yield();        
+	
+	auto hg = Manager::createTeam(bcast, broot, BROADCAST);
+	if(hg.isValid() && fbk.isValid())
+		printf("Emitter starting\n");
+	else {
+		abort();
+	}
+
+	const int msgsize = 100;
+	char data[msgsize];
+	
+	
+	for(int i=0; i< 10; ++i) {
+		hg.sendrecv(data, msgsize, nullptr, 0);		   			
+		// Receive result from feedback channel
+		auto h = Manager::getNext();
+		int res;
+		if (h.receive(&res, sizeof(int)) <= 0) {
+			assert(1==0);
+		}
+		if (res != 1) {
+			assert(1==0);
+		}
+		fprintf(stderr, "EMITTER, RECEIVED FROM COLLECTOR\n");
+	}
+	hg.close();
+	auto h = Manager::getNext();	
+	h.close();
+}
+
+void Worker(const std::string& bcast, const std::string& gather,
+			const std::string& broot, const std::string& groot, int rank) {
+	const int msgsize = 100;
+	char data[msgsize];
+
+	fprintf(stderr, "bcast=%s, gather=%s, broot=%s, groot=%s, rank=%d\n",
+			bcast.c_str(), 			gather.c_str(), 			broot.c_str(), 			groot.c_str(), rank);
+	
+	
+	auto hg_bcast = Manager::createTeam(bcast, broot, BROADCAST);	
+	auto hg_gather= Manager::createTeam(gather, groot,GATHER);
+	
+	
+	if(hg_bcast.isValid() && hg_gather.isValid())
+		printf("WORKER Correctly created teams\n");
+	else {
+		fprintf(stderr, "INVALID COLLECTIVES HANDLE\n");
+		abort();
+	}
+	
+	for(int i=0; i< 10; ++i) {
+		hg_bcast.sendrecv(nullptr, 0, data, msgsize);		   			
+		fprintf(stderr, "WORKER BCAST CROSSED\n");
+		hg_gather.sendrecv(&rank, sizeof(int), nullptr, 0);
+		fprintf(stderr, "WORKER GATHER CROSSED\n");
+	}
+	fprintf(stderr, "WORKER DONE\n");
+	
+	hg_bcast.close();        
+	hg_gather.close();
+	
+}
+
+void Collector(const std::string& gather, const std::string& groot, const int nworkers) {
+
+	auto fbk = Manager::connect("Emitter", 100, 200);
+	if(!fbk.isValid()) {
+		abort();		
+	}
+
+	auto hg_gather = Manager::createTeam(gather, groot, GATHER);
+
+	
+	int ranks[nworkers+1];
+	int rank = 1;
+	for(int i=0; i< 10; ++i) {
+		hg_gather.sendrecv(&rank, sizeof(int), ranks, sizeof(int));
+		fprintf(stderr, "COLLECTOR, GATHER CROSSED\n");
+		if (fbk.send(&rank, sizeof(int))<=0) {
+			assert(1==0);
+		}
+	}
+	hg_gather.close();
+	fbk.close();
+}
+
 
 int main(int argc, char** argv){
 
@@ -208,139 +300,17 @@ int main(int argc, char** argv){
 
 	Manager::init(appName, configuration_file);
 
-    int expected = (streamlen+1)*streamlen/2;
-    int* data = new int[streamlen];
-
     // Emitter
     if(rank == 0) {
-        // Waiting for Collector
-        auto fbk = Manager::getNext();
-        fbk.yield();        
-
-		auto hg = Manager::createTeam(broadcast_string, participants.at(EMITTER_RANK), BROADCAST);
-        if(hg.isValid() && fbk.isValid())
-            printf("Emitter starting\n");
-        else
-            printf("Aborting, connection error (group: %d - p2p: %d)\n", hg.isValid(), fbk.isValid());
-
-
-        // Generating data
-        for(int i = 0; i < streamlen; i++) {
-            data[i] = i+1;
-        }
-
-        int current = 0;
-        int res = 0;
-        ssize_t r;
-        while(current < count) {
-            // Broadcast data
-            if(hg.sendrecv(data, streamlen*sizeof(int), nullptr, 0) <= 0) {
-                printf("Error sending message\n");
-                return 1;
-            }
-
-            // Receive result from feedback channel
-            auto h = Manager::getNext();
-            auto name = h.getName();
-            r = h.receive(&res, sizeof(int));
-            if(r <= 0) {
-                printf("Feedback error\n");
-                break;
-            }
-
-            if(res == expected)
-                printf("[Iteration: %d] Total is: %d, expected was: %d\n", current, res, expected);
-            else {
-                printf("Failed at iteration [%d]. res is: %d, expected was: %d\n", current, res, expected);
-                break;
-            }
-            current++;
-        }
-        hg.close();
-        fbk.close();
-    }
-    // Collector
-    else if(rank==1) {
-        // Feedback channel
-        auto fbk = Manager::connect("Emitter", 100, 200);
-        if(!fbk.isValid()) {
-            printf("Connection failed\n");
-            return 1;
-        }
-
-        auto hg_gather = Manager::createTeam(gather_string, participants.at(COLLECTOR_RANK), GATHER);
-		
-        int* gather_data = new int[hg_gather.size()];
-
-        ssize_t r;
-        do {
-            int partial = 0;
-            r = hg_gather.sendrecv(&rank, sizeof(int), gather_data, sizeof(int));
-            if(r == 0) {
-                printf("gather closed\n");
-                break;
-            }
-
-            for(int i=1; i<hg_gather.size(); i++) {
-                printf("Data from worker[%d]: %d\n", i, gather_data[i]);
-                partial += gather_data[i];
-            }
-
-            printf("Collector computed %d\n", partial);
-
-            fbk.send(&partial, sizeof(int));
-        } while(r > 0);
-        hg_gather.close();
-        fbk.close();
-        delete[] gather_data;
-    }
-    // Worker
-    else {
-        auto hg_bcast = Manager::createTeam(broadcast_string, participants.at(EMITTER_RANK), BROADCAST);
-
-		auto hg_gather = Manager::createTeam(gather_string, participants.at(COLLECTOR_RANK), GATHER);
-
-		
-        if(hg_bcast.isValid() && hg_gather.isValid())
-            printf("Correctly created teams\n");
-        else {
-            printf("bcast: %d - gather: %d\n", hg_bcast.isValid(), hg_gather.isValid());
-            return 1;
-        }
-
-        rank--;
-
-        ssize_t res;
-        int subsize = streamlen/num_workers;
-        int start = (rank-1)*subsize;
-        int end = (rank == num_workers) ? streamlen : rank*subsize;
-        int expected = ((end+1)*end/2) - ((start+1)*start/2);
-        // printf("Rank [%d] managing elements in range [%d,%d)\n", rank, start, end);
-
-        do {
-            res = hg_bcast.sendrecv(nullptr, 0, data, streamlen*sizeof(int));
-            if(res == 0) {
-                printf("bcast closed\n");        
-                break;
-            }
-        
-            // Computing partial result
-            int partial{0};
-            for(int i = start; i < end; i++) {
-                partial += data[i];
-            }
-        
-            // Sending local result to Collector
-            hg_gather.sendrecv(&partial, sizeof(int), nullptr, 0);
-
-            printf("Worker%d computed: %d - expected: %d\n", rank, partial, expected);
-        } while (res > 0);
-
-        hg_bcast.close();        
-        hg_gather.close();
-    }
-
-    delete[] data;
+		Emitter(broadcast_string, participants.at(EMITTER_RANK));
+    } else {
+		if (rank == 1) {
+			Collector(gather_string, participants.at(COLLECTOR_RANK), participants.size()-2);
+		} else {	   
+			Worker(broadcast_string, gather_string, participants.at(EMITTER_RANK),participants.at(COLLECTOR_RANK), rank-1);
+		}
+	}
+	
     Manager::finalize(true);
 
     return 0;

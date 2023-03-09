@@ -151,6 +151,8 @@ protected:
     
 public:
     ssize_t probe(size_t& size, const bool blocking=true) {
+		MTCL_ERROR("[internal]:\t", "Broadcast::probe operation not supported\n");
+		errno=EINVAL;
         return -1;
     }
 
@@ -202,7 +204,7 @@ private:
     bool root;
 
 public:
-
+	// OK
     ssize_t probe(size_t& size, const bool blocking=true) {
         
         ssize_t res = -1;
@@ -352,6 +354,8 @@ public:
         CollectiveImpl(participants, uniqtag), root(root), rank(rank) {}
 
     ssize_t probe(size_t& size, const bool blocking=true) {
+		MTCL_ERROR("[internal]:\t", "Gather::probe operation not supported\n");
+		errno=EINVAL;
         return -1;
     }
 

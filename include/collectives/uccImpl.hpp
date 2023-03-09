@@ -169,8 +169,14 @@ public:
     BroadcastUCC(std::vector<Handle*> participants, int rank, int size, bool root, int uniqtag) : UCCCollective(participants, rank, size, root, uniqtag) {}
 
 
-    ssize_t probe(size_t& size, const bool blocking=true) {
-        if(last_probe != -1) {
+    ssize_t probe(size_t& size, const bool blocking=true)  {
+		MTCL_ERROR("[internal]:\t", "Broadcast::probe operation not supported\n");
+		errno=EINVAL;
+		return -1;
+	}
+
+#if 0	
+		if(last_probe != -1) {
             size = last_probe;
             return sizeof(size_t);
         }
@@ -212,11 +218,19 @@ public:
 
         return sizeof(size_t);
     }
-
+#endif
+	
     ssize_t send(const void* buff, size_t size) {
         ucc_coll_args_t      args;
         ucc_coll_req_h       request;
 
+        args.mask              = 0;
+        args.coll_type         = UCC_COLL_TYPE_BCAST;
+        args.src.info.mem_type = UCC_MEMORY_TYPE_HOST;
+        args.root              = root_rank;
+
+		
+#if 0
         /* BROADCAST HEADER */
         args.mask              = 0;
         args.coll_type         = UCC_COLL_TYPE_BCAST;
@@ -232,7 +246,8 @@ public:
             UCC_CHECK(ucc_context_progress(ctx));
         }
         ucc_collective_finalize(request);
-        
+#endif
+		
         /* BROADCAST DATA */
         args.src.info.buffer = (void*)buff;
         args.src.info.count = size;
@@ -250,11 +265,13 @@ public:
 
 
     ssize_t receive(void* buff, size_t size) {
+#if 0
         size_t sz;
         ssize_t res;
         if((res = this->probe(sz, true)) <= 0) return res;
         if(sz == 0) return 0;
-
+#endif
+		
         ucc_coll_args_t      args;
         ucc_coll_req_h       req;
 
@@ -274,7 +291,7 @@ public:
         }
         ucc_collective_finalize(req);
         
-        last_probe = -1;
+        //last_probe = -1;
 
         return size;
     }
@@ -289,6 +306,8 @@ public:
     }
 
     void close(bool close_wr=true, bool close_rd=true) {
+
+#if 0		
         // Root process can issue the close to all its non-root processes.
         if(root) {
             closing = true;
@@ -307,11 +326,13 @@ public:
             UCC_CHECK(ucc_collective_init(&args, &req, team)); 
             UCC_CHECK(ucc_collective_post(req));
         }
-
+#endif
+		closing = true;
         return;
     }
 
     void finalize(bool, std::string name="") {
+#if 0
         if(root) {
             // The user didn't call the close explicitly
             if(!closing) {
@@ -334,7 +355,11 @@ public:
                 delete[] data;
             }
         }
-
+#endif
+		if(!closing)
+			this->close(true, true);
+        
+		
         // ucc_context_destroy(ctx);
     }
 
@@ -343,16 +368,25 @@ public:
 
 class GatherUCC : public UCCCollective {
     ucc_coll_args_t      close_args;
+
+#if 0	
     size_t* probe_data;
     size_t EOS = 0;
+#endif	
 
 public:
     GatherUCC(std::vector<Handle*> participants, int rank, int size, bool root, int uniqtag) : UCCCollective(participants, rank, size, root, uniqtag) {
-                probe_data = new size_t[participants.size()+1];
+		//probe_data = new size_t[participants.size()+1];
     }
 
     ssize_t probe(size_t& size, const bool blocking=true) {
-        if(last_probe != -1) {
+		MTCL_ERROR("[internal]:\t", "Gather::probe operation not supported\n");
+		errno=EINVAL;
+        return -1;
+    }
+
+#if 0
+		if(last_probe != -1) {
             size = last_probe;
             return sizeof(size_t);
         }
@@ -399,9 +433,14 @@ public:
 
         return sizeof(size_t);
     }
-
+#endif
+	
     ssize_t send(const void* buff, size_t size) {
-        ucc_coll_args_t args;
+		return -1; // TODO
+	}
+
+#if 0
+		ucc_coll_args_t args;
         ucc_coll_req_h  request;
         ucc_status_t    status;
 
@@ -423,9 +462,11 @@ public:
 
         return size;
     }
-
+#endif
 
     ssize_t receive(void* buff, size_t size) {        
+		MTCL_ERROR("[internal]:\t", "Gather::receive operation not supported, you must use the sendrecv method\n");
+		errno=EINVAL;
         return -1;
     }
 
@@ -433,6 +474,7 @@ public:
         ucc_coll_args_t args;
         ucc_coll_req_h  request;
 
+#if 0		
         if(root) {
             size_t sz;
             this->probe(sz, true);
@@ -442,7 +484,8 @@ public:
         else {
             this->send(nullptr, sendsize);
         }
-
+#endif
+		
         args.mask              = 0;
         args.coll_type         = UCC_COLL_TYPE_GATHER;
         args.src.info.buffer   = (void*)sendbuff;
@@ -464,10 +507,11 @@ public:
         }
         ucc_collective_finalize(request);
 
-        return sizeof(size_t);
+		return (root?(recvsize*participants.size()):sendsize);
     }
 
     void close(bool close_wr=true, bool close_rd=true) {
+#if 0		
         // Non-root process can issue the explicit close to the root process and
         // go on. At finalize it will flush the pending operations.
         if(!root) {
@@ -487,9 +531,12 @@ public:
             closing = true;
             return;
         }
+#endif
+		closing = true;
     }
 
     void finalize(bool, std::string name="") {
+#if 0
         if(!root) {
             // The user didn't call the close explicitly
             if(!closing) {
@@ -515,6 +562,9 @@ public:
 
         // ucc_context_destroy(ctx);
         delete[] probe_data;
+#endif
+		if (!closing)
+			this->close(true, true);
     }
 
 };
