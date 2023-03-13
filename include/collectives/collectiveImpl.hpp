@@ -359,7 +359,7 @@ public:
         return -1;
     }
 
-    // Qui il buffer deve essere grande quanto (participants.size()+1)*size
+    // The buffer must be (participants.size()+1)*size
     ssize_t receive(void* buff, size_t size) {
         for(auto& h : participants) {
             ssize_t res;

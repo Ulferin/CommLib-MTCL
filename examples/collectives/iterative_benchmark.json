@@ -4,7 +4,7 @@
             "name":"Emitter",
             "host":"localhost",
             "protocols":["UCX"],
-            "listen-endpoints":["UCX:0.0.0.0:30000"]
+            "listen-endpoints":["UCX:0.0.0.0:13000"]
         },
         {
             "name":"Worker1",
@@ -35,7 +35,7 @@
             "name":"Collector",
             "host":"localhost",
             "protocols":["UCX"],
-            "listen-endpoints":["UCX:0.0.0.0:40000"]
+            "listen-endpoints":["UCX:0.0.0.0:14000"]
         }
     ]
 }

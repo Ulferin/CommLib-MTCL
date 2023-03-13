@@ -62,6 +62,7 @@ void Server(const char serveraddr[]) {
 			}
 		}
 	}
+	
 	MTCL_PRINT(0, "[Server]:\t", "closing\n");
 	delete [] buff;
 	handle.close();
