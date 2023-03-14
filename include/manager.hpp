@@ -178,7 +178,7 @@ private:
         return realHandle->peek();
     }
 
-
+	// IO thread function
     static void getReadyBackend() {
         while(!end){
             for(auto& [prot, conn] : protocolsMap) {

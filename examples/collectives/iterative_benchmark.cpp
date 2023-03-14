@@ -165,6 +165,7 @@ void generate_configuration(int num_workers) {
     doc.Accept(writer);
 }
 
+#if 1
 void Emitter(const std::string& bcast, const std::string& broot, const int iterations, size_t size) {
 
 	// Waiting for Collector
@@ -185,7 +186,7 @@ void Emitter(const std::string& bcast, const std::string& broot, const int itera
 
 	for(int i=0; i< iterations; ++i) {
 		MTCL_PRINT(0, "[Emitter]:\t", "starting iteration %d, size=%ld\n", i, size);
-		char *data = new char[size];
+		char *data = new char[size]();
 		hg.sendrecv(data, size, nullptr, 0);		   			
 		// Receive result from feedback channel
 		auto h = Manager::getNext();
@@ -202,11 +203,59 @@ void Emitter(const std::string& bcast, const std::string& broot, const int itera
 		delete [] data;
 		size = size << 1;
 		MTCL_PRINT(0, "[Emitter]:\t", "done iteration %d\n", i);
+
 	}
-	hg.close();
 	auto h = Manager::getNext();	// waiting for the close of the Collector
 	h.close();
+	hg.close();
 }
+#else
+// QUESTA FUNZIONA, COSI' COME FUNZIONE SE FACCIO LA PROBE ALL'ULTIMA ITERAZIONE (nel for).
+void Emitter(const std::string& bcast, const std::string& broot, const int iterations, size_t size) {
+
+	// Waiting for Collector
+	auto fbk = Manager::getNext();
+	if (!fbk.isValid()) {
+		MTCL_ERROR("[Emitter]:\t", "Manager::getNext, invalid feedback handle\n");
+		return;
+	}
+	auto hg = Manager::createTeam(bcast, broot, BROADCAST);
+	if (hg.isValid()) {
+		MTCL_PRINT(0,"[Emitter]:\t", "Emitter starting\n");
+	} else {
+		MTCL_ERROR("[Emitter]:\t", "Manager::createTeam for BROADCAST, ERROR\n");
+		return;
+	}
+
+	for(int i=0; i< iterations; ++i) {
+		MTCL_PRINT(0, "[Emitter]:\t", "starting iteration %d, size=%ld\n", i, size);
+		char *data = new char[size]();
+		hg.sendrecv(data, size, nullptr, 0);		   			
+		// Receive result from feedback channel
+		int res;
+		if (fbk.receive(&res, sizeof(int)) <= 0) {
+			MTCL_ERROR("[Emitter]:\t", "receive from feedback ERROR\n");
+			return;
+		}
+		if (res != COLLECTOR_RANK) {
+			MTCL_ERROR("[Emitter]:\t", "receive from feedback, WRONG DATA\n");
+			return;
+		}
+		
+		delete [] data;
+		size = size << 1;
+		MTCL_PRINT(0, "[Emitter]:\t", "done iteration %d\n", i);
+	}
+	hg.close();
+	size_t sz;
+	fbk.probe(sz);
+	if (sz != 0) {
+		assert(1==0);
+	}
+	fbk.close();
+}
+#endif
+
 
 void Worker(const std::string& bcast, const std::string& gather,
 			const std::string& broot, const std::string& groot,
@@ -227,7 +276,7 @@ void Worker(const std::string& bcast, const std::string& gather,
 	
 	for(int i=0; i< iterations; ++i) {
 		MTCL_PRINT(0, "[Worker]:\t", "Worker%d, starting iteration %d, size=%ld\n", rank, i, size);
-		char *data = new char[size];
+		char *data = new char[size]();
 		hg_bcast.sendrecv(nullptr, 0, data, size);		   			
 		hg_gather.sendrecv(data, size, nullptr, 0);
 
@@ -260,8 +309,8 @@ void Collector(const std::string& gather, const std::string& groot,
 	char *mydata;
 	for(int i=0; i< iterations; ++i) {
 		MTCL_PRINT(0, "[Collector]:\t", "starting iteration %d, size=%ld\n", i, size);
-		char *gatherdata = new char[(nworkers+1)*size];
-		mydata = new char[size];
+		char *gatherdata = new char[(nworkers+1)*size]();
+		mydata = new char[size]();
 		
 		hg.sendrecv(mydata, size, gatherdata, size);
 
@@ -276,8 +325,8 @@ void Collector(const std::string& gather, const std::string& groot,
 		size = size << 1;
 		MTCL_PRINT(0, "[Collector]:\t", "done iteration %d\n", i);
 	}
+	fbk.close();		
 	hg.close();
-	fbk.close();
 }
 
 
@@ -339,6 +388,6 @@ int main(int argc, char** argv){
 		}
 	}
 	
-    Manager::finalize(true); //false); //true);
+    Manager::finalize(false); //true);
     return 0;
 }

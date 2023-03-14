@@ -62,10 +62,12 @@ void Server(const char serveraddr[]) {
 			}
 		}
 	}
+	handle.yield();
 	
 	MTCL_PRINT(0, "[Server]:\t", "closing\n");
 	delete [] buff;
-	handle.close();
+	auto h = Manager::getNext();	
+	h.close();
 }
 
 void Client(const char serveraddr[]) {
@@ -140,7 +142,7 @@ int main(int argc, char** argv){
 		Server(argv[2]);            
     else
 		Client(argv[2]);	
-    Manager::finalize();
+    Manager::finalize(true);
 	
     return 0;
 }

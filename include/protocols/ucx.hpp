@@ -61,28 +61,28 @@ class HandleUCX : public Handle {
 
 protected:
 
-    void fill_request_param(test_req_t* ctx, ucp_request_param_t* param, bool is_send) {
+    void fill_request_param(test_req_t* ctx, ucp_request_param_t* param, bool is_iov) {
         ctx->complete = 0;
         param->op_attr_mask = UCP_OP_ATTR_FIELD_CALLBACK |
                               UCP_OP_ATTR_FIELD_DATATYPE |
                               UCP_OP_ATTR_FIELD_USER_DATA;
-        param->datatype     = is_send ? UCP_DATATYPE_IOV : ucp_dt_make_contig(1);
+        param->datatype     = is_iov ? UCP_DATATYPE_IOV : ucp_dt_make_contig(1);
         param->user_data    = ctx;
     }
 
-    ucs_status_t request_wait(void* request, test_req_t* ctx, char* operation, bool blocking) {
+    ucs_status_t request_wait(ucs_status_ptr_t l_request, test_req_t* ctx,
+							  char* operation, bool blocking) {
         ucs_status_t status = UCS_OK;
 
         // Operation completed immediately, callback is not called!
-        if(request == NULL) {
-            return status;
+        if(l_request == NULL) {
+            return status;   // OK!
         }
 
-        if(UCS_PTR_IS_ERR(request)) {
-            status = ucp_request_check_status(request);
+        if(UCS_PTR_IS_ERR(l_request)) {
+            status = UCS_PTR_STATUS(l_request);
             MTCL_UCX_PRINT(100, "HandleUCX::request_wait UCX_%s request error (%s)\n",
                 operation, ucs_status_string(status));
-            ucp_request_free(request);
             return status;
         }
 
@@ -94,8 +94,8 @@ protected:
         while(ctx->complete == 0) {
             ucp_worker_progress(ucp_worker);
         }
-        status = ucp_request_check_status(request);
-        ucp_request_free(request);
+        status = ucp_request_check_status(l_request);
+        ucp_request_free(l_request);
     
         if(status != UCS_OK) {
             MTCL_UCX_PRINT(100, "HandleUCX::request_wait UCX_%s status error (%s)\n",
@@ -114,7 +114,7 @@ protected:
             param.flags = UCP_STREAM_RECV_FLAG_WAITALL;
             param.cb.recv_stream = stream_recv_cb;
             request              = ucp_stream_recv_nbx(endpoint, buff, size,
-                                                    &res, &param);
+													   &res, &param);
         }
 
         ucs_status_t status;
@@ -155,10 +155,13 @@ public:
 
     ssize_t sendEOS() {
         size_t sz = 0;
-
-        ucp_dt_iov_t iov[1];
+		int useless = -1;
+        
+        ucp_dt_iov_t iov[2];
         iov[0].buffer = &sz;
-        iov[0].length = sizeof(size_t);
+        iov[0].length = sizeof(sz);
+        iov[1].buffer = (void*)&useless;
+        iov[1].length = sizeof(int);;
 
         ucp_request_param_t param;
         test_req_t* request;
@@ -166,20 +169,19 @@ public:
 
         fill_request_param(&ctx, &param, true);
         param.cb.send = send_cb;
-        request       = (test_req_t*)ucp_stream_send_nbx(endpoint, iov, 1, &param);
+        request       = (test_req_t*)ucp_stream_send_nbx(endpoint, iov, 2, &param);
 
-        ucs_status_t status;
-        if((status = request_wait(request, &ctx, (char*)"sendEOS", true)) != UCS_OK) {
-            int res = -1;
-            if(status == UCS_ERR_CONNECTION_RESET)
-                errno = ECONNRESET;
-            else
-                errno = EINVAL;
-            
-            return res;
-        }
-
-        return sz;
+		ucs_status_t status;
+		if((status = request_wait(request, &ctx, (char*)"send", true)) != UCS_OK) {
+			int res = -1;
+			if(status == UCS_ERR_CONNECTION_RESET)
+				errno = ECONNRESET;
+			else
+				errno = EINVAL;
+			
+			return res;
+		}
+		return sz;
     }
 
     ssize_t send(const void* buff, size_t size) {
@@ -199,16 +201,16 @@ public:
         param.cb.send = send_cb;
         request       = (test_req_t*)ucp_stream_send_nbx(endpoint, iov, 2, &param);
 
-        ucs_status_t status;
-        if((status = request_wait(request, &ctx, (char*)"send", true)) != UCS_OK) {
-            int res = -1;
-            if(status == UCS_ERR_CONNECTION_RESET)
-                errno = ECONNRESET;
-            else
-                errno = EINVAL;
-            
-            return res;
-        }
+		ucs_status_t status;
+		if((status = request_wait(request, &ctx, (char*)"send", true)) != UCS_OK) {
+			int res = -1;
+			if(status == UCS_ERR_CONNECTION_RESET)
+				errno = ECONNRESET;
+			else
+				errno = EINVAL;
+			
+			return res;
+		}
 
         return size;
     }
@@ -226,13 +228,23 @@ public:
             return sizeof(size_t);
         }
 
-        if(receive_internal(&test_probe, sizeof(size_t), blocking) <= 0)
-            return -1;
-
+		ssize_t r;
+        if((r=receive_internal(&test_probe, sizeof(size_t), blocking)) <= 0) {
+            return r;
+		}
 
         size = be64toh(test_probe);
         last_probe = size;
-        return sizeof(size_t);
+
+		if (size == 0) {
+			int useless;
+			r = receive_internal(&useless, sizeof(int), true);
+			if (r<=0) {
+				MTCL_UCX_ERROR("ConnUCX::probe, ERROR extracting \"useless\" bytes of the EOS, going on\n");
+			}
+		}
+
+		return sizeof(size_t);
     }
 
     bool peek() {
@@ -604,7 +616,7 @@ public:
         // This will cause, at the same time, progress on the user handles
         size_t size = -1;
         size_t max_eps = connections.size();
-        
+
         // One-shot progress
         int prog = -1;
         prog = ucp_worker_progress(ucp_worker);
@@ -629,12 +641,12 @@ public:
 
             auto it = connections.find(ep.ep);
             if(it != connections.end()) {
-                auto handlePair = it->second;
+                auto& handlePair = it->second;
                 if(handlePair.second) {
                     handlePair.second = false;
                     addinQ(false, handlePair.first);
                 }
-            }
+			}
         }
         REMOVE_CODE_IF(ulock.unlock());
 
@@ -646,28 +658,33 @@ public:
     void notify_yield(Handle* h) {
 
         HandleUCX* handle = reinterpret_cast<HandleUCX*>(h);
-        if(handle->isClosed()) return;
+        if(handle->isClosed()) {
+			return;
+		}
 
         // Check if handle still has some data to receive, addinQ in case we
         // have data
         size_t size;
-        if(handle->probe(size, false) > 0) {
+		ssize_t r;
+        if((r=handle->probe(size, false)) > 0) {
             addinQ(false, handle);
             return;
         }
 
         REMOVE_CODE_IF(std::unique_lock l(shm));
         auto it = connections.find(handle->endpoint);
-        if(it == connections.end())
+        if(it == connections.end()) {
             MTCL_UCX_ERROR("Couldn't yield handle\n");
+		}
         connections[handle->endpoint].second = true;
-
+		fprintf(stderr, "notify_yield handle %p to MANAGER\n", handle->endpoint);					
+		
         return;
     }
 
     void notify_close(Handle* h, bool close_wr=true, bool close_rd=true) {
         HandleUCX* handle = reinterpret_cast<HandleUCX*>(h);
-
+		
         if(handle->already_closed) return;
 
         REMOVE_CODE_IF(std::unique_lock l(shm));
