@@ -706,7 +706,7 @@ public:
         }
         
         ucp_worker_release_address(ucp_worker, local_addr);
-        // ucp_worker_destroy(ucp_worker);
+        ucp_worker_destroy(ucp_worker);
         ucp_cleanup(ucp_context);
     }
 
