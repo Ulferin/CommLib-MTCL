@@ -100,79 +100,19 @@ public:
         return -1;
     }
 
-#if 0	
-    ssize_t probe(size_t& size, const bool blocking=true) {
-        if(last_probe != -1) {
-            size = last_probe;
-            return sizeof(size_t);
-        }
-
-        if(request_header == MPI_REQUEST_NULL) {
-            if(MPI_Ibcast(&last_probe, 1, MPI_UNSIGNED_LONG, root_rank, comm, &request_header) != MPI_SUCCESS) {
-                MTCL_ERROR("[internal]:\t", "BroadcastMPI::probe Ibcast failed\n");
-                errno=EBADF;
-                return -1;
-            }   
-        }
-        MPI_Status status;
-        int flag{0};
-        if(blocking) {
-            if(MPI_Wait(&request_header, &status) != MPI_SUCCESS) {
-                MTCL_ERROR("[internal]:\t", "BroadcastMPI::probe wait failed\n");
-                errno=EBADF;
-                return -1;
-            }
-        }
-        else {
-            if(MPI_Test(&request_header, &flag, &status) != MPI_SUCCESS) {
-                MTCL_ERROR("[internal]:\t", "BroadcastMPI::probe test failed\n");
-                return -1;
-            }
-
-            if(!flag) {
-                errno = EWOULDBLOCK;
-                return -1;
-            }
-        }
-
-        // EOS
-        if(last_probe == 0) closing = true;
-        request_header = MPI_REQUEST_NULL;
-        size = last_probe;
-
-        return sizeof(size_t);
-    }
-#endif	
-
     ssize_t send(const void* buff, size_t size) {
-#if 0		
-        MPI_Status status;
-        MPI_Ibcast(&size, 1, MPI_UNSIGNED_LONG, root_rank, comm, &request_header);
-        MPI_Wait(&request_header, &status);
-#endif		
         if(MPI_Bcast((void*)buff, size, MPI_BYTE, root_rank, comm) != MPI_SUCCESS) {
             errno = ECOMM;
             return -1;
         }
-
         return size;
     }
 
     ssize_t receive(void* buff, size_t size) {
-#if 0
-        size_t sz;
-        ssize_t res;
-        if((res = this->probe(sz, true)) <= 0) return res;
-
-        if(last_probe == 0) return 0;
-#endif		
         if(MPI_Bcast((void*)buff, size, MPI_BYTE, root_rank, comm) != MPI_SUCCESS) {
             errno = ECOMM;
             return -1;
         }
-
-        //last_probe = -1;
-        
         return size;
     }
 
@@ -186,45 +126,10 @@ public:
     }
 
     void close(bool close_wr=true, bool close_rd=true) {
-#if 0
-		
-        // Root process can issue the close to all its non-root processes.
-        if(root) {
-            closing = true;
-            size_t EOS = 0;
-            MPI_Ibcast(&EOS, 1, MPI_UNSIGNED_LONG, root_rank, comm, &request_header);
-        }
-#endif
 		closing = true;		
-        return;
     }
 
     void finalize(bool, std::string name="") {
-#if 0
-        if(root) {
-            // The user didn't call the close explicitly
-            if(!closing) {
-                this->close(true, true);
-            }
-            MPI_Wait(&request_header, MPI_STATUS_IGNORE);
-        }
-        // non-root process didn't receive EOS
-        else if(!closing) {
-            while(true) {
-                size_t sz;
-                this->probe(sz, true);
-                
-                if(sz == 0) break;
-				MTCL_ERROR("[internal]:\t", "Spurious message received of size %ld on handle with name %s!\n", sz, name.c_str());
-                
-                char* data = new char[sz];
-                this->receive(data, sz);
-                delete[] data;
-                
-            }
-        }
-#endif
-
 		if (!closing)
 			this->close(true,true);
 		
@@ -250,50 +155,6 @@ public:
         return -1;
     }
 	
-#if 0
-    ssize_t probe(size_t& size, const bool blocking=true) {
-        if(last_probe != -1) {
-            size = last_probe;
-            return sizeof(size_t);
-        }
-
-        if(request_header == MPI_REQUEST_NULL) {
-            if(MPI_Igather(&last_probe, 1, MPI_UNSIGNED_LONG, probe_data, 1, MPI_UNSIGNED_LONG, root_rank, comm, &request_header) != MPI_SUCCESS) {
-                MTCL_ERROR("[internal]:\t", "GatherMPI::probe Ibcast error\n");
-                errno = ECOMM;
-                return -1;
-            }
-        }
-        MPI_Status status;
-        int flag{0};
-        if(blocking) {
-            if(MPI_Wait(&request_header, &status) != MPI_SUCCESS) {
-                MTCL_ERROR("[internal]:\t", "BroadcastMPI::probe wait failed\n");
-                errno=EBADF;
-                return -1;
-            }
-        }
-        else {
-            if(MPI_Test(&request_header, &flag, &status) != MPI_SUCCESS) {
-                MTCL_ERROR("[internal]:\t", "BroadcastMPI::probe test failed\n");
-                return -1;
-            }
-
-            if(!flag) {
-                errno = EWOULDBLOCK;
-                return -1;
-            }
-        }
-
-        last_probe = probe_data[(local_rank + 1) % (participants.size() + 1)];
-        if(last_probe == 0) closing = true;
-        request_header = MPI_REQUEST_NULL;
-        size = last_probe;
-
-        return sizeof(size_t);
-    }
-#endif
-	
     ssize_t send(const void* buff, size_t size) {
 		return -1; // TODO
 		
@@ -306,45 +167,6 @@ public:
     }
     
     ssize_t sendrecv(const void* sendbuff, size_t sendsize, void* recvbuff, size_t recvsize) {
-#if 0		
-        if(root) {
-            if(MPI_Igather(&recvsize, 1, MPI_UNSIGNED_LONG, probe_data, 1, MPI_UNSIGNED_LONG, 0, comm, &request_header) != MPI_SUCCESS) {
-                MTCL_ERROR("[internal]:\t", "GatherMPI::probe Ibcast error\n");
-                errno = ECOMM;
-                return -1;
-            }
-            if(MPI_Wait(&request_header, MPI_STATUS_IGNORE) != MPI_SUCCESS) {
-                MTCL_ERROR("[internal]:\t", "BroadcastMPI::probe wait failed\n");
-                errno=EBADF;
-                return -1;
-            }
-
-            // If at least one of the participants sent EOS header, we signal a
-            // close operation in order to "invalidate" the call
-            for(size_t i = 0; i < participants.size() + 1; i++) {
-                if(probe_data[i] == 0) {
-                    MTCL_PRINT(100, "[internal]:\t", "GatherMPI::sendrecv at least one of the participants closed the collective\n");
-                    closing = true;
-                    return 0;
-                }
-
-                if(probe_data[i] > recvsize) {
-                    MTCL_ERROR("[internal]:\t", "GatherMPI::sendrecv the provided recvsize is too small\n");
-                    errno = ENOMEM;
-                    return -1;
-                }
-            }
-        }
-        else {
-            MPI_Status status;
-            if(MPI_Igather(&sendsize, 1, MPI_UNSIGNED_LONG, nullptr, 0, MPI_UNSIGNED_LONG, 0, comm, &request_header) != MPI_SUCCESS) {
-                errno = ECOMM;
-                return -1;
-            }
-            MPI_Wait(&request_header, &status);
-        }
-#endif
-		
         if(MPI_Gather(sendbuff, sendsize, MPI_BYTE, recvbuff, recvsize, MPI_BYTE, 0, comm) != MPI_SUCCESS) {
             errno = ECOMM;
             return -1;
@@ -353,67 +175,10 @@ public:
     }
 
     void close(bool close_wr=true, bool close_rd=true) {
-#if 0		
-        if(!root) {
-            size_t EOS = 0;
-            MPI_Igather(&EOS, 1, MPI_UNSIGNED_LONG, nullptr, 0, MPI_UNSIGNED_LONG, 0, comm, &request_header);
-            closing = true;
-        }
-#endif
 		closing = true;
     }
 
     void finalize(bool, std::string name="") {
-#if 0
-        if(!root) {
-            // The user didn't call the close explicitly
-            if(!closing) {
-                this->close(true, true);
-            }
-            MPI_Wait(&request_header, MPI_STATUS_IGNORE);
-        }
-        // root process didn't get the EOS
-        else if(!closing) {
-            while(true) {
-                size_t sz = 1;
-                if(MPI_Igather(&sz, 1, MPI_UNSIGNED_LONG, probe_data, 1, MPI_UNSIGNED_LONG, 0, comm, &request_header) != MPI_SUCCESS) {
-                    MTCL_ERROR("[internal]:\t", "GatherMPI::probe Ibcast error\n");
-                    errno = ECOMM;
-                    return;
-                }
-                if(MPI_Wait(&request_header, MPI_STATUS_IGNORE) != MPI_SUCCESS) {
-                    MTCL_ERROR("[internal]:\t", "BroadcastMPI::probe wait failed\n");
-                    errno=EBADF;
-                    return;
-                }
-
-                // If at least one of the participants sent EOS header, we signal a
-                // close operation in order to "invalidate" the call
-                for(size_t i = 0; i < participants.size() + 1; i++) {
-                    if(probe_data[i] == 0) {
-                        closing = true;
-                        break;
-                    }
-
-                    if(i != (size_t)local_rank) sz = probe_data[i];
-                }
-                if(closing) break;
-				MTCL_ERROR("[internal]:\t", "Spurious message received of size %ld on handle with name %s!\n", sz, name.c_str());
-                sz = probe_data[(local_rank + 1) % (participants.size() + 1)];
-                char* data = new char[sz];
-                if(MPI_Bcast(data, sz, MPI_BYTE, root_rank, comm) != MPI_SUCCESS) {
-                    errno = ECOMM;
-                    delete[] data;
-                    break;
-                }
-                delete[] data;
-                
-            }
-        }
-
-        delete[] probe_data;
-#endif
-
 		if(!closing) 
 			this->close(true, true);
 					

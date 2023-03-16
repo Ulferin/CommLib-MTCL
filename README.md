@@ -2,7 +2,7 @@
 ### Multi Transport Communication Library (MTCL)
 
 The MTCL library aims to provide a common (and simple enough) interface for
-several back-end communication libraries. Currently we support TCP/IP, MPI, MPIP2P (i.e., dynamic MPI), UCX, MQTT.
+several back-end communication libraries. Currently we support TCP/IP, MPI, MPIP2P (i.e., dynamic MPI), UCX, MQTT. The Shared Memory (SHM) support is still experimental.
 
 
 ### Dependencies
@@ -74,3 +74,4 @@ several back-end communication libraries. Currently we support TCP/IP, MPI, MPIP
 
   We use RapidJSON to parse configuration files. If you do not want
   to use the config file you don't need to install it.
+  

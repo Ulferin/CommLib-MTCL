@@ -7,8 +7,7 @@
 #define STR(x) #x
 #define UCC_CHECK(_call)                                                \
     if (UCC_OK != (_call)) {                                            \
-        MTCL_PRINT(100, "[internal]: \t", "UCC fail %s\n", STR(_call)); \
-        exit(1);                                  \
+        MTCL_ERROR("[internal]:\t", "UCC call failed %s\n", STR(_call)); \
     }
 
 class UCCCollective : public CollectiveImpl {
@@ -175,51 +174,6 @@ public:
 		return -1;
 	}
 
-#if 0	
-		if(last_probe != -1) {
-            size = last_probe;
-            return sizeof(size_t);
-        }
-
-        ucc_coll_args_t      args;
-        if(req == nullptr) {
-
-            /* BROADCAST HEADER */
-            args.mask              = 0;
-            args.coll_type         = UCC_COLL_TYPE_BCAST;
-            args.src.info.buffer   = &last_probe;
-            args.src.info.count    = 1;
-            args.src.info.datatype = UCC_DT_UINT64;
-            args.src.info.mem_type = UCC_MEMORY_TYPE_HOST;
-            args.root              = root_rank;
-
-            UCC_CHECK(ucc_collective_init(&args, &req, team)); 
-            UCC_CHECK(ucc_collective_post(req));
-        }
-
-        if(blocking) {
-            while (UCC_INPROGRESS == ucc_collective_test(req)) { 
-                UCC_CHECK(ucc_context_progress(ctx));
-            }
-        }
-        else {
-            UCC_CHECK(ucc_context_progress(ctx));
-            if(UCC_INPROGRESS == ucc_collective_test(req)) {
-                errno = EWOULDBLOCK;
-                return -1;
-            }
-        }
-
-        if(last_probe == 0) closing = true;
-
-        ucc_collective_finalize(req);
-        req = nullptr;
-        size = last_probe;
-
-        return sizeof(size_t);
-    }
-#endif
-	
     ssize_t send(const void* buff, size_t size) {
         ucc_coll_args_t      args;
         ucc_coll_req_h       request;
@@ -228,26 +182,7 @@ public:
         args.coll_type         = UCC_COLL_TYPE_BCAST;
         args.src.info.mem_type = UCC_MEMORY_TYPE_HOST;
         args.root              = root_rank;
-
-		
-#if 0
-        /* BROADCAST HEADER */
-        args.mask              = 0;
-        args.coll_type         = UCC_COLL_TYPE_BCAST;
-        args.src.info.buffer   = &size;
-        args.src.info.count    = 1;
-        args.src.info.datatype = UCC_DT_UINT64;
-        args.src.info.mem_type = UCC_MEMORY_TYPE_HOST;
-        args.root              = root_rank;
-
-        UCC_CHECK(ucc_collective_init(&args, &request, team)); 
-        UCC_CHECK(ucc_collective_post(request));    
-        while (UCC_INPROGRESS == ucc_collective_test(request)) { 
-            UCC_CHECK(ucc_context_progress(ctx));
-        }
-        ucc_collective_finalize(request);
-#endif
-		
+				
         /* BROADCAST DATA */
         args.src.info.buffer = (void*)buff;
         args.src.info.count = size;
@@ -265,13 +200,6 @@ public:
 
 
     ssize_t receive(void* buff, size_t size) {
-#if 0
-        size_t sz;
-        ssize_t res;
-        if((res = this->probe(sz, true)) <= 0) return res;
-        if(sz == 0) return 0;
-#endif
-		
         ucc_coll_args_t      args;
         ucc_coll_req_h       req;
 
@@ -306,61 +234,13 @@ public:
     }
 
     void close(bool close_wr=true, bool close_rd=true) {
-
-#if 0		
-        // Root process can issue the close to all its non-root processes.
-        if(root) {
-            closing = true;
-            size_t EOS = 0;
-            ucc_coll_args_t      args;
-
-            /* BROADCAST EOS */
-            args.mask              = 0;
-            args.coll_type         = UCC_COLL_TYPE_BCAST;
-            args.src.info.buffer   = &EOS;
-            args.src.info.count    = 1;
-            args.src.info.datatype = UCC_DT_UINT64;
-            args.src.info.mem_type = UCC_MEMORY_TYPE_HOST;
-            args.root              = root_rank;
-
-            UCC_CHECK(ucc_collective_init(&args, &req, team)); 
-            UCC_CHECK(ucc_collective_post(req));
-        }
-#endif
 		closing = true;
         return;
     }
 
     void finalize(bool, std::string name="") {
-#if 0
-        if(root) {
-            // The user didn't call the close explicitly
-            if(!closing) {
-                this->close(true, true);
-            }
-            while (UCC_INPROGRESS == ucc_collective_test(req)) { 
-                UCC_CHECK(ucc_context_progress(ctx));
-            }
-            ucc_collective_finalize(req);
-        }
-        else {
-            while(!closing) {
-                size_t sz = 1;
-                this->probe(sz, true);
-                if(sz == 0) break;
-				MTCL_ERROR("[internal]:\t", "Spurious message received of size %ld on handle with name %s!\n", sz, name.c_str());
-
-                char* data = new char[sz];
-                this->receive(data, sz);
-                delete[] data;
-            }
-        }
-#endif
 		if(!closing)
 			this->close(true, true);
-        
-		
-        // ucc_context_destroy(ctx);
     }
 
 
@@ -368,11 +248,6 @@ public:
 
 class GatherUCC : public UCCCollective {
     ucc_coll_args_t      close_args;
-
-#if 0	
-    size_t* probe_data;
-    size_t EOS = 0;
-#endif	
 
 public:
     GatherUCC(std::vector<Handle*> participants, int rank, int size, bool root, int uniqtag) : UCCCollective(participants, rank, size, root, uniqtag) {
@@ -385,84 +260,9 @@ public:
         return -1;
     }
 
-#if 0
-		if(last_probe != -1) {
-            size = last_probe;
-            return sizeof(size_t);
-        }
-
-        ucc_coll_args_t      args;
-        if(req == nullptr) {
-            /* BROADCAST HEADER */
-            args.mask              = 0;
-            args.coll_type         = UCC_COLL_TYPE_GATHER;
-            args.src.info.buffer   = &last_probe;
-            args.src.info.count    = 1;
-            args.src.info.datatype = UCC_DT_UINT64;
-            args.src.info.mem_type = UCC_MEMORY_TYPE_HOST;
-            if(root) {
-                args.dst.info.buffer   = probe_data;
-                args.dst.info.count    = 1;
-                args.dst.info.datatype = UCC_DT_UINT64;
-                args.dst.info.mem_type = UCC_MEMORY_TYPE_HOST;
-            }
-            args.root              = root_rank;
-
-            UCC_CHECK(ucc_collective_init(&args, &req, team)); 
-            UCC_CHECK(ucc_collective_post(req));
-        }
-
-        if(blocking) {
-            while (UCC_INPROGRESS == ucc_collective_test(req)) { 
-                UCC_CHECK(ucc_context_progress(ctx));
-            }
-        }
-        else {
-            UCC_CHECK(ucc_context_progress(ctx));
-            if(UCC_INPROGRESS == ucc_collective_test(req)) {
-                errno = EWOULDBLOCK;
-                return -1;
-            }
-        }
-        ucc_collective_finalize(req);
-
-        last_probe = probe_data[(rank + 1) % this->size];
-        if(last_probe == 0) closing=true;
-        size = last_probe;
-        req = nullptr;
-
-        return sizeof(size_t);
-    }
-#endif
-	
     ssize_t send(const void* buff, size_t size) {
 		return -1; // TODO
 	}
-
-#if 0
-		ucc_coll_args_t args;
-        ucc_coll_req_h  request;
-        ucc_status_t    status;
-
-        /* BROADCAST HEADER */
-        args.mask              = 0;
-        args.coll_type         = UCC_COLL_TYPE_GATHER;
-        args.src.info.buffer   = &size;
-        args.src.info.count    = 1;
-        args.src.info.datatype = UCC_DT_UINT64;
-        args.src.info.mem_type = UCC_MEMORY_TYPE_HOST;
-        args.root              = root_rank;
-
-        UCC_CHECK(ucc_collective_init(&args, &request, team)); 
-        UCC_CHECK(ucc_collective_post(request));    
-        while (UCC_INPROGRESS == (status = ucc_collective_test(request))) { 
-            UCC_CHECK(ucc_context_progress(ctx));
-        }
-        ucc_collective_finalize(request);
-
-        return size;
-    }
-#endif
 
     ssize_t receive(void* buff, size_t size) {        
 		MTCL_ERROR("[internal]:\t", "Gather::receive operation not supported, you must use the sendrecv method\n");
@@ -474,18 +274,6 @@ public:
         ucc_coll_args_t args;
         ucc_coll_req_h  request;
 
-#if 0		
-        if(root) {
-            size_t sz;
-            this->probe(sz, true);
-            if(closing) return 0;
-            last_probe = -1;
-        }
-        else {
-            this->send(nullptr, sendsize);
-        }
-#endif
-		
         args.mask              = 0;
         args.coll_type         = UCC_COLL_TYPE_GATHER;
         args.src.info.buffer   = (void*)sendbuff;
@@ -511,58 +299,10 @@ public:
     }
 
     void close(bool close_wr=true, bool close_rd=true) {
-#if 0		
-        // Non-root process can issue the explicit close to the root process and
-        // go on. At finalize it will flush the pending operations.
-        if(!root) {
-
-            /* BROADCAST EOS */
-            close_args.mask              = 0;
-            close_args.coll_type         = UCC_COLL_TYPE_GATHER;
-            close_args.src.info.buffer   = &EOS;
-            close_args.src.info.count    = 1;
-            close_args.src.info.datatype = UCC_DT_UINT64;
-            close_args.src.info.mem_type = UCC_MEMORY_TYPE_HOST;
-            close_args.root              = root_rank;
-
-            UCC_CHECK(ucc_collective_init(&close_args, &req, team)); 
-            UCC_CHECK(ucc_collective_post(req));  
-
-            closing = true;
-            return;
-        }
-#endif
 		closing = true;
     }
 
     void finalize(bool, std::string name="") {
-#if 0
-        if(!root) {
-            // The user didn't call the close explicitly
-            if(!closing) {
-                this->close(true, true);
-            }
-            while (UCC_INPROGRESS == ucc_collective_test(req)) { 
-                UCC_CHECK(ucc_context_progress(ctx));
-            }
-            ucc_collective_finalize(req);
-        }
-        else {
-            while(!closing) {
-                size_t sz = 1;
-                this->probe(sz, true);
-                if(sz == 0) break;
-				MTCL_ERROR("[internal]:\t", "Spurious message received of size %ld on handle with name %s!\n", sz, name.c_str());
-
-                char* data = new char[sz];
-                this->receive(data, sz);
-                delete[] data;
-            }
-        }
-
-        // ucc_context_destroy(ctx);
-        delete[] probe_data;
-#endif
 		if (!closing)
 			this->close(true, true);
     }
